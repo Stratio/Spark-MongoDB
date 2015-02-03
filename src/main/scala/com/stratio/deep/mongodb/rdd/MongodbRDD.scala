@@ -1,8 +1,8 @@
 package com.stratio.deep.mongodb.rdd
 
-import com.stratio.deep.mongodb.schema.MongodbSchema
+import com.mongodb.DBObject
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.{Row, SQLContext}
+import org.apache.spark.sql.SQLContext
 import org.apache.spark.{Partition, TaskContext}
 
 /**
@@ -10,12 +10,11 @@ import org.apache.spark.{Partition, TaskContext}
  */
 
 
-class MongodbRowRDD(sc: SQLContext,
-                    val schema: MongodbSchema,
+class MongodbRDD(sc: SQLContext,
                     val host: String,
                     val database: String,
                     val collection: String)
-  extends RDD[Row](sc.sparkContext, Nil) {
+  extends RDD[DBObject](sc.sparkContext, Nil) {
 
   override def getPartitions: Array[Partition] = {
     val sparkPartitions = new Array[Partition](1)
@@ -29,8 +28,8 @@ class MongodbRowRDD(sc: SQLContext,
     super.getPreferredLocations(split)
   }
 
-  override def compute(split: Partition, context: TaskContext): MongodbRowRDDIterator = {
-    new MongodbRowRDDIterator(context, schema, split.asInstanceOf[MongodbPartition])
+  override def compute(split: Partition, context: TaskContext): MongodbRDDIterator = {
+    new MongodbRDDIterator(context, split.asInstanceOf[MongodbPartition])
   }
 
 }

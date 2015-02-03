@@ -1,29 +1,93 @@
 package com.stratio.deep.mongodb.schema
 
-import com.mongodb.DBObject
-import com.stratio.deep.schema.DeepSchema
-import org.apache.spark.sql.StructType
+import com.stratio.deep.mongodb.rdd.MongodbRDD
+import com.stratio.deep.schema.DeepSchemaProvider
+import org.apache.spark.SparkContext._
+import org.apache.spark.sql.catalyst.ScalaReflection
+import org.apache.spark.sql.catalyst.analysis.HiveTypeCoercion
+import org.apache.spark.sql.catalyst.types.{NullType, StringType, StructField, StructType}
+import org.apache.spark.sql.{ArrayType, DataType}
 import org.bson.BasicBSONObject
+import org.bson.types.BasicBSONList
+
+import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 
 /**
  * Created by rmorandeira on 29/01/15.
  */
 
-class MongodbSchema(val columns: Array[MongodbColumn]) extends DeepSchema with Serializable {
-  override def toStructType(): StructType = {
-    val fields = columns.map {
-      column => column.toStructField()
-    }
-    StructType(fields)
+case class MongodbSchema(rdd: MongodbRDD, samplingRatio: Double) extends DeepSchemaProvider with Serializable {
+  override def schema(): StructType = {
+    val schemaData = if (samplingRatio > 0.99) rdd else rdd.sample(false, samplingRatio, 1)
+
+    val structFields = schemaData.mapPartitions {
+      part => part.flatMap {
+        dbo => {
+          val doc = mapAsScalaMap(dbo.asInstanceOf[BasicBSONObject])
+          val fields = doc.mapValues(f => convertToStruct(f))
+          fields
+        }
+      }
+    }.reduceByKey(compatibleType).map { case (k: String, v: DataType) => StructField(k, v) }.collect
+    StructType(structFields)
   }
-}
 
+  private def convertToStruct(dataType: Any): DataType = dataType match {
+    case bl: BasicBSONList =>
+      typeOfArray(bl.asScala)
 
-object MongodbSchema {
+    case bo: BasicBSONObject => {
+      val fields = bo.asScala.map {
+        case (k, v) =>
+          StructField(k, convertToStruct(v))
+      }.toSeq
+      StructType(fields)
+    }
 
-  def schema(json: DBObject): MongodbSchema = {
-    val doc = scala.collection.JavaConversions.mapAsScalaMap(json.asInstanceOf[BasicBSONObject])
-    val columns = for (k <- doc) yield (MongodbColumn(k._1, k._2))
-    new MongodbSchema(columns.toArray)
+    case elem: Any => {
+      val elemType: PartialFunction[Any, DataType] = ScalaReflection.typeOfObject.orElse{case _ => StringType}
+      elemType(elem)
+    }
+  }
+
+  private def compatibleType(t1: DataType, t2: DataType): DataType = {
+    HiveTypeCoercion.findTightestCommonType(t1, t2) match {
+      case Some(commonType) => commonType
+      case None =>
+        // t1 or t2 is a StructType, ArrayType, or an unexpected type.
+        (t1, t2) match {
+          case (other: DataType, NullType) => other
+          case (NullType, other: DataType) => other
+          case (StructType(fields1), StructType(fields2)) => {
+            val newFields = (fields1 ++ fields2).groupBy(field => field.name).map {
+              case (name, fieldTypes) => {
+                val dataType = fieldTypes.map(field => field.dataType).reduce(
+                  (type1: DataType, type2: DataType) => compatibleType(type1, type2))
+                StructField(name, dataType, true)
+              }
+            }
+            StructType(newFields.toSeq.sortBy(_.name))
+          }
+          case (ArrayType(elementType1, containsNull1), ArrayType(elementType2, containsNull2)) =>
+            ArrayType(compatibleType(elementType1, elementType2), containsNull1 || containsNull2)
+          case (_, _) => StringType
+        }
+    }
+  }
+
+  private def typeOfArray(l: Seq[Any]): ArrayType = {
+    val containsNull = l.exists(v => v == null)
+    val elements = l.flatMap(v => Option(v))
+    if (elements.isEmpty) {
+      // If this JSON array is empty, we use NullType as a placeholder.
+      // If this array is not empty in other JSON objects, we can resolve
+      // the type after we have passed through all JSON objects.
+      ArrayType(NullType, containsNull)
+    } else {
+      val elementType = elements.map(convertToStruct _)
+        .reduce((type1: DataType, type2: DataType) => compatibleType(type1, type2))
+      ArrayType(elementType, containsNull)
+    }
   }
 }

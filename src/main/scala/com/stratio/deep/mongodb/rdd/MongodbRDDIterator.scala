@@ -2,17 +2,14 @@ package com.stratio.deep.mongodb.rdd
 
 import com.mongodb.DBObject
 import com.stratio.deep.mongodb.reader.MongodbReader
-import com.stratio.deep.mongodb.schema.{MongodbRecord, MongodbSchema}
 import org.apache.spark._
-import org.apache.spark.sql.Row
 
 /**
  * Created by rmorandeira on 29/01/15.
  */
-class MongodbRowRDDIterator(taskContext: TaskContext,
-                            schema: MongodbSchema,
+class MongodbRDDIterator(taskContext: TaskContext,
                             partition: Partition)
-  extends Iterator[Row] {
+  extends Iterator[DBObject] {
 
   protected var finished = false
   private var closed = false
@@ -29,12 +26,11 @@ class MongodbRowRDDIterator(taskContext: TaskContext,
   override def hasNext(): Boolean = {
     !finished && reader.hasNext()
   }
-  override def next(): Row = {
+  override def next(): DBObject = {
     if (!hasNext) {
       throw new NoSuchElementException("End of stream")
     }
-    val value = reader.next()
-    createRow(value)
+    reader.next()
   }
 
   def closeIfNeeded(): Unit = {
@@ -53,10 +49,5 @@ class MongodbRowRDDIterator(taskContext: TaskContext,
     val reader = new MongodbReader()
     reader.init(partition)
     reader
-  }
-
-  def createRow(doc: DBObject): Row = {
-    val values = MongodbRecord(schema, doc).values()
-    Row.fromSeq(values)
   }
 }

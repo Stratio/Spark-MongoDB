@@ -1,8 +1,7 @@
 package com.stratio.deep.mongodb
 
-import com.mongodb.{BasicDBList, BasicDBObject}
-import com.stratio.deep.mongodb.rdd.MongodbRowRDD
-import com.stratio.deep.mongodb.schema.MongodbSchema
+import com.stratio.deep.mongodb.rdd.MongodbRDD
+import com.stratio.deep.mongodb.schema.{MongodbRowConverter, MongodbSchema}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.sources.{BaseRelation, RelationProvider, TableScan}
 import org.apache.spark.sql.{Row, SQLContext, StructType}
@@ -18,23 +17,23 @@ class DefaultSource extends RelationProvider {
     val collection = parameters.getOrElse("mongodb.collection", sys.error("Option 'mongodb.collection' not specified"))
     val samplingRatio = parameters.get("mongodb.schema.samplingRatio").map(_.toDouble).getOrElse(1.0)
 
-    MongodbRelation(host, database, collection, samplingRatio)(sqlContext)
+    MongodbRelation(host, database, collection, samplingRatio, None)(sqlContext)
   }
 }
 
-case class MongodbRelation(host: String, database: String, collection: String, samplingRation: Double = 1.0)
+case class MongodbRelation(host: String, database: String, collection: String, samplingRatio: Double,
+                           schemaProvided: Option[StructType])
                           (@transient val sqlContext: SQLContext) extends TableScan {
 
-  override def schema: StructType = lazySchema.toStructType()
+  private lazy val baseRDD = new MongodbRDD(sqlContext, host, database, collection)
+
+  override val schema: StructType = schemaProvided.getOrElse(lazySchema)
 
   @transient lazy val lazySchema = {
-    val list = new BasicDBList()
-    list.add("one")
-    MongodbSchema.schema(new BasicDBObject("_id", 1).append("name", "name").append("players", list).append("other",
-    new BasicDBObject("pepe", 3)))
+    MongodbSchema(baseRDD, samplingRatio).schema
   }
 
   override def buildScan(): RDD[Row] = {
-    new MongodbRowRDD(sqlContext, lazySchema, host, database, collection)
+    new MongodbRowConverter().asRow(schema, baseRDD)
   }
 }
