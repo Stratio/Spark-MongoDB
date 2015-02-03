@@ -13,8 +13,8 @@ import scala.collection.JavaConverters._
 /**
  * Created by rmorandeira on 30/01/15.
  */
-class MongodbColumn(val field: String, val dataType: DataType)
-  extends DeepColumn with Serializable {
+case class MongodbColumn(field: String, dataType: DataType)
+  extends DeepColumn {
 
   override def toSqlVal(value: Any): Any = {
 
@@ -78,7 +78,7 @@ object MongodbColumn  {
               case (name, fieldTypes) => {
                 val dataType = fieldTypes.map(field => field.dataType).reduce(
                   (type1: DataType, type2: DataType) => compatibleType(type1, type2))
-                StructField(name, dataType, true)
+                StructField(name, dataType, nullable = true)
               }
             }
             StructType(newFields.toSeq.sortBy(_.name))
@@ -90,9 +90,8 @@ object MongodbColumn  {
     }
   }
 
-  private def typeOfArray(l: Seq[Any]): ArrayType = {
-    val containsNull = l.exists(v => v == null)
-    val elements = l.flatMap(v => Option(v))
+  private def typeOfArray(elements: Seq[Any]): ArrayType = {
+    val containsNull = elements.contains(null)
     if (elements.isEmpty) {
       // If this JSON array is empty, we use NullType as a placeholder.
       // If this array is not empty in other JSON objects, we can resolve

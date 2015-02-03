@@ -14,17 +14,15 @@ import org.apache.spark.{Partition, TaskContext}
 case class MongodbRowRDD(sc: SQLContext,
                          schema: MongodbSchema,
                          config: Config)
-  extends RDD[Row](sc.sparkContext, Nil) {
+  extends RDD[Row](sc.sparkContext, deps = Nil) {
 
   override def getPartitions: Array[Partition] = {
-    val sparkPartitions = new Array[Partition](1)
-    val idx: Int = 0
-    sparkPartitions(idx) = new MongodbPartition(id, idx)
-
-    sparkPartitions
+    val sparkPartitions = List(new MongodbPartition(id, 0))
+    sparkPartitions.toArray
   }
 
   override def getPreferredLocations(split: Partition): Seq[String] = {
+    //TODO: Implement proper getPreferredLocations
     super.getPreferredLocations(split)
   }
 

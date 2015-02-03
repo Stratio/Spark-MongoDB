@@ -15,22 +15,19 @@ class MongodbReader {
   /**
    * The Mongo client.
    */
-  private var mongoClient: MongoClient = null
+  private var mongoClient: Option[MongoClient] = None
+
   /**
    * The Db cursor.
    */
-  private var dbCursor: DBCursor = null
+  private var dbCursor: Option[DBCursor] = None
 
   /**
    * Close void.
    */
   def close(): Unit = {
-    if (dbCursor != null) {
-      dbCursor.close
-    }
-    if (mongoClient != null) {
-      mongoClient.close
-    }
+    dbCursor.fold(ifEmpty=())(_.close)
+    mongoClient.fold(ifEmpty = ())(_.close)
   }
 
   /**
@@ -39,7 +36,7 @@ class MongodbReader {
    * @return the boolean
    */
   def hasNext(): Boolean = {
-    return dbCursor.hasNext
+    dbCursor.fold(ifEmpty = false)(_.hasNext())
   }
 
   /**
@@ -48,7 +45,8 @@ class MongodbReader {
    * @return the cells
    */
   def next(): DBObject = {
-    return dbCursor.next
+    dbCursor.fold(ifEmpty=
+      throw new IllegalStateException("DbCursor is not initialized"))(_.next())
   }
 
   /**
@@ -57,20 +55,17 @@ class MongodbReader {
    * @param partition the partition
    */
   def init(partition: Partition)(config: Config): Unit = {
-    try {
-      val addressList: List[ServerAddress] = List(new ServerAddress(config.host))
-      val mongoCredentials: List[MongoCredential] = List.empty
+    //TODO: Catch any exception and throw a specific exception type
 
-      mongoClient = new MongoClient(addressList, mongoCredentials)
-      val db = mongoClient.getDB(config.database)
+    val addressList: List[ServerAddress] = List(new ServerAddress(config.host))
+    val mongoCredentials: List[MongoCredential] = List.empty
+
+    Some(new MongoClient(addressList, mongoCredentials)).foreach{client =>
+      val db = client.getDB(config.database)
       val collection = db.getCollection(config.collection)
-      dbCursor = collection.find(createQueryPartition(partition))
+      dbCursor = Some(collection.find(createQueryPartition(partition)))
     }
-    catch {
-      case e: UnknownHostException => {
-        throw e
-      }
-    }
+
   }
 
   /**
@@ -80,10 +75,10 @@ class MongodbReader {
    * @return the dB object
    */
   private def createQueryPartition(partition: Partition): DBObject = {
-//    val queryBuilderMin: QueryBuilder = QueryBuilder.start()
-//    val bsonObjectMin: DBObject = queryBuilderMin.get
-//    val queryBuilderMax: QueryBuilder = QueryBuilder.start()
-//    val bsonObjectMax: DBObject = queryBuilderMax.get
+    //    val queryBuilderMin: QueryBuilder = QueryBuilder.start()
+    //    val bsonObjectMin: DBObject = queryBuilderMin.get
+    //    val queryBuilderMax: QueryBuilder = QueryBuilder.start()
+    //    val bsonObjectMax: DBObject = queryBuilderMax.get
     val queryBuilder: QueryBuilder = QueryBuilder.start
 
     queryBuilder.get
