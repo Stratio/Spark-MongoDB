@@ -1,6 +1,7 @@
 package com.stratio.deep.mongodb.rdd
 
 import com.mongodb.DBObject
+import com.stratio.deep.mongodb.Config
 import com.stratio.deep.mongodb.reader.MongodbReader
 import com.stratio.deep.mongodb.schema.{MongodbRecord, MongodbSchema}
 import org.apache.spark._
@@ -11,7 +12,8 @@ import org.apache.spark.sql.Row
  */
 class MongodbRowRDDIterator(taskContext: TaskContext,
                             schema: MongodbSchema,
-                            partition: Partition)
+                            partition: Partition,
+                            config: Config)
   extends Iterator[Row] {
 
   protected var finished = false
@@ -51,7 +53,7 @@ class MongodbRowRDDIterator(taskContext: TaskContext,
 
   def initReader() = {
     val reader = new MongodbReader()
-    reader.init(partition)
+    reader.init(partition)(config)
     reader
   }
 

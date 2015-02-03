@@ -12,8 +12,8 @@ import org.apache.spark.{Partition, TaskContext}
 
 
 case class MongodbRowRDD(sc: SQLContext,
-                    schema: MongodbSchema,
-                    config: Config)
+                         schema: MongodbSchema,
+                         config: Config)
   extends RDD[Row](sc.sparkContext, Nil) {
 
   override def getPartitions: Array[Partition] = {
@@ -29,7 +29,7 @@ case class MongodbRowRDD(sc: SQLContext,
   }
 
   override def compute(split: Partition, context: TaskContext): MongodbRowRDDIterator = {
-    new MongodbRowRDDIterator(context, schema, split.asInstanceOf[MongodbPartition])
+    new MongodbRowRDDIterator(context, schema, split.asInstanceOf[MongodbPartition],config)
   }
 
 }

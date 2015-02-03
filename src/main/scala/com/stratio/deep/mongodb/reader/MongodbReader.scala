@@ -3,6 +3,7 @@ package com.stratio.deep.mongodb.reader
 import java.net.UnknownHostException
 
 import com.mongodb._
+import com.stratio.deep.mongodb.Config
 import org.apache.spark.Partition
 
 import scala.collection.JavaConversions._
@@ -55,14 +56,14 @@ class MongodbReader {
    *
    * @param partition the partition
    */
-  def init(partition: Partition): Unit = {
+  def init(partition: Partition)(config: Config): Unit = {
     try {
-      val addressList: List[ServerAddress] = List[ServerAddress](new ServerAddress("172.28.128.3:27017"))
+      val addressList: List[ServerAddress] = List(new ServerAddress(config.host))
       val mongoCredentials: List[MongoCredential] = List.empty
 
       mongoClient = new MongoClient(addressList, mongoCredentials)
-      val db = mongoClient.getDB("football")
-      val collection = db.getCollection("teams")
+      val db = mongoClient.getDB(config.database)
+      val collection = db.getCollection(config.collection)
       dbCursor = collection.find(createQueryPartition(partition))
     }
     catch {
