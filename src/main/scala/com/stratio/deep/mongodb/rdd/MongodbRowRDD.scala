@@ -1,5 +1,6 @@
 package com.stratio.deep.mongodb.rdd
 
+import com.stratio.deep.mongodb.Config
 import com.stratio.deep.mongodb.schema.MongodbSchema
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{Row, SQLContext}
@@ -10,11 +11,9 @@ import org.apache.spark.{Partition, TaskContext}
  */
 
 
-class MongodbRowRDD(sc: SQLContext,
-                    val schema: MongodbSchema,
-                    val host: String,
-                    val database: String,
-                    val collection: String)
+case class MongodbRowRDD(sc: SQLContext,
+                    schema: MongodbSchema,
+                    config: Config)
   extends RDD[Row](sc.sparkContext, Nil) {
 
   override def getPartitions: Array[Partition] = {

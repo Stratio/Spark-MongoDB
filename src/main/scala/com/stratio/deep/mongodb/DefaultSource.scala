@@ -18,11 +18,11 @@ class DefaultSource extends RelationProvider {
     val collection = parameters.getOrElse("mongodb.collection", sys.error("Option 'mongodb.collection' not specified"))
     val samplingRatio = parameters.get("mongodb.schema.samplingRatio").map(_.toDouble).getOrElse(1.0)
 
-    MongodbRelation(host, database, collection, samplingRatio)(sqlContext)
+    MongodbRelation(Config(host, database, collection, samplingRatio))(sqlContext)
   }
 }
 
-case class MongodbRelation(host: String, database: String, collection: String, samplingRation: Double = 1.0)
+case class MongodbRelation(config: Config)
                           (@transient val sqlContext: SQLContext) extends TableScan {
 
   override def schema: StructType = lazySchema.toStructType()
@@ -35,6 +35,6 @@ case class MongodbRelation(host: String, database: String, collection: String, s
   }
 
   override def buildScan(): RDD[Row] = {
-    new MongodbRowRDD(sqlContext, lazySchema, host, database, collection)
+    new MongodbRowRDD(sqlContext, lazySchema, config)
   }
 }

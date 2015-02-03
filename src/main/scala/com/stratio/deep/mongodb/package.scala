@@ -10,8 +10,8 @@ package object mongodb {
    * Adds a method, fromMongodb, to SQLContext that allows reading data stored in Mongodb.
    */
   implicit class MongodbContext(sqlContext: SQLContext) {
-    def fromMongoDB(host: String, database: String, collection: String, samplingRation: Double = 1.0): SchemaRDD = {
-      sqlContext.baseRelationToSchemaRDD(MongodbRelation(host, database, collection, samplingRation)(sqlContext))
+    def fromMongoDB(config: Config): SchemaRDD = {
+      sqlContext.baseRelationToSchemaRDD(MongodbRelation(config)(sqlContext))
     }
   }
 
