@@ -5,11 +5,11 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.stratio</groupId>
-    <artifactId>deep-sql</artifactId>
+    <artifactId>spark-mongodb</artifactId>
     <version>1.0-SNAPSHOT</version>
     <packaging>jar</packaging>
-    <name>deep-sql</name>
-    <url>http://github.com/Stratio/deep-sql</url>
+    <name>spark-mongodb</name>
+    <url>http://github.com/Stratio/spark-mongodb</url>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java.version>1.7.0</java.version>
