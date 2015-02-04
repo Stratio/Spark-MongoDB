@@ -27,7 +27,7 @@ package object mongodb {
   /**
    * Adds a method, fromMongodb, to schemaRDD that allows storing data in Mongodb.
    */
-  implicit class MongodbSchemaRDD(schemaRDD: SchemaRDD) {
+  implicit class MongodbSchemaRDD(schemaRDD: SchemaRDD) extends Serializable {
 
     def saveToMongodb(parameters: Map[String, String]): Unit = {
       val config = Config(

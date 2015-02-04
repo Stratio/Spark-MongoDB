@@ -5,12 +5,14 @@ import com.stratio.deep.schema.DeepRowConverter
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.StructType
 import org.apache.spark.sql.catalyst.ScalaReflection
+import org.apache.spark.sql.catalyst.expressions.GenericRow
 import org.apache.spark.sql.catalyst.types.{StructType, ArrayType, DataType, StructField}
 import org.apache.spark.sql.{Row, StructType}
 import org.bson.BasicBSONObject
 import org.bson.types.BasicBSONList
 
 import scala.collection.JavaConverters._
+import scala.collection.mutable.ArrayBuffer
 
 /**
  * Created by rmorandeira on 3/02/15.
@@ -37,6 +39,7 @@ object MongodbRowConverter extends DeepRowConverter[DBObject] with Serializable 
   def rowAsDBObject(row: Row, schema: StructType): DBObject = {
     import scala.collection.JavaConversions._
     val attMap: Map[String, Any] = schema.fieldNames.zipWithIndex.map {
+      //FIXME: Make conversion recursive (it will fail for objects and arrays
       case (att, idx) => (att, row(idx))
     }.toMap
     new BasicDBObject(attMap)
