@@ -8,7 +8,7 @@ import org.apache.spark._
  * Created by rmorandeira on 29/01/15.
  */
 class MongodbRDDIterator(taskContext: TaskContext,
-                            partition: Partition)
+  partition: Partition)
   extends Iterator[DBObject] {
 
   protected var finished = false
@@ -21,11 +21,12 @@ class MongodbRDDIterator(taskContext: TaskContext,
   }
 
   // Register an on-task-completion callback to close the input stream.
-  taskContext.addTaskCompletionListener((context :TaskContext) => closeIfNeeded())
+  taskContext.addTaskCompletionListener((context: TaskContext) => closeIfNeeded())
 
   override def hasNext(): Boolean = {
     !finished && reader.hasNext()
   }
+
   override def next(): DBObject = {
     if (!hasNext) {
       throw new NoSuchElementException("End of stream")
@@ -39,6 +40,7 @@ class MongodbRDDIterator(taskContext: TaskContext,
       closed = true
     }
   }
+
   protected def close(): Unit = {
     if (initialized) {
       reader.close()

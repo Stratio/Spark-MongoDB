@@ -17,9 +17,14 @@ import scala.collection.JavaConverters._
  * Created by rmorandeira on 29/01/15.
  */
 
-case class MongodbSchema(rdd: MongodbRDD, samplingRatio: Double) extends DeepSchemaProvider with Serializable {
+case class MongodbSchema(
+  rdd: MongodbRDD,
+  samplingRatio: Double) extends DeepSchemaProvider with Serializable {
+
   override def schema(): StructType = {
-    val schemaData = if (samplingRatio > 0.99) rdd else rdd.sample(false, samplingRatio, 1)
+    val schemaData =
+      if (samplingRatio > 0.99) rdd
+      else rdd.sample(withReplacement = false, samplingRatio, 1)
 
     val structFields = schemaData.mapPartitions {
       part => part.flatMap {
@@ -29,7 +34,9 @@ case class MongodbSchema(rdd: MongodbRDD, samplingRatio: Double) extends DeepSch
           fields
         }
       }
-    }.reduceByKey(compatibleType).map { case (k: String, v: DataType) => StructField(k, v) }.collect
+    }.reduceByKey(compatibleType).map {
+      case (k, v) => StructField(k, v)
+    }.collect()
     StructType(structFields)
   }
 
@@ -46,7 +53,8 @@ case class MongodbSchema(rdd: MongodbRDD, samplingRatio: Double) extends DeepSch
     }
 
     case elem: Any => {
-      val elemType: PartialFunction[Any, DataType] = ScalaReflection.typeOfObject.orElse{case _ => StringType}
+      val elemType: PartialFunction[Any, DataType] =
+        ScalaReflection.typeOfObject.orElse { case _ => StringType}
       elemType(elem)
     }
   }
@@ -54,39 +62,46 @@ case class MongodbSchema(rdd: MongodbRDD, samplingRatio: Double) extends DeepSch
   private def compatibleType(t1: DataType, t2: DataType): DataType = {
     HiveTypeCoercion.findTightestCommonType(t1, t2) match {
       case Some(commonType) => commonType
+
       case None =>
         // t1 or t2 is a StructType, ArrayType, or an unexpected type.
         (t1, t2) match {
           case (other: DataType, NullType) => other
           case (NullType, other: DataType) => other
-          case (StructType(fields1), StructType(fields2)) => {
-            val newFields = (fields1 ++ fields2).groupBy(field => field.name).map {
-              case (name, fieldTypes) => {
-                val dataType = fieldTypes.map(field => field.dataType).reduce(
-                  (type1: DataType, type2: DataType) => compatibleType(type1, type2))
-                StructField(name, dataType, true)
-              }
+          case (StructType(fields1), StructType(fields2)) =>
+            val newFields = (fields1 ++ fields2)
+              .groupBy(field => field.name)
+              .map { case (name, fieldTypes) =>
+              val dataType = fieldTypes
+                .map(field => field.dataType)
+                .reduce(compatibleType)
+              StructField(name, dataType, nullable = true)
+
             }
             StructType(newFields.toSeq.sortBy(_.name))
-          }
+
           case (ArrayType(elementType1, containsNull1), ArrayType(elementType2, containsNull2)) =>
-            ArrayType(compatibleType(elementType1, elementType2), containsNull1 || containsNull2)
+            ArrayType(
+              compatibleType(elementType1, elementType2),
+              containsNull1 || containsNull2)
+
           case (_, _) => StringType
         }
     }
   }
 
   private def typeOfArray(l: Seq[Any]): ArrayType = {
-    val containsNull = l.exists(v => v == null)
+    val containsNull = l.contains(null)
     val elements = l.flatMap(v => Option(v))
-    if (elements.isEmpty) {
+    if (l.isEmpty) {
       // If this JSON array is empty, we use NullType as a placeholder.
       // If this array is not empty in other JSON objects, we can resolve
       // the type after we have passed through all JSON objects.
       ArrayType(NullType, containsNull)
     } else {
-      val elementType = elements.map(convertToStruct _)
-        .reduce((type1: DataType, type2: DataType) => compatibleType(type1, type2))
+      val elementType = elements
+        .map(convertToStruct)
+        .reduce(compatibleType)
       ArrayType(elementType, containsNull)
     }
   }

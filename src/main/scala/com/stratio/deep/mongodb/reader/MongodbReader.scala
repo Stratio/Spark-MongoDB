@@ -57,9 +57,9 @@ class MongodbReader {
    */
   def init(partition: Partition): Unit = {
     try {
-      val addressList: List[ServerAddress] = List[ServerAddress](new ServerAddress("172.28.128.3:27017"))
+      val addressList: List[ServerAddress] =
+        List[ServerAddress](new ServerAddress("172.28.128.3:27017"))
       val mongoCredentials: List[MongoCredential] = List.empty
-
       mongoClient = new MongoClient(addressList, mongoCredentials)
       val db = mongoClient.getDB("football")
       val collection = db.getCollection("teams")
@@ -79,10 +79,10 @@ class MongodbReader {
    * @return the dB object
    */
   private def createQueryPartition(partition: Partition): DBObject = {
-//    val queryBuilderMin: QueryBuilder = QueryBuilder.start()
-//    val bsonObjectMin: DBObject = queryBuilderMin.get
-//    val queryBuilderMax: QueryBuilder = QueryBuilder.start()
-//    val bsonObjectMax: DBObject = queryBuilderMax.get
+    //    val queryBuilderMin: QueryBuilder = QueryBuilder.start()
+    //    val bsonObjectMin: DBObject = queryBuilderMin.get
+    //    val queryBuilderMax: QueryBuilder = QueryBuilder.start()
+    //    val bsonObjectMax: DBObject = queryBuilderMax.get
     val queryBuilder: QueryBuilder = QueryBuilder.start
 
     queryBuilder.get
