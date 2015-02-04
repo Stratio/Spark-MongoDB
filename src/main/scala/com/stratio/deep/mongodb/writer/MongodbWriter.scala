@@ -2,35 +2,28 @@ package com.stratio.deep.mongodb.writer
 
 import com.mongodb._
 import com.stratio.deep.mongodb.Config
-import org.apache.spark.Partition
+import scala.collection.JavaConversions._
 
 
-class MongodbWriter {
-	/**
-	 * The Mongo client.
-	 */
-	private var mongoClient: Option[MongoClient] = None
+class MongodbWriter(
+                     config: Config,
+                     writeConcern: WriteConcern) {
+  /**
+   * The Mongo client.
+   */
+  val mongoClient: MongoClient =
+    new MongoClient(List(new ServerAddress(config.host)))
 
-	val writeConcern: Option[WriteConcern] = None
+  val dbCollection = mongoClient
+    .getDB(config.database)
+    .getCollection(config.collection)
 
+  def save (dbObject: DBObject): Unit = {
+    dbCollection.save(dbObject,writeConcern)
+  }
 
-
-/**
- * Save void.
- * 
- * @param dbObject
- *            the db object
- */
-
-def save (DBObject): Unit = {
-		val db = 
-}
-
-/**
- * Close void.
- */
-def close(): Unit = {
-		mongoClient.fold(ifEmpty = ())(_.close)
-}
+  def close(): Unit = {
+    mongoClient.close()
+  }
 
 }
