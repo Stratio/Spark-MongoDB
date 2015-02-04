@@ -6,13 +6,15 @@ import org.apache.spark.sql.{SQLContext, SchemaRDD}
  * Created by rmorandeira on 28/01/15.
  */
 package object mongodb {
+
   /**
    * Adds a method, fromMongodb, to SQLContext that allows reading data stored in Mongodb.
    */
   implicit class MongodbContext(sqlContext: SQLContext) {
     def fromMongoDB(config: Config): SchemaRDD = {
-      sqlContext.baseRelationToSchemaRDD(MongodbRelation(config)(sqlContext))
+      sqlContext.baseRelationToSchemaRDD(MongodbRelation(config, None)(sqlContext))
     }
+
   }
 
   /**

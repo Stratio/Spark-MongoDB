@@ -1,7 +1,5 @@
 package com.stratio.deep.mongodb.reader
 
-import java.net.UnknownHostException
-
 import com.mongodb._
 import com.stratio.deep.mongodb.Config
 import org.apache.spark.Partition
@@ -26,7 +24,7 @@ class MongodbReader {
    * Close void.
    */
   def close(): Unit = {
-    dbCursor.fold(ifEmpty=())(_.close)
+    dbCursor.fold(ifEmpty = ())(_.close)
     mongoClient.fold(ifEmpty = ())(_.close)
   }
 
@@ -45,7 +43,7 @@ class MongodbReader {
    * @return the cells
    */
   def next(): DBObject = {
-    dbCursor.fold(ifEmpty=
+    dbCursor.fold(ifEmpty =
       throw new IllegalStateException("DbCursor is not initialized"))(_.next())
   }
 
@@ -60,7 +58,8 @@ class MongodbReader {
     val addressList: List[ServerAddress] = List(new ServerAddress(config.host))
     val mongoCredentials: List[MongoCredential] = List.empty
 
-    Some(new MongoClient(addressList, mongoCredentials)).foreach{client =>
+    mongoClient = Some(new MongoClient(addressList, mongoCredentials))
+    mongoClient.foreach { client =>
       val db = client.getDB(config.database)
       val collection = db.getCollection(config.collection)
       dbCursor = Some(collection.find(createQueryPartition(partition)))
