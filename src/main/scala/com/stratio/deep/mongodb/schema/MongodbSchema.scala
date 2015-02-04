@@ -21,15 +21,14 @@ case class MongodbSchema(rdd: MongodbRDD, samplingRatio: Double) extends DeepSch
   override def schema(): StructType = {
     val schemaData = if (samplingRatio > 0.99) rdd else rdd.sample(false, samplingRatio, 1)
 
-    val structFields = schemaData.mapPartitions {
-      part => part.flatMap {
-        dbo => {
-          val doc = mapAsScalaMap(dbo.asInstanceOf[BasicBSONObject])
-          val fields = doc.mapValues(f => convertToStruct(f))
-          fields
-        }
+    val structFields = schemaData.flatMap {
+      dbo => {
+        val doc = mapAsScalaMap(dbo.asInstanceOf[BasicBSONObject])
+        val fields = doc.mapValues(f => convertToStruct(f))
+        fields
       }
-    }.reduceByKey(compatibleType).map { case (k: String, v: DataType) => StructField(k, v) }.collect
+    }.reduceByKey(compatibleType).aggregate(Seq[StructField]())((fields, newField) => fields :+ StructField(newField._1,
+      newField._2),((oldFields, newFields) => oldFields ++ newFields))
     StructType(structFields)
   }
 
