@@ -1,6 +1,12 @@
 package com.stratio.deep
 
-import org.apache.spark.sql.{SQLContext, SchemaRDD}
+import com.mongodb.{BasicDBObject, DBObject, WriteConcern}
+import com.stratio.deep.mongodb.Config
+import com.stratio.deep.mongodb.writer.MongodbWriter
+import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.catalyst.types.StructType
+import org.apache.spark.sql.{SQLContext, SchemaRDD, Row}
+import Config._
 
 /**
  * Created by rmorandeira on 28/01/15.
@@ -20,9 +26,30 @@ package object mongodb {
   /**
    * Adds a method, fromMongodb, to schemaRDD that allows storing data in Mongodb.
    */
-  // TODO:
   implicit class MongodbSchemaRDD(schemaRDD: SchemaRDD) {
-    def saveToMongodb(parameters: Map[String, String]): Unit = ???
+
+    def saveToMongodb(parameters: Map[String, String]): Unit = {
+      val config = Config(
+        parameters.getOrElse(Host,notFound(Host)),
+        parameters.getOrElse(Database,notFound(Database)),
+        parameters.getOrElse(Collection,notFound(Collection)))
+      //TODO It's necessary to implement a helper for translating from String to WriteConcern constant.
+      schemaRDD.foreachPartition(it => {
+        val writer = new MongodbWriter(config,WriteConcern.NORMAL)
+        writer.save(it.map(row =>
+          Row2DbObject(row,schemaRDD.schema)))
+        writer.close()
+      })
+    }
+
+    private def Row2DbObject(row: Row,schema: StructType): DBObject = {
+      import scala.collection.JavaConversions._
+      val attMap: Map[String, Any] = schema.fieldNames.zipWithIndex.map{
+        case (att,idx) => (att,row(idx))
+      }.toMap
+      new BasicDBObject(attMap)
+    }
+
   }
 
 }
