@@ -19,9 +19,9 @@ class DefaultSource extends RelationProvider {
 
     val host = parameters.getOrElse(Host, notFound(Host))
 
-    val database = parameters.getOrElse(Database,notFound(Database))
+    val database = parameters.getOrElse(Database, notFound(Database))
 
-    val collection = parameters.getOrElse(Collection,notFound(Collection))
+    val collection = parameters.getOrElse(Collection, notFound(Collection))
 
     val samplingRatio = parameters
       .get(SamplingRatio)
@@ -47,7 +47,7 @@ case class MongodbRelation(
   }
 
   override def buildScan(): RDD[Row] = {
-    new MongodbRowConverter().asRow(schema, baseRDD)
+    MongodbRowConverter.asRow(schema, baseRDD)
   }
 
 }

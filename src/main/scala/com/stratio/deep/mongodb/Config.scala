@@ -16,7 +16,7 @@ object Config extends Serializable {
   val Collection = "mongodb.collection"
   val SamplingRatio = "mongodb.schema.samplingRatio"
 
-  /** Defines how to act in case any parameter is not set*/
+  /** Defines how to act in case any parameter is not set */
   def notFound(key: String) = sys.error(s"Parameter $key not specified")
 
 }

@@ -1,10 +1,11 @@
 package com.stratio.deep.mongodb.schema
 
-import com.mongodb.DBObject
+import com.mongodb.{BasicDBObject, DBObject}
 import com.stratio.deep.schema.DeepRowConverter
 import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.StructType
 import org.apache.spark.sql.catalyst.ScalaReflection
-import org.apache.spark.sql.catalyst.types.{ArrayType, DataType, StructField}
+import org.apache.spark.sql.catalyst.types.{StructType, ArrayType, DataType, StructField}
 import org.apache.spark.sql.{Row, StructType}
 import org.bson.BasicBSONObject
 import org.bson.types.BasicBSONList
@@ -14,7 +15,7 @@ import scala.collection.JavaConverters._
 /**
  * Created by rmorandeira on 3/02/15.
  */
-class MongodbRowConverter extends DeepRowConverter[DBObject] with Serializable {
+object MongodbRowConverter extends DeepRowConverter[DBObject] with Serializable {
 
   override def asRow(schema: StructType, rdd: RDD[DBObject]): RDD[Row] = {
     rdd.map { record =>
@@ -31,6 +32,14 @@ class MongodbRowConverter extends DeepRowConverter[DBObject] with Serializable {
           toSQL(_, dataType)).orNull
     }
     Row.fromSeq(values)
+  }
+
+  def rowAsDBObject(row: Row, schema: StructType): DBObject = {
+    import scala.collection.JavaConversions._
+    val attMap: Map[String, Any] = schema.fieldNames.zipWithIndex.map {
+      case (att, idx) => (att, row(idx))
+    }.toMap
+    new BasicDBObject(attMap)
   }
 
   private def toSQL(value: Any, dataType: DataType): Any = {

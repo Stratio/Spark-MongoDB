@@ -6,11 +6,9 @@ import scala.collection.JavaConversions._
 
 
 class MongodbWriter(
-                     config: Config,
-                     writeConcern: WriteConcern) extends Serializable {
-  /**
-   * The Mongo client.
-   */
+  config: Config,
+  writeConcern: WriteConcern) extends Serializable {
+  
   val mongoClient: MongoClient =
     new MongoClient(List(new ServerAddress(config.host)))
 
@@ -19,7 +17,7 @@ class MongodbWriter(
     .getCollection(config.collection)
 
   def save(it: Iterator[DBObject]): Unit =
-    it.foreach(dbo => dbCollection.save(dbo,writeConcern))
+    it.foreach(dbo => dbCollection.save(dbo, writeConcern))
 
   def close(): Unit = {
     mongoClient.close()
