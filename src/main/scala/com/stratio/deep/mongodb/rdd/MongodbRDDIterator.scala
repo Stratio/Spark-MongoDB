@@ -3,18 +3,16 @@ package com.stratio.deep.mongodb.rdd
 import com.mongodb.DBObject
 import com.stratio.deep.mongodb.Config
 import com.stratio.deep.mongodb.reader.MongodbReader
-import com.stratio.deep.mongodb.schema.{MongodbRecord, MongodbSchema}
 import org.apache.spark._
-import org.apache.spark.sql.Row
 
 /**
  * Created by rmorandeira on 29/01/15.
  */
-class MongodbRowRDDIterator(taskContext: TaskContext,
-                            schema: MongodbSchema,
-                            partition: Partition,
-                            config: Config)
-  extends Iterator[Row] {
+class MongodbRDDIterator(
+  taskContext: TaskContext,
+  partition: Partition,
+  config: Config)
+  extends Iterator[DBObject] {
 
   protected var finished = false
   private var closed = false
@@ -26,17 +24,17 @@ class MongodbRowRDDIterator(taskContext: TaskContext,
   }
 
   // Register an on-task-completion callback to close the input stream.
-  taskContext.addTaskCompletionListener((context :TaskContext) => closeIfNeeded())
+  taskContext.addTaskCompletionListener((context: TaskContext) => closeIfNeeded())
 
   override def hasNext(): Boolean = {
     !finished && reader.hasNext()
   }
-  override def next(): Row = {
+
+  override def next(): DBObject = {
     if (!hasNext) {
       throw new NoSuchElementException("End of stream")
     }
-    val value = reader.next()
-    createRow(value)
+    reader.next()
   }
 
   def closeIfNeeded(): Unit = {
@@ -45,6 +43,7 @@ class MongodbRowRDDIterator(taskContext: TaskContext,
       closed = true
     }
   }
+
   protected def close(): Unit = {
     if (initialized) {
       reader.close()
@@ -55,10 +54,5 @@ class MongodbRowRDDIterator(taskContext: TaskContext,
     val reader = new MongodbReader()
     reader.init(partition)(config)
     reader
-  }
-
-  def createRow(doc: DBObject): Row = {
-    val values = MongodbRecord(schema, doc).values()
-    Row.fromSeq(values)
   }
 }
