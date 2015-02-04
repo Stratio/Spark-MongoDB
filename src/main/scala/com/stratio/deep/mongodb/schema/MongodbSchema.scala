@@ -5,12 +5,11 @@ import com.stratio.deep.schema.DeepSchemaProvider
 import org.apache.spark.SparkContext._
 import org.apache.spark.sql.catalyst.ScalaReflection
 import org.apache.spark.sql.catalyst.analysis.HiveTypeCoercion
-import org.apache.spark.sql.catalyst.types.{NullType, StringType, StructField, StructType}
+import org.apache.spark.sql.catalyst.types._
 import org.apache.spark.sql.{ArrayType, DataType}
 import org.bson.BasicBSONObject
 import org.bson.types.BasicBSONList
 
-import scala.collection.JavaConversions._
 import scala.collection.JavaConverters._
 
 /**
@@ -28,13 +27,13 @@ case class MongodbSchema(
 
     val structFields = schemaData.flatMap {
       dbo => {
-        val doc = mapAsScalaMap(dbo.asInstanceOf[BasicBSONObject])
+        val doc: Map[String, AnyRef] = dbo.asInstanceOf[BasicBSONObject].asScala.toMap
         val fields = doc.mapValues(f => convertToStruct(f))
         fields
       }
-    }.reduceByKey(compatibleType).aggregate(Seq[StructField]())((fields, newField) =>
-      fields :+ StructField(newField._1, newField._2),
-      ((oldFields, newFields) => oldFields ++ newFields))
+    }.reduceByKey(compatibleType).aggregate(Seq[StructField]())(
+        (fields, newField) => fields :+ StructField(newField._1, newField._2),
+        (oldFields, newFields) => oldFields ++ newFields)
     StructType(structFields)
   }
 
@@ -91,7 +90,7 @@ case class MongodbSchema(
   private def typeOfArray(l: Seq[Any]): ArrayType = {
     val containsNull = l.contains(null)
     val elements = l.flatMap(v => Option(v))
-    if (l.isEmpty) {
+    if (elements.isEmpty) {
       // If this JSON array is empty, we use NullType as a placeholder.
       // If this array is not empty in other JSON objects, we can resolve
       // the type after we have passed through all JSON objects.
