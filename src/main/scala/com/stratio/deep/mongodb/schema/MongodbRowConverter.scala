@@ -1,12 +1,11 @@
 package com.stratio.deep.mongodb.schema
 
-import com.mongodb.{BasicDBObject, DBObject}
+import com.mongodb.{BasicDBList, BasicDBObject, DBObject}
 import com.stratio.deep.schema.DeepRowConverter
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.StructType
 import org.apache.spark.sql.catalyst.ScalaReflection
 import org.apache.spark.sql.catalyst.expressions.GenericRow
-import org.apache.spark.sql.catalyst.types.{StructType, ArrayType, DataType, StructField}
+import org.apache.spark.sql.catalyst.types.{ArrayType, DataType, StructField}
 import org.apache.spark.sql.{Row, StructType}
 import org.bson.BasicBSONObject
 import org.bson.types.BasicBSONList
@@ -38,17 +37,30 @@ object MongodbRowConverter extends DeepRowConverter[DBObject] with Serializable 
 
   def rowAsDBObject(row: Row, schema: StructType): DBObject = {
     import scala.collection.JavaConversions._
-    val attMap: Map[String, Any] = schema.fieldNames.zipWithIndex.map {
-      //FIXME: Make conversion recursive (it will fail for objects and arrays
-      case (att, idx) => (att, row(idx))
+    val attMap: Map[String, Any] = schema.fields.zipWithIndex.map {
+      case (att, idx) => (att.name, toDBObject(row(idx),att.dataType))
     }.toMap
     new BasicDBObject(attMap)
   }
 
+  def toDBObject(value: Any, dataType: DataType): Any = {
+    Option(value).map{v =>
+      (dataType,v) match {
+        case (ArrayType(elementType, _),array: ArrayBuffer[Any]) =>
+          val list = new BasicDBList
+          array.zipWithIndex.map{
+            case (obj,idx) => list.put(idx,toDBObject(obj,elementType))
+          }
+          list
+        case (struct: StructType,value: GenericRow) =>
+          rowAsDBObject(value,struct)
+        case _ => v
+      }
+    }.orNull
+  }
+
   private def toSQL(value: Any, dataType: DataType): Any = {
-    if (value == null) {
-      null
-    } else {
+    Option(value).map{value =>
       dataType match {
         case ArrayType(elementType, _) =>
           value.asInstanceOf[BasicBSONList].asScala.map(toSQL(_, elementType))
@@ -57,7 +69,7 @@ object MongodbRowConverter extends DeepRowConverter[DBObject] with Serializable 
         case _ =>
           ScalaReflection.convertToScala(value, dataType)
       }
-    }
+    }.orNull
   }
 
   private def dbObjectToMap(dBObject: DBObject): Map[String, AnyRef] = {
