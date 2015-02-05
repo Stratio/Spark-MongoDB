@@ -17,7 +17,8 @@ class DefaultSource extends RelationProvider {
     sqlContext: SQLContext,
     parameters: Map[String, String]): BaseRelation = {
 
-    val host = parameters.getOrElse(Host, notFound(Host))
+    /** We will assume hosts are provided like 'host:port,host2:port2,...'*/
+    val host = parameters.getOrElse(Host, notFound(Host)).split(",")
 
     val database = parameters.getOrElse(Database, notFound(Database))
 

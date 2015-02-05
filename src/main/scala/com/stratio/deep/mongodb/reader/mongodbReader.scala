@@ -55,8 +55,12 @@ class MongodbReader {
    */
   def init(partition: Partition)(config: Config): Unit =
     Try {
-      val addressList: List[ServerAddress] = List(new ServerAddress(config.host))
-      val mongoCredentials: List[MongoCredential] = List.empty
+
+      val addressList: List[ServerAddress] =
+        config.host.map(add => new ServerAddress(add)).toList
+
+      val mongoCredentials =
+        List.empty[MongoCredential]
 
       mongoClient = Some(new MongoClient(addressList, mongoCredentials))
       mongoClient.foreach { client =>

@@ -16,7 +16,7 @@ import scala.collection.JavaConversions._
 abstract class MongodbWriter(config:Config) extends Serializable{
 
   protected val mongoClient: MongoClient =
-    new MongoClient(List(new ServerAddress(config.host)))
+    new MongoClient(config.host.map(add => new ServerAddress(add)).toList)
 
   protected val dbCollection: DBCollection =
     mongoClient

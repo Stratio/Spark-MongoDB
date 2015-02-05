@@ -22,7 +22,7 @@ class MongodbSchemaSpec extends FlatSpec
 
   it should "be inferred from rdd with primitives" in {
     withEmbedMongoFixture(primitiveFieldAndType) { mongodProc =>
-      val mongodbRDD = new MongodbRDD(TestSQLContext, Config(host + ":" + port, database, collection))
+      val mongodbRDD = new MongodbRDD(TestSQLContext, Config(List(host + ":" + port), database, collection))
       val schema = MongodbSchema(mongodbRDD, 1.0).schema()
 
       schema.fields should have size 7
@@ -34,7 +34,7 @@ class MongodbSchemaSpec extends FlatSpec
 
   it should "be inferred from rdd with complex fields" in {
     withEmbedMongoFixture(complexFieldAndType1) { mongodProc =>
-      val mongodbRDD = new MongodbRDD(TestSQLContext, Config(host + ":" + port, database, collection))
+      val mongodbRDD = new MongodbRDD(TestSQLContext, Config(List(host + ":" + port), database, collection))
       val schema = MongodbSchema(mongodbRDD, 1.0).schema()
 
       schema.fields should have size 12
@@ -45,7 +45,7 @@ class MongodbSchemaSpec extends FlatSpec
 
   it should "resolve type conflicts between fields" in {
     withEmbedMongoFixture(primitiveFieldValueTypeConflict) { mongodProc =>
-      val mongodbRDD = new MongodbRDD(TestSQLContext, Config(host + ":" + port, database, collection))
+      val mongodbRDD = new MongodbRDD(TestSQLContext, Config(List(host + ":" + port), database, collection))
       val schema = MongodbSchema(mongodbRDD, 1.0).schema()
 
       schema.fields should have size 7
@@ -56,7 +56,7 @@ class MongodbSchemaSpec extends FlatSpec
 
   it should "be inferred from rdd with more complex fields" in {
     withEmbedMongoFixture(complexFieldAndType2) { mongodProc =>
-      val mongodbRDD = new MongodbRDD(TestSQLContext, Config(host + ":" + port, database, collection))
+      val mongodbRDD = new MongodbRDD(TestSQLContext, Config(List(host + ":" + port), database, collection))
       val schema = MongodbSchema(mongodbRDD, 1.0).schema()
 
       schema.fields should have size 5

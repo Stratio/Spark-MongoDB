@@ -1,6 +1,5 @@
 package com.stratio.deep
 
-import com.stratio.deep.mongodb.Config
 import com.stratio.deep.mongodb.schema.MongodbRowConverter
 import com.stratio.deep.mongodb.writer.MongodbWriter
 import org.apache.spark.sql.{SQLContext, SchemaRDD}
