@@ -1,7 +1,7 @@
 package com.stratio.deep.mongodb.rdd
 
 import com.mongodb.DBObject
-import com.stratio.deep.mongodb.Config
+import com.stratio.deep.DeepConfig
 import com.stratio.deep.mongodb.reader.MongodbReader
 import org.apache.spark._
 
@@ -11,7 +11,7 @@ import org.apache.spark._
 class MongodbRDDIterator(
   taskContext: TaskContext,
   partition: Partition,
-  config: Config)
+  config: DeepConfig)
   extends Iterator[DBObject] {
 
   protected var finished = false

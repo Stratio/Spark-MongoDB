@@ -14,7 +14,7 @@ package object mongodb {
    * Adds a method, fromMongodb, to SQLContext that allows reading data stored in Mongodb.
    */
   implicit class MongodbContext(sqlContext: SQLContext) {
-    def fromMongoDB(config: Config): SchemaRDD = {
+    def fromMongoDB(config: DeepConfig): SchemaRDD = {
       sqlContext.baseRelationToSchemaRDD(MongodbRelation(config, None)(sqlContext))
     }
 
@@ -25,11 +25,11 @@ package object mongodb {
    */
   implicit class MongodbSchemaRDD(schemaRDD: SchemaRDD) extends Serializable {
 
-    def saveToMongodb(config: Config,batch: Boolean = true): Unit = {
+    def saveToMongodb(config: DeepConfig,batch: Boolean = true): Unit = {
       schemaRDD.foreachPartition(it => {
         val writer =
           if (batch) new MongodbBatchWriter(config)
-          else new MongodbSimpleWriter(config,WriteConcern.NORMAL)//TODO Make WriteConcern configurable
+          else new MongodbSimpleWriter(config)
         writer.save(it.map(row =>
           MongodbRowConverter.rowAsDBObject(row, schemaRDD.schema)))
         writer.close()

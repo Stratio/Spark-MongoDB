@@ -1,11 +1,13 @@
 package com.stratio.deep.mongodb
 
+import com.stratio.deep.DeepConfig
+import com.stratio.deep.DeepConfig._
 import com.stratio.deep.mongodb.rdd.MongodbRDD
 import com.stratio.deep.mongodb.schema.{MongodbRowConverter, MongodbSchema}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.sources.{BaseRelation, RelationProvider, TableScan}
 import org.apache.spark.sql.{Row, SQLContext, StructType}
-import Config._
+import MongodbConfig._
 
 /**
  * Created by rmorandeira on 29/01/15.
@@ -18,7 +20,7 @@ class DefaultSource extends RelationProvider {
     parameters: Map[String, String]): BaseRelation = {
 
     /** We will assume hosts are provided like 'host:port,host2:port2,...'*/
-    val host = parameters.getOrElse(Host, notFound(Host)).split(",")
+    val host = parameters.getOrElse(Host, notFound(Host)).split(",").toList
 
     val database = parameters.getOrElse(Database, notFound(Database))
 
@@ -28,14 +30,20 @@ class DefaultSource extends RelationProvider {
       .get(SamplingRatio)
       .map(_.toDouble).getOrElse(1.0)
 
-    MongodbRelation(Config(host, database, collection, samplingRatio), None)(sqlContext)
+    MongodbRelation(
+      DeepConfig()
+        .set(Host,host)
+        .set(Database,database)
+        .set(Collection,collection)
+        .set(SamplingRatio,samplingRatio))(sqlContext)
+    
   }
 
 }
 
 case class MongodbRelation(
-  config: Config,
-  schemaProvided: Option[StructType])(
+  config: DeepConfig,
+  schemaProvided: Option[StructType]=None)(
   @transient val sqlContext: SQLContext) extends TableScan {
 
   private lazy val baseRDD =
@@ -44,7 +52,7 @@ case class MongodbRelation(
   override val schema: StructType = schemaProvided.getOrElse(lazySchema)
 
   @transient lazy val lazySchema = {
-    MongodbSchema(baseRDD, config.samplingRatio).schema()
+    MongodbSchema(baseRDD, config[Double](SamplingRatio)).schema()
   }
 
   override def buildScan(): RDD[Row] = {

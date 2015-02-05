@@ -1,7 +1,7 @@
 package com.stratio.deep.mongodb.writer
 
 import com.mongodb.{BasicDBObject, DBObject}
-import com.stratio.deep.mongodb.Config
+import com.stratio.deep.DeepConfig
 
 /**
  * Created by jsantos on 4/02/15.
@@ -13,7 +13,7 @@ import com.stratio.deep.mongodb.Config
  * @param batchSize Group size to be inserted via bulk operation
  */
 class MongodbBatchWriter(
-  config: Config,
+  config: DeepConfig,
   batchSize: Int = 100) extends MongodbWriter(config){
   
   def save(it: Iterator[DBObject]): Unit = {
