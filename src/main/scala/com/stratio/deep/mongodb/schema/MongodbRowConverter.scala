@@ -46,7 +46,7 @@ object MongodbRowConverter extends DeepRowConverter[DBObject] with Serializable 
   def toDBObject(value: Any, dataType: DataType): Any = {
     Option(value).map{v =>
       (dataType,v) match {
-        case (ArrayType(elementType, _),array: ArrayBuffer[Any]) =>
+        case (ArrayType(elementType, _),array: ArrayBuffer[Any@unchecked]) =>
           val list = new BasicDBList
           array.zipWithIndex.map{
             case (obj,idx) => list.put(idx,toDBObject(obj,elementType))
