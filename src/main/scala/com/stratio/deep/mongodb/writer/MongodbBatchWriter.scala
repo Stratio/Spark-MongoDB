@@ -1,7 +1,8 @@
 package com.stratio.deep.mongodb.writer
 
-import com.mongodb.{BasicDBObject, DBObject}
+import com.mongodb.{WriteConcern, BasicDBObject, DBObject}
 import com.stratio.deep.DeepConfig
+import com.stratio.deep.mongodb.MongodbConfig
 
 /**
  * Created by jsantos on 4/02/15.
@@ -25,7 +26,7 @@ class MongodbBatchWriter(
         val query = new BasicDBObject(Map(Id -> element.get(Id)))
         bulkop.find(query).upsert().replaceOne(element)
       }
-      bulkop.execute()
+      bulkop.execute(config[WriteConcern](MongodbConfig.WriteConcern))
     }
 
   }
