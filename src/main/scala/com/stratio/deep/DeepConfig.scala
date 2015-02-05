@@ -24,10 +24,3 @@ object DeepConfig extends Serializable {
   def notFound(key: String) = sys.error(s"Parameter $key not specified")
 
 }
-
-/*host: Iterable[String],
-database: String,
-collection: String,
-samplingRatio: Double = 1.0)
-
-*/
