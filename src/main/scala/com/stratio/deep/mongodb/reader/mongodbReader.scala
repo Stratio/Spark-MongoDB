@@ -5,6 +5,7 @@ import com.stratio.deep.mongodb.Config
 import org.apache.spark.Partition
 
 import scala.collection.JavaConversions._
+import scala.util.Try
 
 /**
  * Created by rmorandeira on 29/01/15.
@@ -52,20 +53,20 @@ class MongodbReader {
    *
    * @param partition the partition
    */
-  def init(partition: Partition)(config: Config): Unit = {
-    //TODO: Catch any exception and throw a specific exception type
+  def init(partition: Partition)(config: Config): Unit =
+    Try {
+      val addressList: List[ServerAddress] = List(new ServerAddress(config.host))
+      val mongoCredentials: List[MongoCredential] = List.empty
 
-    val addressList: List[ServerAddress] = List(new ServerAddress(config.host))
-    val mongoCredentials: List[MongoCredential] = List.empty
-
-    mongoClient = Some(new MongoClient(addressList, mongoCredentials))
-    mongoClient.foreach { client =>
-      val db = client.getDB(config.database)
-      val collection = db.getCollection(config.collection)
-      dbCursor = Some(collection.find(createQueryPartition(partition)))
+      mongoClient = Some(new MongoClient(addressList, mongoCredentials))
+      mongoClient.foreach { client =>
+        val db = client.getDB(config.database)
+        val collection = db.getCollection(config.collection)
+        dbCursor = Some(collection.find(createQueryPartition(partition)))
+      }
+    }.recover{
+      case throwable => throw MongodbReadException(throwable.getMessage,throwable)
     }
-
-  }
 
   /**
    * Create query partition.
@@ -79,7 +80,10 @@ class MongodbReader {
     //    val queryBuilderMax: QueryBuilder = QueryBuilder.start()
     //    val bsonObjectMax: DBObject = queryBuilderMax.get
     val queryBuilder: QueryBuilder = QueryBuilder.start
-
     queryBuilder.get
   }
 }
+
+case class MongodbReadException(
+  msg: String,
+  causedBy: Throwable) extends RuntimeException(msg,causedBy)

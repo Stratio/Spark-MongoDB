@@ -14,7 +14,7 @@ import org.apache.spark.{Partition, TaskContext}
 class MongodbRDD(
   sc: SQLContext,
   config: Config)
-  extends RDD[DBObject](sc.sparkContext, Nil) {
+  extends RDD[DBObject](sc.sparkContext, deps = Nil) {
 
   override def getPartitions: Array[Partition] = {
     val sparkPartitions = new Array[Partition](1)
