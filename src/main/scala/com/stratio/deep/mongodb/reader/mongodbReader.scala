@@ -10,15 +10,17 @@ import scala.util.Try
 /**
  * Created by rmorandeira on 29/01/15.
  */
-class MongodbReader {
-  /**
-   * The Mongo client.
-   */
-  private var mongoClient: Option[MongoClient] = None
+class MongodbReader(config: Config) {
 
-  /**
-   * The Db cursor.
-   */
+  private val mongoClient: MongoClient =
+    new MongoClient(
+      config.host.map(add => new ServerAddress(add)).toList,
+      List.empty[MongoCredential])
+
+  private val db = mongoClient.getDB(config.database)
+
+  private val collection = db.getCollection(config.collection)
+
   private var dbCursor: Option[DBCursor] = None
 
   /**
@@ -26,7 +28,7 @@ class MongodbReader {
    */
   def close(): Unit = {
     dbCursor.fold(ifEmpty = ())(_.close)
-    mongoClient.fold(ifEmpty = ())(_.close)
+    mongoClient.close()
   }
 
   /**
@@ -34,8 +36,8 @@ class MongodbReader {
    *
    * @return the boolean
    */
-  def hasNext(): Boolean = {
-    dbCursor.fold(ifEmpty = false)(_.hasNext())
+  def hasNext: Boolean = {
+    dbCursor.fold(ifEmpty = false)(_.hasNext)
   }
 
   /**
@@ -53,21 +55,9 @@ class MongodbReader {
    *
    * @param partition the partition
    */
-  def init(partition: Partition)(config: Config): Unit =
+  def init(partition: Partition): Unit =
     Try {
-
-      val addressList: List[ServerAddress] =
-        config.host.map(add => new ServerAddress(add)).toList
-
-      val mongoCredentials =
-        List.empty[MongoCredential]
-
-      mongoClient = Some(new MongoClient(addressList, mongoCredentials))
-      mongoClient.foreach { client =>
-        val db = client.getDB(config.database)
-        val collection = db.getCollection(config.collection)
-        dbCursor = Some(collection.find(createQueryPartition(partition)))
-      }
+      dbCursor = Option(collection.find(createQueryPartition(partition)))
     }.recover{
       case throwable => throw MongodbReadException(throwable.getMessage,throwable)
     }

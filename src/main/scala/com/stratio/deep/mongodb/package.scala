@@ -1,7 +1,8 @@
 package com.stratio.deep
 
+import com.mongodb.WriteConcern
 import com.stratio.deep.mongodb.schema.MongodbRowConverter
-import com.stratio.deep.mongodb.writer.MongodbWriter
+import com.stratio.deep.mongodb.writer.{MongodbSimpleWriter, MongodbBatchWriter, MongodbWriter}
 import org.apache.spark.sql.{SQLContext, SchemaRDD}
 
 /**
@@ -24,8 +25,11 @@ package object mongodb {
    */
   implicit class MongodbSchemaRDD(schemaRDD: SchemaRDD) extends Serializable {
 
-    def saveToMongodb(writer: => MongodbWriter): Unit = {
+    def saveToMongodb(config: Config,batch: Boolean = true): Unit = {
       schemaRDD.foreachPartition(it => {
+        val writer =
+          if (batch) new MongodbBatchWriter(config)
+          else new MongodbSimpleWriter(config,WriteConcern.NORMAL)//TODO Make WriteConcern configurable
         writer.save(it.map(row =>
           MongodbRowConverter.rowAsDBObject(row, schemaRDD.schema)))
         writer.close()

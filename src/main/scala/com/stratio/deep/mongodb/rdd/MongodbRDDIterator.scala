@@ -26,8 +26,8 @@ class MongodbRDDIterator(
   // Register an on-task-completion callback to close the input stream.
   taskContext.addTaskCompletionListener((context: TaskContext) => closeIfNeeded())
 
-  override def hasNext(): Boolean = {
-    !finished && reader.hasNext()
+  override def hasNext: Boolean = {
+    !finished && reader.hasNext
   }
 
   override def next(): DBObject = {
@@ -51,8 +51,8 @@ class MongodbRDDIterator(
   }
 
   def initReader() = {
-    val reader = new MongodbReader()
-    reader.init(partition)(config)
+    val reader = new MongodbReader(config)
+    reader.init(partition)
     reader
   }
 }

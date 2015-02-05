@@ -18,13 +18,13 @@ import scala.collection.mutable.ArrayBuffer
  */
 object MongodbRowConverter extends DeepRowConverter[DBObject] with Serializable {
 
-  override def asRow(schema: StructType, rdd: RDD[DBObject]): RDD[Row] = {
+  def asRow(schema: StructType, rdd: RDD[DBObject]): RDD[Row] = {
     rdd.map { record =>
       recordAsRow(dbObjectToMap(record), schema)
     }
   }
 
-  private def recordAsRow(
+  def recordAsRow(
     json: Map[String, AnyRef],
     schema: StructType): Row = {
     val values: Seq[Any] = schema.fields.map {
@@ -59,7 +59,7 @@ object MongodbRowConverter extends DeepRowConverter[DBObject] with Serializable 
     }.orNull
   }
 
-  private def toSQL(value: Any, dataType: DataType): Any = {
+  def toSQL(value: Any, dataType: DataType): Any = {
     Option(value).map{value =>
       dataType match {
         case ArrayType(elementType, _) =>
@@ -72,7 +72,8 @@ object MongodbRowConverter extends DeepRowConverter[DBObject] with Serializable 
     }.orNull
   }
 
-  private def dbObjectToMap(dBObject: DBObject): Map[String, AnyRef] = {
+  def dbObjectToMap(dBObject: DBObject): Map[String, AnyRef] = {
     dBObject.asInstanceOf[BasicBSONObject].asScala.toMap
   }
+
 }
