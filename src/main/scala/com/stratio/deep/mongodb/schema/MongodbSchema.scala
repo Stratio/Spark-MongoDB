@@ -49,7 +49,7 @@ case class MongodbSchema(
       StructType(fields)
     }
 
-    case elem: Any => {
+    case elem => {
       val elemType: PartialFunction[Any, DataType] =
         ScalaReflection.typeOfObject.orElse { case _ => StringType}
       elemType(elem)
