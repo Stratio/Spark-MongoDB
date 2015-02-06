@@ -58,4 +58,4 @@ trait MongoEmbedDatabase {
   }
 }
 
-sealed case class MongodProps(mongodProcess: MongodProcess, mongodExe: MongodExecutable)
+case class MongodProps(mongodProcess: MongodProcess, mongodExe: MongodExecutable)
