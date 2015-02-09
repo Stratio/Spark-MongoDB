@@ -16,17 +16,15 @@
  *  under the License.
  */
 
-package com.stratio.deep.mongodb.rdd
+package com.stratio.deep.mongodb.partitioner
 
+import com.mongodb.casbah.Imports._
+import com.stratio.deep.partitioner.DeepPartitionRange
 import org.apache.spark.Partition
 
 /**
  * Created by rmorandeira on 29/01/15.
  */
-class MongodbPartition(rddId: Int, idx: Int) extends Partition {
-
-  override def hashCode(): Int = 41 * (41 * (41 + rddId) + idx)
-
-  override val index: Int = idx
-
-}
+case class MongodbPartition(index: Int,
+  hosts: Seq[String],
+  partitionRange: DeepPartitionRange[DBObject]) extends Partition

@@ -18,8 +18,9 @@
 
 package com.stratio.deep.mongodb.rdd
 
-import com.mongodb.DBObject
+import com.mongodb.{DBObject, ServerAddress}
 import com.stratio.deep.DeepConfig
+import com.stratio.deep.mongodb.partitioner.{MongodbPartition, MongodbPartitioner}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.{Partition, TaskContext}
@@ -34,15 +35,13 @@ class MongodbRDD(
   config: DeepConfig)
   extends RDD[DBObject](sc.sparkContext, deps = Nil) {
 
-  override def getPartitions: Array[Partition] = {
-    val sparkPartitions = new Array[Partition](1)
-    val idx: Int = 0
-    sparkPartitions(idx) = new MongodbPartition(id, idx)
-    sparkPartitions
-  }
+  override def getPartitions: Array[Partition] =
+    MongodbPartitioner(config).computePartitions
 
   override def getPreferredLocations(split: Partition): Seq[String] =
-    super.getPreferredLocations(split)
+    split.asInstanceOf[MongodbPartition].hosts.map {
+      new ServerAddress(_).getHost
+    }
 
   override def compute(
     split: Partition,

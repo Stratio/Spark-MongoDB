@@ -21,6 +21,7 @@ package com.stratio.deep.mongodb.reader
 import com.mongodb._
 import com.stratio.deep.DeepConfig
 import com.stratio.deep.mongodb.MongodbConfig
+import com.stratio.deep.mongodb.partitioner.MongodbPartition
 import org.apache.spark.Partition
 
 import scala.collection.JavaConversions._
@@ -79,7 +80,12 @@ class MongodbReader(config: DeepConfig) {
    */
   def init(partition: Partition): Unit =
     Try {
+      val mongoPartition = partition.asInstanceOf[MongodbPartition]
       dbCursor = Option(collection.find(createQueryPartition(partition)))
+      dbCursor.foreach { cursor =>
+        mongoPartition.partitionRange.minKey.foreach(min => cursor.addSpecial("$min", min))
+        mongoPartition.partitionRange.maxKey.foreach(min => cursor.addSpecial("$max", min))
+      }
     }.recover{
       case throwable => throw MongodbReadException(throwable.getMessage,throwable)
     }

@@ -20,13 +20,12 @@
 
 package com.stratio.deep.mongodb.schema
 
-import com.mongodb.util.JSON
-import com.mongodb.{DBObject, ReadPreference, MongoClient, DBCursor}
-import com.stratio.deep.DeepConfig
-import com.stratio.deep.mongodb.{MongodbConfigBuilder, MongodbConfig}
+import com.mongodb.DBObject
+import com.stratio.deep.mongodb.partitioner.MongodbPartition
 import com.stratio.deep.mongodb.reader.MongodbReader
-import org.apache.spark.Partition
-import org.scalatest.{Matchers, FlatSpec}
+import com.stratio.deep.mongodb.{MongodbConfig, MongodbConfigBuilder}
+import com.stratio.deep.partitioner.DeepPartitionRange
+import org.scalatest.{FlatSpec, Matchers}
 
 /**
  * Created by lfernandez on 9/02/15.
@@ -52,9 +51,11 @@ with TestBsonData {
 
   it should "throw IllegalStateException if next() operation is invoked after closing the Reader" in {
     val mongodbReader = new MongodbReader(testConfig)
-    mongodbReader.init(new Partition {
-      override def index: Int = 0
-    })
+    mongodbReader.init(
+      MongodbPartition(0,
+        testConfig[Seq[String]](MongodbConfig.Host),
+        DeepPartitionRange[DBObject](None, None)))
+    
     mongodbReader.close()
 
     a[IllegalStateException] should be thrownBy {
@@ -66,9 +67,10 @@ with TestBsonData {
     withEmbedMongoFixture(complexFieldAndType1) { mongodbProc =>
 
       val mongodbReader = new MongodbReader(testConfig)
-      mongodbReader.init(new Partition {
-        override def index: Int = 0
-      })
+      mongodbReader.init(
+        MongodbPartition(0,
+          testConfig[Seq[String]](MongodbConfig.Host),
+          DeepPartitionRange[DBObject](None, None)))
 
       (1 until 20).map(_ => mongodbReader.hasNext).distinct.toList==List(true)
     }
@@ -78,9 +80,10 @@ with TestBsonData {
     withEmbedMongoFixture(complexFieldAndType1) { mongodbProc =>
 
       val mongodbReader = new MongodbReader(testConfig)
-      mongodbReader.init(new Partition {
-        override def index: Int = 0
-      })
+      mongodbReader.init(
+        MongodbPartition(0,
+          testConfig[Seq[String]](MongodbConfig.Host),
+          DeepPartitionRange[DBObject](None, None)))
       val posBefore = mongodbReader.hasNext
       val dbObject2 = mongodbReader.next()
       val posAfter = mongodbReader.hasNext
