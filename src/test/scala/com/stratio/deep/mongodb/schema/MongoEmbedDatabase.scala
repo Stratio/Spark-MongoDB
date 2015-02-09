@@ -35,7 +35,7 @@ trait MongoEmbedDatabase {
     runtimeConfig: IRuntimeConfig = runtimeConfig)
       (fixture: MongodProps => Any) {
     val mongodProps = mongoStart(port, version, runtimeConfig)
-    populateDatabase(port, dataset)
+    if (!dataset.isEmpty) populateDatabase(port, dataset)
     try { fixture(mongodProps) } finally { Option(mongodProps).foreach( mongoStop ) }
   }
 
