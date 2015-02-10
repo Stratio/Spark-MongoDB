@@ -18,6 +18,7 @@
 
 package com.stratio.deep.mongodb.schema
 
+import com.mongodb.casbah.Imports._
 import com.stratio.deep.mongodb.rdd.MongodbRDD
 import com.stratio.deep.schema.DeepSchemaProvider
 import org.apache.spark.SparkContext._
@@ -25,10 +26,6 @@ import org.apache.spark.sql.catalyst.ScalaReflection
 import org.apache.spark.sql.catalyst.analysis.HiveTypeCoercion
 import org.apache.spark.sql.catalyst.types._
 import org.apache.spark.sql.{ArrayType, DataType}
-import org.bson.BasicBSONObject
-import org.bson.types.BasicBSONList
-
-import scala.collection.JavaConverters._
 
 /**
  * Created by rmorandeira on 29/01/15.
@@ -45,7 +42,7 @@ case class MongodbSchema(
 
     val structFields = schemaData.flatMap {
       dbo => {
-        val doc: Map[String, AnyRef] = dbo.asInstanceOf[BasicBSONObject].asScala.toMap
+        val doc: Map[String, AnyRef] = dbo.seq.toMap
         val fields = doc.mapValues(f => convertToStruct(f))
         fields
       }
@@ -56,11 +53,11 @@ case class MongodbSchema(
   }
 
   private def convertToStruct(dataType: Any): DataType = dataType match {
-    case bl: BasicBSONList =>
-      typeOfArray(bl.asScala)
+    case bl: BasicDBList =>
+      typeOfArray(bl)
 
-    case bo: BasicBSONObject => {
-      val fields = bo.asScala.map {
+    case bo: DBObject => {
+      val fields = bo.map {
         case (k, v) =>
           StructField(k, convertToStruct(v))
       }.toSeq

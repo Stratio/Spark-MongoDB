@@ -18,7 +18,7 @@
 
 package com.stratio.deep.mongodb.rdd
 
-import com.mongodb.DBObject
+import com.mongodb.casbah.Imports._
 import com.stratio.deep.DeepConfig
 import com.stratio.deep.mongodb.reader.MongodbReader
 import org.apache.spark._
