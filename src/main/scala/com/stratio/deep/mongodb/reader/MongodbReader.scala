@@ -1,8 +1,27 @@
+/*
+ *  Licensed to STRATIO (C) under one or more contributor license agreements.
+ *  See the NOTICE file distributed with this work for additional information
+ *  regarding copyright ownership. The STRATIO (C) licenses this file
+ *  to you under the Apache License, Version 2.0 (the
+ *  "License"); you may not use this file except in compliance
+ *  with the License. You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing,
+ *  software distributed under the License is distributed on an
+ *  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ *  KIND, either express or implied. See the License for the
+ *  specific language governing permissions and limitations
+ *  under the License.
+ */
+
 package com.stratio.deep.mongodb.reader
 
 import com.mongodb._
 import com.stratio.deep.DeepConfig
 import com.stratio.deep.mongodb.MongodbConfig
+import com.stratio.deep.mongodb.partitioner.MongodbPartition
 import org.apache.spark.Partition
 import org.apache.spark.sql.sources.Filter
 
@@ -32,7 +51,10 @@ class MongodbReader(
    * Close void.
    */
   def close(): Unit = {
-    dbCursor.fold(ifEmpty = ())(_.close)
+    dbCursor.fold(ifEmpty = ()){cursor =>
+      cursor.close
+      dbCursor = None
+    }
     mongoClient.close()
   }
 
@@ -62,9 +84,14 @@ class MongodbReader(
    */
   def init(partition: Partition): Unit =
     Try {
+      val mongoPartition = partition.asInstanceOf[MongodbPartition]
       dbCursor = Option(collection.find(
         queryPartition(partition,filters),
         selectFields(requiredColumns)))
+      dbCursor.foreach { cursor =>
+        mongoPartition.partitionRange.minKey.foreach(min => cursor.addSpecial("$min", min))
+        mongoPartition.partitionRange.maxKey.foreach(min => cursor.addSpecial("$max", min))
+      }
     }.recover{
       case throwable =>
         throw MongodbReadException(throwable.getMessage,throwable)
