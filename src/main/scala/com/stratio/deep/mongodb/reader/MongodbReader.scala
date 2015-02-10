@@ -46,7 +46,10 @@ class MongodbReader(config: DeepConfig) {
    * Close void.
    */
   def close(): Unit = {
-    dbCursor.fold(ifEmpty = ())(_.close)
+    dbCursor.fold(ifEmpty = ()){cursor =>
+      cursor.close
+      dbCursor = None
+    }
     mongoClient.close()
   }
 
