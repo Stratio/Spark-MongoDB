@@ -1,6 +1,6 @@
 package com.stratio.deep.mongodb.writer
 
-import com.mongodb.{DBObject, ServerAddress, MongoClient, WriteConcern}
+import com.mongodb.DBObject
 import com.stratio.deep.DeepConfig
 import com.stratio.deep.mongodb.MongodbConfig
 

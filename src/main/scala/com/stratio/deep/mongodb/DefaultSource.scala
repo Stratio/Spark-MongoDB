@@ -31,12 +31,12 @@ class DefaultSource extends RelationProvider {
       .map(_.toDouble).getOrElse(1.0)
 
     MongodbRelation(
-      DeepConfig()
+      MongodbConfigBuilder()
         .set(Host,host)
         .set(Database,database)
         .set(Collection,collection)
-        .set(SamplingRatio,samplingRatio))(sqlContext)
-    
+        .set(SamplingRatio,samplingRatio).build())(sqlContext)
+
   }
 
 }

@@ -1,8 +1,7 @@
 package com.stratio.deep
 
-import com.mongodb.WriteConcern
 import com.stratio.deep.mongodb.schema.MongodbRowConverter
-import com.stratio.deep.mongodb.writer.{MongodbSimpleWriter, MongodbBatchWriter, MongodbWriter}
+import com.stratio.deep.mongodb.writer.{MongodbSimpleWriter, MongodbBatchWriter}
 import org.apache.spark.sql.{SQLContext, SchemaRDD}
 
 /**
