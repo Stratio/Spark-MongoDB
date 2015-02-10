@@ -26,6 +26,10 @@ import org.apache.spark.sql.catalyst.ScalaReflection
 import org.apache.spark.sql.catalyst.analysis.HiveTypeCoercion
 import org.apache.spark.sql.catalyst.types._
 import org.apache.spark.sql.{ArrayType, DataType}
+import org.bson.BasicBSONObject
+import org.bson.types.BasicBSONList
+
+import scala.collection.JavaConverters._
 
 /**
  * Created by rmorandeira on 29/01/15.
@@ -64,11 +68,11 @@ case class MongodbSchema(
       StructType(fields)
     }
 
-    case elem => {
+    case elem =>
       val elemType: PartialFunction[Any, DataType] =
         ScalaReflection.typeOfObject.orElse { case _ => StringType}
       elemType(elem)
-    }
+
   }
 
   private def compatibleType(t1: DataType, t2: DataType): DataType = {

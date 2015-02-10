@@ -60,7 +60,7 @@ with TestBsonData {
     2.0 -> new StructField(
       "att2",DoubleType,false),
     "hi" -> new StructField(
-      "att3",IntegerType,false),
+      "att3",StringType,false),
     null.asInstanceOf[Any] -> new StructField(
       "att4",StringType,true),
     new ArrayBuffer[Int]().+=(1).+=(2).+=(3) -> new StructField(

@@ -21,9 +21,8 @@ package com.stratio.deep.mongodb.schema
 import com.mongodb.casbah.Imports._
 import com.stratio.deep.schema.DeepRowConverter
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.catalyst.ScalaReflection
 import org.apache.spark.sql.catalyst.expressions.GenericRow
-import org.apache.spark.sql.catalyst.types.{ArrayType, DataType, StructField}
+import org.apache.spark.sql.catalyst.types._
 import org.apache.spark.sql.{Row, StructType}
 
 import scala.collection.mutable.ArrayBuffer
@@ -31,7 +30,9 @@ import scala.collection.mutable.ArrayBuffer
 /**
  * Created by rmorandeira on 3/02/15.
  */
-object MongodbRowConverter extends DeepRowConverter[DBObject] with Serializable {
+object MongodbRowConverter extends DeepRowConverter[DBObject]
+with JsonSupport
+with Serializable {
 
   def asRow(schema: StructType, rdd: RDD[DBObject]): RDD[Row] = {
     rdd.map { record =>
@@ -80,7 +81,8 @@ object MongodbRowConverter extends DeepRowConverter[DBObject] with Serializable 
         case struct: StructType =>
           recordAsRow(dbObjectToMap(value.asInstanceOf[DBObject]), struct)
         case _ =>
-          ScalaReflection.convertToScala(value, dataType)
+          //Assure value is mapped to schema constrained type.
+          enforceCorrectType(value, dataType)
       }
     }.orNull
   }

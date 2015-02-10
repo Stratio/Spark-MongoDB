@@ -18,12 +18,18 @@
 
 package com.stratio.deep.mongodb.reader
 
-import com.mongodb._
+import com.mongodb.BasicDBObject
+import com.mongodb.DBObject
+import com.mongodb.MongoClient
+import com.mongodb.MongoCredential
+import com.mongodb.ServerAddress
+import com.mongodb.{DBCursor,QueryBuilder}
+import com.mongodb.casbah.Imports._
 import com.stratio.deep.DeepConfig
 import com.stratio.deep.mongodb.MongodbConfig
 import com.stratio.deep.mongodb.partitioner.MongodbPartition
 import org.apache.spark.Partition
-import org.apache.spark.sql.sources.Filter
+import org.apache.spark.sql.sources._
 
 import scala.collection.JavaConversions._
 import scala.util.Try
@@ -52,7 +58,7 @@ class MongodbReader(
    */
   def close(): Unit = {
     dbCursor.fold(ifEmpty = ()){cursor =>
-      cursor.close
+      cursor.close()
       dbCursor = None
     }
     mongoClient.close()
@@ -106,11 +112,25 @@ class MongodbReader(
   private def queryPartition(
     partition: Partition,
     filters: Array[Filter]): DBObject = {
-    //    val queryBuilderMin: QueryBuilder = QueryBuilder.start()
-    //    val bsonObjectMin: DBObject = queryBuilderMin.get
-    //    val queryBuilderMax: QueryBuilder = QueryBuilder.start()
-    //    val bsonObjectMax: DBObject = queryBuilderMax.get
+
     val queryBuilder: QueryBuilder = QueryBuilder.start
+
+
+
+    filters.map{
+      case equalsTo: EqualTo =>
+        queryBuilder.put(equalsTo.attribute).is(equalsTo.value)
+      case greaterThan: GreaterThan =>
+        queryBuilder.put(greaterThan.attribute).greaterThan(greaterThan.value)
+      case greaterThanOrEqual: GreaterThanOrEqual =>
+        queryBuilder.put(greaterThanOrEqual.attribute).greaterThanEquals(greaterThanOrEqual.value)
+      case in: In =>
+        queryBuilder.put(in.attribute).in(in.values)
+      case lessThan: LessThan =>
+        queryBuilder.put(lessThan.attribute).lessThan(lessThan.value)
+      case lessThanOrEqual: LessThanOrEqual =>
+        queryBuilder.put(lessThanOrEqual.attribute).lessThanEquals(lessThanOrEqual.value)
+    }
     queryBuilder.get
 
   }
@@ -121,11 +141,9 @@ class MongodbReader(
    * @param fields Required fields
    * @return A mongodb object that represents required fields.
    */
-  private def selectFields(fields: Array[String]): DBObject = {
-    val dbObject = new BasicDBObject()
-    fields.foreach(dbObject.put(_,1))
-    dbObject
-  }
+  private def selectFields(fields: Array[String]): DBObject =
+    MongoDBObject(fields.toList.map(_ -> 1))
+
 }
 
 case class MongodbReadException(

@@ -72,11 +72,18 @@ case class MongodbRelation(
 
   override val schema: StructType = schemaProvided.getOrElse(lazySchema)
 
+  def pruneSchema(
+    schema: StructType,
+    requiredColumns: Array[String]): StructType =
+    StructType(
+      requiredColumns.flatMap(column =>
+        schema.fields.find(_.name==column)))
+
   override def buildScan(
     requiredColumns : Array[String],
     filters : Array[Filter]): RDD[Row] = {
     val rdd = new MongodbRDD(sqlContext,config,requiredColumns,filters)
-    MongodbRowConverter.asRow(schema, rdd)
+    MongodbRowConverter.asRow(pruneSchema(schema,requiredColumns), rdd)
   }
 
 }
