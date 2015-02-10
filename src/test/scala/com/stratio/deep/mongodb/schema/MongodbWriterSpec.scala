@@ -22,13 +22,9 @@ package com.stratio.deep.mongodb.schema
 
 import com.mongodb._
 import com.mongodb.util.JSON
-import com.stratio.deep.DeepConfig
-import com.stratio.deep.mongodb.MongodbConfig
-import com.stratio.deep.mongodb.rdd.MongodbRDD
-import com.stratio.deep.mongodb.writer.{MongodbBatchWriter, MongodbSimpleWriter, MongodbWriter}
-import org.apache.spark.sql.{SQLContext, SchemaRDD}
-import org.apache.spark.sql.test.TestSQLContext
-import org.scalatest.{fixture, Matchers, FlatSpec}
+import com.stratio.deep.mongodb.{MongodbConfigBuilder, MongodbConfig}
+import com.stratio.deep.mongodb.writer.{MongodbBatchWriter, MongodbSimpleWriter}
+import org.scalatest.{Matchers, FlatSpec}
 
 /**
  * Created by lfernandez on 9/02/15.
@@ -44,12 +40,13 @@ with TestBsonData {
   private val collection: String = "testCol"
   private val writeConcern : WriteConcern = WriteConcern.NORMAL
 
-  val testConfig = DeepConfig()
+  val testConfig = MongodbConfigBuilder()
     .set(MongodbConfig.Host, List(host + ":" + port))
     .set(MongodbConfig.Database, database)
     .set(MongodbConfig.Collection, collection)
     .set(MongodbConfig.SamplingRatio, 1.0)
     .set(MongodbConfig.WriteConcern, writeConcern)
+    .build()
 
   val dbObject = JSON.parse(
     """{ "att5" : [ 1 , 2 , 3] ,

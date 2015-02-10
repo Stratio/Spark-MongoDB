@@ -29,7 +29,7 @@ import org.apache.spark.sql.catalyst.types.StructType
 import org.apache.spark.sql.test.TestSQLContext
 import org.scalatest.{Matchers, FlatSpec }
 import com.stratio.deep.DeepConfig
-import com.stratio.deep.mongodb.MongodbConfig
+import com.stratio.deep.mongodb.{MongodbConfigBuilder, MongodbConfig}
 import MongodbRowConverter._
 
 import scala.collection.mutable.ArrayBuffer
@@ -47,11 +47,12 @@ with TestBsonData {
   private val database: String = "testDb"
   private val collection: String = "testCol"
 
-  val testConfig = DeepConfig()
+  val testConfig = MongodbConfigBuilder()
     .set(MongodbConfig.Host,List(host + ":" + port))
     .set(MongodbConfig.Database,database)
     .set(MongodbConfig.Collection,collection)
     .set(MongodbConfig.SamplingRatio,1.0)
+    .build()
 
   //  Sample values
 
