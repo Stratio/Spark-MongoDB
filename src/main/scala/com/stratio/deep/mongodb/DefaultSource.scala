@@ -5,7 +5,7 @@ import com.stratio.deep.DeepConfig._
 import com.stratio.deep.mongodb.rdd.MongodbRDD
 import com.stratio.deep.mongodb.schema.{MongodbRowConverter, MongodbSchema}
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.sources.{BaseRelation, RelationProvider, TableScan}
+import org.apache.spark.sql.sources._
 import org.apache.spark.sql.{Row, SQLContext, StructType}
 import MongodbConfig._
 
@@ -44,19 +44,21 @@ class DefaultSource extends RelationProvider {
 case class MongodbRelation(
   config: DeepConfig,
   schemaProvided: Option[StructType]=None)(
-  @transient val sqlContext: SQLContext) extends TableScan {
+  @transient val sqlContext: SQLContext) extends PrunedFilteredScan {
 
-  private lazy val baseRDD =
-    new MongodbRDD(sqlContext, config)
+  @transient lazy val lazySchema = {
+    MongodbSchema(
+      new MongodbRDD(sqlContext, config),
+      config[Double](SamplingRatio)).schema()
+  }
 
   override val schema: StructType = schemaProvided.getOrElse(lazySchema)
 
-  @transient lazy val lazySchema = {
-    MongodbSchema(baseRDD, config[Double](SamplingRatio)).schema()
-  }
-
-  override def buildScan(): RDD[Row] = {
-    MongodbRowConverter.asRow(schema, baseRDD)
+  override def buildScan(
+    requiredColumns : Array[String],
+    filters : Array[Filter]): RDD[Row] = {
+    val rdd = new MongodbRDD(sqlContext,config,requiredColumns,filters)
+    MongodbRowConverter.asRow(schema, rdd)
   }
 
 }

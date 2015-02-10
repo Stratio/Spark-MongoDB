@@ -4,6 +4,7 @@ import com.mongodb.DBObject
 import com.stratio.deep.DeepConfig
 import com.stratio.deep.mongodb.reader.MongodbReader
 import org.apache.spark._
+import org.apache.spark.sql.sources.Filter
 
 /**
  * Created by rmorandeira on 29/01/15.
@@ -11,7 +12,9 @@ import org.apache.spark._
 class MongodbRDDIterator(
   taskContext: TaskContext,
   partition: Partition,
-  config: DeepConfig)
+  config: DeepConfig,
+  requiredColumns: Array[String],
+  filters: Array[Filter])
   extends Iterator[DBObject] {
 
   protected var finished = false
@@ -51,7 +54,7 @@ class MongodbRDDIterator(
   }
 
   def initReader() = {
-    val reader = new MongodbReader(config)
+    val reader = new MongodbReader(config,requiredColumns,filters)
     reader.init(partition)
     reader
   }

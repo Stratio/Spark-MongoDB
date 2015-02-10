@@ -4,6 +4,7 @@ import com.mongodb.DBObject
 import com.stratio.deep.DeepConfig
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SQLContext
+import org.apache.spark.sql.sources.Filter
 import org.apache.spark.{Partition, TaskContext}
 
 /**
@@ -13,7 +14,9 @@ import org.apache.spark.{Partition, TaskContext}
 
 class MongodbRDD(
   sc: SQLContext,
-  config: DeepConfig)
+  config: DeepConfig,
+  requiredColumns: Array[String]=Array(),
+  filters: Array[Filter]=Array())
   extends RDD[DBObject](sc.sparkContext, deps = Nil) {
 
   override def getPartitions: Array[Partition] = {
@@ -29,6 +32,11 @@ class MongodbRDD(
   override def compute(
     split: Partition,
     context: TaskContext): MongodbRDDIterator =
-    new MongodbRDDIterator(context, split.asInstanceOf[MongodbPartition], config)
+    new MongodbRDDIterator(
+      context,
+      split.asInstanceOf[MongodbPartition],
+      config,
+      requiredColumns,
+      filters)
 
 }
