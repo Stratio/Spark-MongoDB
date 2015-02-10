@@ -95,12 +95,9 @@ class MongodbReader(
    * @return A mongodb object that represents required fields.
    */
   private def selectFields(fields: Array[String]): DBObject = {
-    (if (fields.isEmpty) None
-    else {
-      val dbObject = new BasicDBObject()
-      fields.foreach(dbObject.put(_,1))
-      Some(dbObject)
-    }).orNull
+    val dbObject = new BasicDBObject()
+    fields.foreach(dbObject.put(_,1))
+    dbObject
   }
 }
 
