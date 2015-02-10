@@ -18,12 +18,7 @@
 
 package com.stratio.deep.mongodb.reader
 
-import com.mongodb.BasicDBObject
-import com.mongodb.DBObject
-import com.mongodb.MongoClient
-import com.mongodb.MongoCredential
-import com.mongodb.ServerAddress
-import com.mongodb.{DBCursor,QueryBuilder}
+import com.mongodb._
 import com.mongodb.casbah.Imports._
 import com.stratio.deep.DeepConfig
 import com.stratio.deep.mongodb.MongodbConfig
