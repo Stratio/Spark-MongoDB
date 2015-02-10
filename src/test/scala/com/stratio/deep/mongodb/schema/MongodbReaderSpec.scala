@@ -50,7 +50,7 @@ with TestBsonData {
   behavior of "A reader"
 
   it should "throw IllegalStateException if next() operation is invoked after closing the Reader" in {
-    val mongodbReader = new MongodbReader(testConfig)
+    val mongodbReader = new MongodbReader(testConfig,Array(),Array())
     mongodbReader.init(
       MongodbPartition(0,
         testConfig[Seq[String]](MongodbConfig.Host),
@@ -66,7 +66,7 @@ with TestBsonData {
   it should "not advance the cursor position when calling hasNext() operation" in {
     withEmbedMongoFixture(complexFieldAndType1) { mongodbProc =>
 
-      val mongodbReader = new MongodbReader(testConfig)
+      val mongodbReader = new MongodbReader(testConfig,Array(),Array())
       mongodbReader.init(
         MongodbPartition(0,
           testConfig[Seq[String]](MongodbConfig.Host),
@@ -79,7 +79,7 @@ with TestBsonData {
   it should "advance the cursor position when calling next() operation" in {
     withEmbedMongoFixture(complexFieldAndType1) { mongodbProc =>
 
-      val mongodbReader = new MongodbReader(testConfig)
+      val mongodbReader = new MongodbReader(testConfig,Array(),Array())
       mongodbReader.init(
         MongodbPartition(0,
           testConfig[Seq[String]](MongodbConfig.Host),
