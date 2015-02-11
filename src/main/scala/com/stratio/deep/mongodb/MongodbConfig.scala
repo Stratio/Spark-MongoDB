@@ -35,7 +35,7 @@ case class MongodbConfigBuilder(
   override val properties: Map[Property,Any]=Map(
     //default values
     SamplingRatio -> 1.0,
-    WriteConcern -> mongodb.WriteConcern.NORMAL
+    WriteConcern -> mongodb.WriteConcern.ACKNOWLEDGED
   )) extends DeepConfigBuilder[MongodbConfigBuilder](properties) {
 
   val requiredProperties: List[Property] = MongodbConfig.all
