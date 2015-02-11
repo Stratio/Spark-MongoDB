@@ -47,11 +47,11 @@ case class MongodbConfigBuilder(
 object MongodbConfig {
   //  Parameter names
 
-  val Host = "mongodb.host"
-  val Database = "mongodb.database"
-  val Collection = "mongodb.collection"
-  val SamplingRatio = "mongodb.schema.samplingRatio"
-  val WriteConcern = "mongodb.writeConcern"
+  val Host = "host"
+  val Database = "database"
+  val Collection = "collection"
+  val SamplingRatio = "schema_samplingRatio"
+  val WriteConcern = "writeConcern"
 
   val all = List(Host,Database,Collection,SamplingRatio,WriteConcern)
 
