@@ -35,7 +35,10 @@ case class MongodbConfigBuilder(
   override val properties: Map[Property,Any]=Map(
     //default values
     SamplingRatio -> 1.0,
-    WriteConcern -> mongodb.WriteConcern.NORMAL
+    WriteConcern -> mongodb.WriteConcern.NORMAL,
+    SplitKey -> "_id",
+    SplitSize ->  10,
+    AllowSlaveReads -> false
   )) extends DeepConfigBuilder[MongodbConfigBuilder](properties) {
 
   val requiredProperties: List[Property] = MongodbConfig.all
@@ -52,6 +55,9 @@ object MongodbConfig {
   val Collection = "collection"
   val SamplingRatio = "schema_samplingRatio"
   val WriteConcern = "writeConcern"
+  val SplitSize = "splitSize"
+  val SplitKey = "splitKey"
+  val AllowSlaveReads = "allowSlaveReads"
 
   val all = List(Host,Database,Collection,SamplingRatio,WriteConcern)
 

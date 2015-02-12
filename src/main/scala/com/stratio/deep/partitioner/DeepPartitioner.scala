@@ -5,8 +5,8 @@ import org.apache.spark.Partition
 /**
  * Created by rmorandeira on 6/02/15.
  */
-trait DeepPartitioner {
+trait DeepPartitioner[T <: Partition] {
 
-  def computePartitions(): Array[Partition]
+  def computePartitions(): Array[T]
 
 }

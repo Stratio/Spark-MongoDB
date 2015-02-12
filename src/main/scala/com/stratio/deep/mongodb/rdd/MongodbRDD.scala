@@ -39,7 +39,9 @@ class MongodbRDD(
   extends RDD[DBObject](sc.sparkContext, deps = Nil) {
 
   override def getPartitions: Array[Partition] =
-    MongodbPartitioner(config).computePartitions
+    MongodbPartitioner(config)
+      .computePartitions
+      .asInstanceOf[Array[Partition]]
 
   override def getPreferredLocations(split: Partition): Seq[String] =
     split.asInstanceOf[MongodbPartition].hosts.map {
