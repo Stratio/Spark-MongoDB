@@ -85,12 +85,10 @@ builder: com.stratio.deep.mongodb.MongodbConfigBuilder = MongodbConfigBuilder(Ma
 scala> val readConfig = builder.build()
 
 scala> val mongoRDD = sqlContext.fromMongoDB(readConfig)
-***RESULTADO***
 
 scala> mongoRDD.registerTempTable("students")
 
 scala> sqlContext.sql("SELECT name, enrolled FROM students")
-***RESULTADO***
 
 scala> val writeConfig = builder.set(Collection,"students2").build()
 
