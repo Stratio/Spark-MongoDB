@@ -12,7 +12,7 @@ worlds opening to MongoDB the possibility of solving a wide range of new use cas
 
 ## Requirements
 
-This library requires Spark 1.2+
+This library requires Spark 1.2+, Scala 10.4+, casbah 2.8+
 
 ## Using the library
 
@@ -90,15 +90,28 @@ scala> mongoRDD.registerTempTable("students")
 
 scala> sqlContext.sql("SELECT name, enrolled FROM students")
 
-scala> val writeConfig = builder.set(Collection,"students2").build()
-
 ```
 In the example we can see how to use the fromMongoDB() function to read from MongoDB and transform it to a SchemaRDD.
 
 To save a SchemaRDD in MongoDB you should use the saveToMongodb() function as follows:
 
 ```
-scala> mongoRDD.saveToMongodb(writeConfig,batch=true)
+
+scala> import org.apache.spark.sql._
+scala> val sqlContext = new SQLContext(sc)
+
+scala> import sqlContext._
+
+scala> case class Student(name: String, age: Int)
+scala> val rdd: SchemaRDD = sc.parallelize(List(Student("Torcuato", 27), Student("Rosalinda", 34)))
+
+scala> import com.mongodb.casbah.{WriteConcern => MongodbWriteConcern}
+scala> import com.stratio.deep.mongodb._
+scala> import MongodbConfig._
+
+scala> val saveConfig = MongodbConfigBuilder(Map(Host -> List("host:port"), Database -> "highschool", Collection -> "students", SamplingRatio -> 1.0, WriteConcern -> MongodbWriteConcern.Normal, SplitSize -> 8, SplitKey -> "_id", SplitSize -> 8, SplitKey -> "_id"))
+
+scala> rdd.saveToMongodb(saveConfig.build)
 
 ```
 
@@ -111,7 +124,9 @@ from pyspark.sql import SQLContext
 
 sqlContext = SQLContext(sc)
 
-sqlContext.sql("CREATE TEMPORARY TABLE teams USING com.stratio.deep.mongodb OPTIONS ( mongodb_host 'host:port', mongodb_database 'football', mongodb_collection 'teams')")
+sqlContext.sql("CREATE TEMPORARY TABLE students_table USING com.stratio.deep.mongodb OPTIONS (host 'host:port', database 'highschool', collection 'students')")
+
+sqlContext.sql("SELECT * FROM students_table").collect()
 
 ```
 
