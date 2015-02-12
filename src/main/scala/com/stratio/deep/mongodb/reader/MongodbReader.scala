@@ -18,7 +18,7 @@
 
 package com.stratio.deep.mongodb.reader
 
-import com.mongodb._
+import com.mongodb.{DBCursor,MongoCredential,QueryBuilder}
 import com.mongodb.casbah.Imports._
 import com.stratio.deep.DeepConfig
 import com.stratio.deep.mongodb.MongodbConfig
@@ -26,7 +26,6 @@ import com.stratio.deep.mongodb.partitioner.MongodbPartition
 import org.apache.spark.Partition
 import org.apache.spark.sql.sources._
 
-import scala.collection.JavaConversions._
 import scala.util.Try
 
 /**
@@ -38,7 +37,7 @@ class MongodbReader(
   filters: Array[Filter]) {
 
   private val mongoClient: MongoClient =
-    new MongoClient(config[List[String]](MongodbConfig.Host)
+    MongoClient(config[List[String]](MongodbConfig.Host)
       .map(add => new ServerAddress(add)).toList,
       List.empty[MongoCredential])
 
@@ -109,8 +108,6 @@ class MongodbReader(
     filters: Array[Filter]): DBObject = {
 
     val queryBuilder: QueryBuilder = QueryBuilder.start
-
-
 
     filters.map{
       case equalsTo: EqualTo =>
