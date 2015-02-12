@@ -22,7 +22,15 @@ import org.apache.spark.sql._
 
 /**
  * Created by rmorandeira on 3/02/15.
+ *
+ * Knows the way to provide some Data Source schema
  */
 trait DeepSchemaProvider {
+
+  /**
+   * Provides the schema for current implementation of Data Source
+   * @return schema
+   */
   def schema(): StructType
+
 }

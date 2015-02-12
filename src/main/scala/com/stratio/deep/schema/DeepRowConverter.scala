@@ -23,8 +23,20 @@ import org.apache.spark.sql._
 
 /**
  * Created by rmorandeira on 3/02/15.
+ *
+ * Knows how to map from some Data Source native RDD to an {{{RDD[Row]}}}
+ * @tparam T Original RDD type
  */
 trait DeepRowConverter[T] {
+
+  /**
+   * Given a known schema,
+   * it maps an RDD of some specified type to an {{{RDD[Row}}}
+   * @param schema RDD native schema
+   * @param rdd Current native RDD
+   * @return A brand new RDD of Spark SQL Row type.
+   */
   def asRow(schema: StructType, rdd: RDD[T]): RDD[Row]
+
 }
 

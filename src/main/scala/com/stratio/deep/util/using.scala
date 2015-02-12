@@ -22,6 +22,16 @@ import scala.language.reflectiveCalls
 
 /**
  * Created by rmorandeira on 12/02/15.
+ *
+ * DSL helper for enclosing some functionality into a closeable type.
+ * Helper will be responsible of closing the object.
+ * i.e.:{{{
+ *   import java.io._
+ *   val writer = new PrintWriter(new File("test.txt" ))
+ *   using(writer){ w =>
+ *    w.append("hi!")
+ *   }
+ * }}}
  */
 object using {
   type AutoClosable = { def close(): Unit }

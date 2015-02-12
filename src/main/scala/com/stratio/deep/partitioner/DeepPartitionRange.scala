@@ -20,5 +20,10 @@ package com.stratio.deep.partitioner
 
 /**
  * Created by rmorandeira on 6/02/15.
+ *
+ * Determines a range of keys that compounds some partition
+ * @param minKey Starting partition key
+ * @param maxKey Final partition key
+ * @tparam T Partition key type.
  */
 case class DeepPartitionRange[T](minKey: Option[T], maxKey: Option[T])

@@ -1,10 +1,40 @@
+/*
+ *  Licensed to STRATIO (C) under one or more contributor license agreements.
+ *  See the NOTICE file distributed with this work for additional information
+ *  regarding copyright ownership. The STRATIO (C) licenses this file
+ *  to you under the Apache License, Version 2.0 (the
+ *  "License"); you may not use this file except in compliance
+ *  with the License. You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing,
+ *  software distributed under the License is distributed on an
+ *  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ *  KIND, either express or implied. See the License for the
+ *  specific language governing permissions and limitations
+ *  under the License.
+ */
+
 package com.stratio.deep.mongodb.schema
 
 import org.apache.spark.sql.catalyst.types._
 import org.apache.spark.sql.catalyst.types.decimal.Decimal
 
+/**
+ * Json - Scala object transformation support.
+ * Used to convert from DBObjects to Spark SQL Row field types.
+ * Disclaimer: As explained in NOTICE.md, some of this product includes
+ * software developed by The Apache Software Foundation (http://www.apache.org/).
+ */
 trait JsonSupport {
 
+  /**
+   * Tries to convert some scala value to another compatible given type
+   * @param value Value to be converted
+   * @param desiredType Destiny type
+   * @return Converted value
+   */
   protected def enforceCorrectType(value: Any, desiredType: DataType): Any ={
     if (value == null) {
       null

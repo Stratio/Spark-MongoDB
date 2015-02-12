@@ -29,7 +29,7 @@ import com.stratio.deep.mongodb.MongodbConfig._
  * A specialized deep configuration builder.
  * It focuses on mongodb config parameters
  * such as host,database,collection, samplingRatio (for schema infer)
- * @param properties
+ * @param properties Initial properties map
  */
 case class MongodbConfigBuilder(
   override val properties: Map[Property, Any] = Map(
