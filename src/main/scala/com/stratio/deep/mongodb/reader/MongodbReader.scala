@@ -18,7 +18,7 @@
 
 package com.stratio.deep.mongodb.reader
 
-import com.mongodb.{DBCursor,MongoCredential,QueryBuilder}
+import com.mongodb.QueryBuilder
 import com.mongodb.casbah.Imports._
 import com.stratio.deep.DeepConfig
 import com.stratio.deep.mongodb.MongodbConfig
@@ -36,26 +36,23 @@ class MongodbReader(
   requiredColumns: Array[String],
   filters: Array[Filter]) {
 
-  private val mongoClient: MongoClient =
-    MongoClient(config[List[String]](MongodbConfig.Host)
-      .map(add => new ServerAddress(add)).toList,
-      List.empty[MongoCredential])
+  private var mongoClient: Option[MongoClient] = None
 
-  private val db = mongoClient.getDB(config(MongodbConfig.Database))
-
-  private val collection = db.getCollection(config(MongodbConfig.Collection))
-
-  private var dbCursor: Option[DBCursor] = None
+  private var dbCursor: Option[MongoCursor] = None
 
   /**
    * Close void.
    */
   def close(): Unit = {
-    dbCursor.fold(ifEmpty = ()){cursor =>
+    dbCursor.fold(ifEmpty = ()) { cursor =>
       cursor.close()
       dbCursor = None
     }
-    mongoClient.close()
+
+    mongoClient.fold(ifEmpty = ()) { client =>
+      client.close()
+      mongoClient = None
+    }
   }
 
   /**
@@ -85,16 +82,24 @@ class MongodbReader(
   def init(partition: Partition): Unit =
     Try {
       val mongoPartition = partition.asInstanceOf[MongodbPartition]
-      dbCursor = Option(collection.find(
-        queryPartition(partition,filters),
-        selectFields(requiredColumns)))
-      dbCursor.foreach { cursor =>
-        mongoPartition.partitionRange.minKey.foreach(min => cursor.addSpecial("$min", min))
-        mongoPartition.partitionRange.maxKey.foreach(min => cursor.addSpecial("$max", min))
-      }
-    }.recover{
+
+      mongoClient = Option(MongoClient(
+        mongoPartition.hosts.map(add => new ServerAddress(add)).toList,
+        List.empty[MongoCredential]))
+
+      dbCursor = (for {
+        client <- mongoClient
+        collection <- Option(client(config(MongodbConfig.Database))(config(MongodbConfig.Collection)))
+        dbCursor <- Option(collection.find(queryPartition(partition, filters), selectFields(requiredColumns)))
+      } yield {
+        mongoPartition.partitionRange.minKey.foreach(min => dbCursor.addSpecial("$min", min))
+        mongoPartition.partitionRange.maxKey.foreach(min => dbCursor.addSpecial("$max", min))
+        dbCursor
+      }).headOption
+
+    }.recover {
       case throwable =>
-        throw MongodbReadException(throwable.getMessage,throwable)
+        throw MongodbReadException(throwable.getMessage, throwable)
     }
 
   /**
@@ -109,22 +114,21 @@ class MongodbReader(
 
     val queryBuilder: QueryBuilder = QueryBuilder.start
 
-    filters.map{
-      case equalsTo: EqualTo =>
-        queryBuilder.put(equalsTo.attribute).is(equalsTo.value)
-      case greaterThan: GreaterThan =>
-        queryBuilder.put(greaterThan.attribute).greaterThan(greaterThan.value)
-      case greaterThanOrEqual: GreaterThanOrEqual =>
-        queryBuilder.put(greaterThanOrEqual.attribute).greaterThanEquals(greaterThanOrEqual.value)
-      case in: In =>
-        queryBuilder.put(in.attribute).in(in.values)
-      case lessThan: LessThan =>
-        queryBuilder.put(lessThan.attribute).lessThan(lessThan.value)
-      case lessThanOrEqual: LessThanOrEqual =>
-        queryBuilder.put(lessThanOrEqual.attribute).lessThanEquals(lessThanOrEqual.value)
+    filters.foreach {
+      case EqualTo(attribute, value) =>
+        queryBuilder.put(attribute).is(value)
+      case GreaterThan(attribute, value) =>
+        queryBuilder.put(attribute).greaterThan(value)
+      case GreaterThanOrEqual(attribute, value) =>
+        queryBuilder.put(attribute).greaterThanEquals(value)
+      case In(attribute, values) =>
+        queryBuilder.put(attribute).in(values)
+      case LessThan(attribute, value) =>
+        queryBuilder.put(attribute).lessThan(value)
+      case LessThanOrEqual(attribute, value) =>
+        queryBuilder.put(attribute).lessThanEquals(value)
     }
     queryBuilder.get
-
   }
 
   /**
@@ -140,4 +144,4 @@ class MongodbReader(
 
 case class MongodbReadException(
   msg: String,
-  causedBy: Throwable) extends RuntimeException(msg,causedBy)
+  causedBy: Throwable) extends RuntimeException(msg, causedBy)

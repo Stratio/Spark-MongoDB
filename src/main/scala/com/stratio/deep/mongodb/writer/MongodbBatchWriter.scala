@@ -18,7 +18,7 @@
 
 package com.stratio.deep.mongodb.writer
 
-import com.mongodb.{WriteConcern, BasicDBObject, DBObject}
+import com.mongodb.casbah.Imports._
 import com.stratio.deep.DeepConfig
 import com.stratio.deep.mongodb.MongodbConfig
 
@@ -36,17 +36,21 @@ class MongodbBatchWriter(
   batchSize: Int = 100) extends MongodbWriter(config){
   
   def save(it: Iterator[DBObject]): Unit = {
-    import scala.collection.JavaConversions._
-    val Id = "_id"
+    val IdKey = "_id"
     it.grouped(batchSize).foreach{ group =>
-      val bulkop = dbCollection.initializeUnorderedBulkOperation()
-      group.foreach{element =>
-        val query = new BasicDBObject(Map(Id -> element.get(Id)))
-        bulkop.find(query).upsert().replaceOne(element)
+      val bulkop = dbCollection.initializeUnorderedBulkOperation
+      group.foreach { element =>
+        val idValue = Option(element.get(IdKey))
+        idValue match {
+          case Some(id) =>
+            val query = MongoDBObject(IdKey -> id)
+            bulkop.find(query).upsert().replaceOne(element)
+          case None =>
+            bulkop.insert(element)
+        }
       }
       bulkop.execute(config[WriteConcern](MongodbConfig.WriteConcern))
     }
-
   }
 
 }
