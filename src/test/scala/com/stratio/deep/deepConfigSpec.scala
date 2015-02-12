@@ -16,11 +16,10 @@
  *  under the License.
  */
 
-package com.stratio.deep.mongodb
+package com.stratio.deep
 
 import com.stratio.deep.DeepConfig.Property
-import com.stratio.deep.DeepConfigBuilder
-import org.scalatest.{Matchers, FlatSpec}
+import org.scalatest.{FlatSpec, Matchers}
 
 /**
  * Created by jsantos on 10/02/15.
@@ -74,9 +73,10 @@ with ConfigHelpers {
 }
 trait ConfigHelpers {
 
-  case class Builder(override val properties: Map[Property,Any]=Map()) extends DeepConfigBuilder[Builder]{
-    override val requiredProperties: List[Property] = List("prop1","prop2")
-    override def apply(props: Map[Property, Any]): Builder =
+  case class Builder(
+    override val properties: Map[Property,Any]=Map()) extends DeepConfigBuilder[Builder]{
+    val requiredProperties: List[Property] = List("prop1","prop2")
+    def apply(props: Map[Property, Any]): Builder =
       new Builder(props)
   }
 

@@ -18,6 +18,8 @@
 
 package com.stratio.deep.util
 
+import scala.language.reflectiveCalls
+
 /**
  * Created by rmorandeira on 12/02/15.
  */
@@ -29,7 +31,7 @@ object using {
       code(resource)
     }
     finally {
-      resource.close
+      resource.close()
     }
   }
 
