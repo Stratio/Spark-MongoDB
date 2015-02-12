@@ -16,13 +16,12 @@
  *  under the License.
  */
 
-package com.stratio.deep.mongodb.schema
+package com.stratio.deep.mongodb.writer
 
 import com.mongodb._
 import com.mongodb.util.JSON
-import com.stratio.deep.mongodb.{MongodbConfigBuilder, MongodbConfig}
-import com.stratio.deep.mongodb.writer.{MongodbBatchWriter, MongodbSimpleWriter}
-import org.scalatest.{Matchers, FlatSpec}
+import com.stratio.deep.mongodb.{MongoEmbedDatabase, TestBsonData, MongodbConfig, MongodbConfigBuilder}
+import org.scalatest.{FlatSpec, Matchers}
 
 /**
  * Created by lfernandez on 9/02/15.

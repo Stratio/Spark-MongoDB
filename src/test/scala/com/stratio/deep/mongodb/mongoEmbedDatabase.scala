@@ -16,7 +16,7 @@
  *  under the License.
  */
 
-package com.stratio.deep.mongodb.schema
+package com.stratio.deep.mongodb
 
 import com.mongodb.{DBCollection, DBObject, MongoClient}
 import de.flapdoodle.embed.mongo.config.{MongodConfigBuilder, Net, RuntimeConfigBuilder}

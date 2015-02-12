@@ -19,7 +19,7 @@
 package com.stratio.deep.mongodb.schema
 
 import com.stratio.deep.DeepConfig
-import com.stratio.deep.mongodb.{MongodbConfigBuilder, MongodbConfig}
+import com.stratio.deep.mongodb.{MongoEmbedDatabase, TestBsonData, MongodbConfigBuilder, MongodbConfig}
 import com.stratio.deep.mongodb.rdd.MongodbRDD
 import org.apache.spark.sql.test.TestSQLContext
 import org.scalatest._

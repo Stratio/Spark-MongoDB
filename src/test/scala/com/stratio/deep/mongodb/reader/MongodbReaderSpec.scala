@@ -18,12 +18,11 @@
  * /
  */
 
-package com.stratio.deep.mongodb.schema
+package com.stratio.deep.mongodb.reader
 
 import com.mongodb.DBObject
 import com.stratio.deep.mongodb.partitioner.MongodbPartition
-import com.stratio.deep.mongodb.reader.MongodbReader
-import com.stratio.deep.mongodb.{MongodbConfig, MongodbConfigBuilder}
+import com.stratio.deep.mongodb.{MongoEmbedDatabase, TestBsonData, MongodbConfig, MongodbConfigBuilder}
 import com.stratio.deep.partitioner.DeepPartitionRange
 import org.scalatest.{FlatSpec, Matchers}
 

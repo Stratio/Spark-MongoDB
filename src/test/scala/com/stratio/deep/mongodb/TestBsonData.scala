@@ -16,7 +16,7 @@
  *  under the License.
  */
 
-package com.stratio.deep.mongodb.schema
+package com.stratio.deep.mongodb
 
 import com.mongodb.DBObject
 import com.mongodb.util.JSON

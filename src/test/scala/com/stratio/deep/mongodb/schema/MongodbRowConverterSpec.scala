@@ -27,7 +27,7 @@ import org.apache.spark.sql.catalyst.types.StructType
 import org.apache.spark.sql.test.TestSQLContext
 import org.scalatest.{Matchers, FlatSpec }
 import com.stratio.deep.DeepConfig
-import com.stratio.deep.mongodb.{MongodbConfigBuilder, MongodbConfig}
+import com.stratio.deep.mongodb.{MongoEmbedDatabase, TestBsonData, MongodbConfigBuilder, MongodbConfig}
 import MongodbRowConverter._
 
 import scala.collection.mutable.ArrayBuffer
