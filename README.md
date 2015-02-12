@@ -78,19 +78,42 @@ scala> import MongodbConfig._
 
 scala> val sqlContext: SQLContext = new SQLContext(sc)
 
-scala> val builder = MongodbConfigBuilder(Map(Host -> List("localhost:27017"), Database -> "highschool", Collection -> "students", SamplingRatio -> 1.0, WriteConcern -> MongodbWriteConcern.Normal))
+scala> val builder = MongodbConfigBuilder(Map(Host -> List("host:port"), Database -> "highschool", Collection -> "students", SamplingRatio -> 1.0, WriteConcern -> MongodbWriteConcern.Normal))
+
+builder: com.stratio.deep.mongodb.MongodbConfigBuilder = MongodbConfigBuilder(Map(database -> highschool, writeConcern -> WriteConcern { "getlasterror" : 1} / (Continue on error? false), schema_samplingRatio -> 1.0, collection -> students, host -> List(host:port)))
 
 scala> val readConfig = builder.build()
 
 scala> val mongoRDD = sqlContext.fromMongoDB(readConfig)
+***RESULTADO***
 
 scala> mongoRDD.registerTempTable("students")
 
 scala> sqlContext.sql("SELECT name, enrolled FROM students")
+***RESULTADO***
 
 scala> val writeConfig = builder.set(Collection,"students2").build()
 
+```
+In the example we can see how to use the fromMongoDB() function to read from MongoDB and transform it to a SchemaRDD.
+
+To save a SchemaRDD in MongoDB you should use the saveToMongodb() function as follows:
+
+```
 scala> mongoRDD.saveToMongodb(writeConfig,batch=true)
+
+```
+
+### Python API
+
+Mongo data can be queried from Python too:
+
+```
+from pyspark.sql import SQLContext
+
+sqlContext = SQLContext(sc)
+
+sqlContext.sql("CREATE TEMPORARY TABLE teams USING com.stratio.deep.mongodb OPTIONS ( mongodb_host 'host:port', mongodb_database 'football', mongodb_collection 'teams')")
 
 ```
 
