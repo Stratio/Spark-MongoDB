@@ -19,9 +19,9 @@
 package com.stratio.deep.mongodb
 
 import com.mongodb
-import com.stratio.deep.{DeepConfigBuilder, DeepConfig}
-import DeepConfig._
-import MongodbConfig._
+import com.stratio.deep.DeepConfig._
+import com.stratio.deep.DeepConfigBuilder
+import com.stratio.deep.mongodb.MongodbConfig._
 
 /**
  * Created by jsantos on 5/02/15.
@@ -32,18 +32,18 @@ import MongodbConfig._
  * @param properties
  */
 case class MongodbConfigBuilder(
-  override val properties: Map[Property,Any]=Map(
+  override val properties: Map[Property, Any] = Map(
     //default values
     SamplingRatio -> 1.0,
     WriteConcern -> mongodb.WriteConcern.NORMAL,
     SplitKey -> "_id",
-    SplitSize ->  10,
+    SplitSize -> 10,
     AllowSlaveReads -> false
   )) extends DeepConfigBuilder[MongodbConfigBuilder](properties) {
 
   val requiredProperties: List[Property] = MongodbConfig.all
 
-  def apply(props: Map[Property,Any]) =
+  def apply(props: Map[Property, Any]) =
     MongodbConfigBuilder(props)
 }
 
@@ -59,6 +59,6 @@ object MongodbConfig {
   val SplitKey = "splitKey"
   val AllowSlaveReads = "allowSlaveReads"
 
-  val all = List(Host,Database,Collection,SamplingRatio,WriteConcern)
+  val all = List(Host, Database, Collection, SamplingRatio, WriteConcern, SplitKey, SplitSize)
 
 }
