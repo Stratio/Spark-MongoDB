@@ -19,10 +19,9 @@
 package com.stratio.deep.util
 
 import scala.language.reflectiveCalls
+import scala.util.Try
 
 /**
- * Created by rmorandeira on 12/02/15.
- *
  * DSL helper for enclosing some functionality into a closeable type.
  * Helper will be responsible of closing the object.
  * i.e.:{{{
@@ -34,15 +33,15 @@ import scala.language.reflectiveCalls
  * }}}
  */
 object using {
+
   type AutoClosable = { def close(): Unit }
 
-  def apply[A <: AutoClosable, B](resource: A)(code: A => B): B = {
+  def apply[A <: AutoClosable, B](resource: A)(code: A => B): B =
     try {
       code(resource)
     }
     finally {
-      resource.close()
+      Try(resource.close())
     }
-  }
 
 }

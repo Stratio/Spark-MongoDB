@@ -27,26 +27,24 @@ import org.apache.spark.sql.sources.Filter
 import org.apache.spark.{Partition, TaskContext}
 
 /**
- * Created by rmorandeira on 29/01/15.
+ * @param sc Spark SQLContext
+ * @param config Config parameters
+ * @param requiredColumns Fields to project
+ * @param filters Query filters
  */
-
-
 class MongodbRDD(
   sc: SQLContext,
   config: DeepConfig,
-  requiredColumns: Array[String]=Array(),
-  filters: Array[Filter]=Array())
+  partitioner: MongodbPartitioner,
+  requiredColumns: Array[String] = Array(),
+  filters: Array[Filter] = Array())
   extends RDD[DBObject](sc.sparkContext, deps = Nil) {
 
   override def getPartitions: Array[Partition] =
-    MongodbPartitioner(config)
-      .computePartitions
-      .asInstanceOf[Array[Partition]]
+    partitioner.computePartitions().asInstanceOf[Array[Partition]]
 
   override def getPreferredLocations(split: Partition): Seq[String] =
-    split.asInstanceOf[MongodbPartition].hosts.map {
-      new ServerAddress(_).getHost
-    }
+    split.asInstanceOf[MongodbPartition].hosts.map(new ServerAddress(_).getHost)
 
   override def compute(
     split: Partition,

@@ -26,9 +26,6 @@ import de.flapdoodle.embed.process.config.IRuntimeConfig
 import de.flapdoodle.embed.process.config.io.ProcessOutput
 import de.flapdoodle.embed.process.runtime.Network
 
-/**
- * Created by rmorandeira on 5/02/15.
- */
 trait MongoEmbedDatabase {
   private val runtimeConfig = new RuntimeConfigBuilder()
     .defaults(Command.MongoD)

@@ -25,11 +25,13 @@ import com.stratio.deep.mongodb.MongodbConfig
 import com.stratio.deep.mongodb.partitioner.MongodbPartition
 import org.apache.spark.Partition
 import org.apache.spark.sql.sources._
-
 import scala.util.Try
 
 /**
- * Created by rmorandeira on 29/01/15.
+ *
+ * @param config Configuration object.
+ * @param requiredColumns Pruning fields
+ * @param filters Added query filters
  */
 class MongodbReader(
   config: DeepConfig,
@@ -40,9 +42,6 @@ class MongodbReader(
 
   private var dbCursor: Option[MongoCursor] = None
 
-  /**
-   * Close void.
-   */
   def close(): Unit = {
     dbCursor.fold(ifEmpty = ()) { cursor =>
       cursor.close()
@@ -55,29 +54,19 @@ class MongodbReader(
     }
   }
 
-  /**
-   * Has next.
-   *
-   * @return the boolean
-   */
   def hasNext: Boolean = {
     dbCursor.fold(ifEmpty = false)(_.hasNext)
   }
 
-  /**
-   * Next row.
-   *
-   * @return the cells
-   */
   def next(): DBObject = {
     dbCursor.fold(ifEmpty =
       throw new IllegalStateException("DbCursor is not initialized"))(_.next())
   }
 
+
   /**
-   * Init void.
-   *
-   * @param partition the partition
+   * Initialize MongoDB reader
+   * @param partition Where to read from
    */
   def init(partition: Partition): Unit =
     Try {
@@ -129,11 +118,12 @@ class MongodbReader(
         queryBuilder.put(attribute).lessThanEquals(value)
     }
     queryBuilder.get
+
   }
 
   /**
    *
-   * Prepared dbobject used to specify required fields in mongodb 'find'
+   * Prepared DBObject used to specify required fields in mongodb 'find'
    * @param fields Required fields
    * @return A mongodb object that represents required fields.
    */

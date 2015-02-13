@@ -26,9 +26,6 @@ import com.stratio.deep.mongodb.{MongoEmbedDatabase, TestBsonData, MongodbConfig
 import com.stratio.deep.partitioner.DeepPartitionRange
 import org.scalatest.{FlatSpec, Matchers}
 
-/**
- * Created by lfernandez on 9/02/15.
- */
 class MongodbReaderSpec extends FlatSpec
 with Matchers
 with MongoEmbedDatabase

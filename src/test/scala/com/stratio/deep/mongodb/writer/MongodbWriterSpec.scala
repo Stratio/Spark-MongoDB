@@ -23,9 +23,6 @@ import com.mongodb.util.JSON
 import com.stratio.deep.mongodb.{MongoEmbedDatabase, TestBsonData, MongodbConfig, MongodbConfigBuilder}
 import org.scalatest.{FlatSpec, Matchers}
 
-/**
- * Created by lfernandez on 9/02/15.
- */
 class MongodbWriterSpec extends FlatSpec
 with Matchers
 with MongoEmbedDatabase

@@ -23,8 +23,6 @@ import com.stratio.deep.DeepConfig
 import com.stratio.deep.mongodb.MongodbConfig
 
 /**
- * Created by jsantos on 5/02/15.
- *
  * A simple mongodb writer.
  *
  * @param config Configuration parameters (host,database,collection,...)

@@ -34,10 +34,10 @@ import com.stratio.deep.mongodb.MongodbConfig._
 case class MongodbConfigBuilder(
   override val properties: Map[Property, Any] = Map(
     //default values
-    SamplingRatio -> 1.0,
-    WriteConcern -> mongodb.WriteConcern.ACKNOWLEDGED,
-    SplitKey -> "_id",
-    SplitSize -> 10,
+    SamplingRatio -> DefaultSamplingRatio,
+    WriteConcern -> DefaultWriteConcern,
+    SplitKey -> DefaultSplitKey,
+    SplitSize -> DefaultSplitSize,
     AllowSlaveReads -> false
 
   )) extends DeepConfigBuilder[MongodbConfigBuilder](properties) {
@@ -49,6 +49,7 @@ case class MongodbConfigBuilder(
 }
 
 object MongodbConfig {
+
   //  Parameter names
 
   val Host = "host"
@@ -61,5 +62,12 @@ object MongodbConfig {
   val AllowSlaveReads = "allowSlaveReads"
 
   val all = List(Host, Database, Collection, SamplingRatio, WriteConcern, SplitKey, SplitSize)
+
+  //  Default values
+
+  val DefaultSamplingRatio = 1.0
+  val DefaultWriteConcern = mongodb.WriteConcern.ACKNOWLEDGED
+  val DefaultSplitKey = "_id"
+  val DefaultSplitSize = 10
 
 }

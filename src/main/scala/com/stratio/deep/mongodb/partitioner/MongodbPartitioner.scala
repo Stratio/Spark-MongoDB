@@ -18,74 +18,93 @@
 
 package com.stratio.deep.mongodb.partitioner
 
-import com.mongodb.DBObject
 import com.mongodb.casbah.Imports._
 import com.stratio.deep.DeepConfig
 import com.stratio.deep.mongodb.MongodbConfig
+import com.stratio.deep.mongodb.partitioner.MongodbPartitioner._
 import com.stratio.deep.partitioner.{DeepPartitionRange, DeepPartitioner}
 import com.stratio.deep.util.using
 
 import scala.util.Try
 
 /**
- * Created by rmorandeira on 6/02/15.
+ * @param config Partition configuration
  */
-class MongodbPartitioner(config: DeepConfig) extends DeepPartitioner[MongodbPartition] {
+class MongodbPartitioner(
+  config: DeepConfig) extends DeepPartitioner[MongodbPartition] {
 
-  private val hosts: List[ServerAddress] =
+  @transient private val hosts: List[ServerAddress] =
     config[List[String]](MongodbConfig.Host)
       .map(add => new ServerAddress(add)).toList
+
   private val databaseName: String = config(MongodbConfig.Database)
+
   private val collectionName: String = config(MongodbConfig.Collection)
-  private val collectionFullName: String = databaseName + "." + collectionName
 
-  override def computePartitions(): Array[MongodbPartition] = {
+  private val collectionFullName: String = s"$databaseName.$collectionName"
+
+  override def computePartitions(): Array[MongodbPartition] =
     if (isShardedCollection)
-      computeShardedChunkPartitions
+      computeShardedChunkPartitions()
     else
-      computeNotShardedPartitions
-  }
+      computeNotShardedPartitions()
 
+  /**
+   * @return Whether this is a sharded collection or not
+   */
   protected def isShardedCollection: Boolean =
     using(MongoClient(hosts)) { mongoClient =>
       mongoClient.readPreference = ReadPreference.Nearest
       val collection = mongoClient(databaseName)(collectionName)
-
       collection.stats.ok && collection.stats.getBoolean("sharded", false)
     }
 
-
-  protected def computeShardedChunkPartitions: Array[MongodbPartition] = {
+  /**
+   * @return MongoDB partitions as sharded chunks.
+   */
+  protected def computeShardedChunkPartitions(): Array[MongodbPartition] =
     using(MongoClient(hosts)) { mongoClient =>
       mongoClient.readPreference = ReadPreference.Nearest
 
-      val chunksCollection = mongoClient("config")("chunks")
-      val dbCursor = chunksCollection.find(MongoDBObject("ns" -> collectionFullName))
+      Try {
+        val chunksCollection = mongoClient(ConfigDatabase)(ChunksCollection)
+        val dbCursor = chunksCollection.find(MongoDBObject("ns" -> collectionFullName))
 
-      val shards = describeShardsMap
+        val shards = describeShardsMap()
 
-      val partitions = dbCursor.zipWithIndex.map { case (chunk: DBObject, i: Int) =>
-        val lowerBound = chunk.getAs[DBObject]("min")
-        val upperBound = chunk.getAs[DBObject]("max")
+        val partitions = dbCursor.zipWithIndex.map {
+          case (chunk: DBObject, i: Int) =>
+            val lowerBound = chunk.getAs[DBObject]("min")
+            val upperBound = chunk.getAs[DBObject]("max")
 
-        val hosts: Seq[String] = (for {
-          shard <- chunk.getAs[String]("shard")
-          hosts <- shards.get(shard)
-        } yield hosts).getOrElse(Seq[String]())
+            val hosts: Seq[String] = (for {
+              shard <- chunk.getAs[String]("shard")
+              hosts <- shards.get(shard)
+            } yield hosts).getOrElse(Seq[String]())
 
-        MongodbPartition(i,
-          hosts,
-          DeepPartitionRange(lowerBound, upperBound))
-      }.toArray
+            MongodbPartition(i,
+              hosts,
+              DeepPartitionRange(lowerBound, upperBound))
+        }.toArray
 
-      partitions
+        partitions
+
+      }.recover {
+        case _: Exception =>
+          val serverAddressList: Seq[String] = mongoClient.allAddress.map {
+            server => server.getHost + ":" + server.getPort
+          }.toSeq
+          Array(MongodbPartition(0, serverAddressList, DeepPartitionRange(None, None)))
+      }.get
     }
-  }
 
-  protected def computeNotShardedPartitions: Array[MongodbPartition] = {
+  /**
+   * @return Array MongoDB not sharded partitions.
+   */
+  protected def computeNotShardedPartitions(): Array[MongodbPartition] =
     using(MongoClient(hosts)) { mongoClient =>
       mongoClient.readPreference = ReadPreference.Nearest
-      val ranges = splitRanges
+      val ranges = splitRanges()
 
       val serverAddressList: Seq[String] = mongoClient.allAddress.map {
         server => server.getHost + ":" + server.getPort
@@ -100,9 +119,12 @@ class MongodbPartitioner(config: DeepConfig) extends DeepPartitioner[MongodbPart
 
       partitions
     }
-  }
 
-  protected def splitRanges: Seq[(Option[DBObject], Option[DBObject])] = {
+  /**
+   * @return A sequence of minimum and maximum DBObject in range.
+   */
+  protected def splitRanges(): Seq[(Option[DBObject], Option[DBObject])] = {
+
     val cmd: MongoDBObject = MongoDBObject(
       "splitVector" -> collectionFullName,
       "keyPattern" -> MongoDBObject(MongodbConfig.SplitKey -> 1),
@@ -120,10 +142,10 @@ class MongodbPartitioner(config: DeepConfig) extends DeepPartitioner[MongodbPart
       }.recover {
         case _: Exception =>
           val stats = mongoClient(databaseName)(collectionName).stats
-          val shards = mongoClient("config")("shards")
+          val shards = mongoClient(ConfigDatabase)(ShardsCollection)
             .find(MongoDBObject("_id" -> stats.getString("primary")))
 
-          val shard = shards.next
+          val shard = shards.next()
           val shardHost: String = shard.as[String]("host")
             .replace(shard.get("_id") + "/", "")
 
@@ -135,14 +157,18 @@ class MongodbPartitioner(config: DeepConfig) extends DeepPartitioner[MongodbPart
           }
       }.getOrElse(Seq((None, None)))
     }
+
   }
 
-  protected def describeShardsMap: Map[String, Seq[String]] = {
+  /**
+   * @return Map of shards.
+   */
+  protected def describeShardsMap(): Map[String, Seq[String]] =
     using(MongoClient(hosts)) { mongoClient =>
       mongoClient.readPreference = ReadPreference.Nearest
-      val shardsCollection = mongoClient(MongodbPartitioner.ConfigDatabase)("shards")
+      val shardsCollection = mongoClient(ConfigDatabase)(ShardsCollection)
 
-      val shards = shardsCollection.find.map { shard =>
+      val shards = shardsCollection.find().map { shard =>
         val hosts: Seq[String] = shard.getAs[String]("host")
           .fold(ifEmpty = Seq[String]())(_.split(",").map(_.split("/").reverse.head).toSeq)
         (shard.as[String]("_id"), hosts)
@@ -150,12 +176,13 @@ class MongodbPartitioner(config: DeepConfig) extends DeepPartitioner[MongodbPart
 
       shards
     }
-  }
+
 }
 
 object MongodbPartitioner {
-  private val ConfigDatabase: String = "config"
 
-  def apply(config: DeepConfig): MongodbPartitioner =
-    new MongodbPartitioner(config)
+  val ConfigDatabase = "config"
+  val ChunksCollection = "chunks"
+  val ShardsCollection = "shards"
+
 }

@@ -28,18 +28,31 @@ import org.apache.spark.sql.{Row, StructType}
 import scala.collection.mutable.ArrayBuffer
 
 /**
- * Created by rmorandeira on 3/02/15.
+ * MongodbRowConverter support RDD transformations
+ * from DBObject to Row and vice versa
  */
 object MongodbRowConverter extends DeepRowConverter[DBObject]
-with JsonSupport
-with Serializable {
+  with JsonSupport
+  with Serializable {
 
+  /**
+   *
+   * @param schema RDD native schema
+   * @param rdd Current native RDD
+   * @return A brand new RDD of Spark SQL Row type.
+   */
   def asRow(schema: StructType, rdd: RDD[DBObject]): RDD[Row] = {
     rdd.map { record =>
       recordAsRow(dbObjectToMap(record), schema)
     }
   }
 
+  /**
+   * Given a schema, it converts a JSON object (as map) into a Row
+   * @param json DBObject map
+   * @param schema Schema
+   * @return The converted row
+   */
   def recordAsRow(
     json: Map[String, AnyRef],
     schema: StructType): Row = {
@@ -51,6 +64,12 @@ with Serializable {
     Row.fromSeq(values)
   }
 
+  /**
+   * Given a schema, it converts a Row into a DBObject
+   * @param row Row to be converted
+   * @param schema Schema
+   * @return The converted DBObject
+   */
   def rowAsDBObject(row: Row, schema: StructType): DBObject = {
     val attMap: Map[String, Any] = schema.fields.zipWithIndex.map {
       case (att, idx) => (att.name, toDBObject(row(idx),att.dataType))
@@ -58,6 +77,14 @@ with Serializable {
     attMap
   }
 
+  /**
+   * It converts some Row attribute value into
+   * a DBObject field
+   * @param value Row attribute
+   * @param dataType Attribute type
+   * @return The converted value into a DBObject field.
+   * @return The converted value into a DBObject field.
+   */
   def toDBObject(value: Any, dataType: DataType): Any = {
     Option(value).map{v =>
       (dataType,v) match {
@@ -73,6 +100,13 @@ with Serializable {
     }.orNull
   }
 
+  /**
+   * It converts some DBObject attribute value into
+   * a Row field
+   * @param value DBObject attribute
+   * @param dataType Attribute type
+   * @return The converted value into a Row field.
+   */
   def toSQL(value: Any, dataType: DataType): Any = {
     Option(value).map{value =>
       dataType match {
@@ -87,6 +121,11 @@ with Serializable {
     }.orNull
   }
 
+  /**
+   * It creates a map with dbObject attribute values.
+   * @param dBObject Object to be splitted into attribute tuples.
+   * @return A map with dbObject attributes.
+   */
   def dbObjectToMap(dBObject: DBObject): Map[String, AnyRef] = {
     dBObject.seq.toMap
   }

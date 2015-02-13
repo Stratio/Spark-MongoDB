@@ -25,7 +25,13 @@ import org.apache.spark._
 import org.apache.spark.sql.sources.Filter
 
 /**
- * Created by rmorandeira on 29/01/15.
+ * MongoRDD values iterator.
+ *
+ * @param taskContext Spark task context.
+ * @param partition Spark partition.
+ * @param config Configuration object.
+ * @param requiredColumns Pruning fields
+ * @param filters Added query filters
  */
 class MongodbRDDIterator(
   taskContext: TaskContext,

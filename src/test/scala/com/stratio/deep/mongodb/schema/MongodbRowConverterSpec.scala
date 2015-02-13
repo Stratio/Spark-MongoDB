@@ -18,23 +18,19 @@
 
 package com.stratio.deep.mongodb.schema
 
+import com.mongodb.DBObject
 import com.mongodb.util.JSON
-import com.mongodb.{DBObject, BasicDBObject}
+import com.stratio.deep.mongodb.partitioner.MongodbPartitioner
 import com.stratio.deep.mongodb.rdd.MongodbRDD
-import org.apache.spark.sql.catalyst.types._
-import org.apache.spark.sql.catalyst.expressions.{GenericRow, Row}
-import org.apache.spark.sql.catalyst.types.StructType
+import com.stratio.deep.mongodb.schema.MongodbRowConverter._
+import com.stratio.deep.mongodb.{MongoEmbedDatabase, MongodbConfig, MongodbConfigBuilder, TestBsonData}
+import org.apache.spark.sql.catalyst.expressions.GenericRow
+import org.apache.spark.sql.catalyst.types.{StructType, _}
 import org.apache.spark.sql.test.TestSQLContext
-import org.scalatest.{Matchers, FlatSpec }
-import com.stratio.deep.DeepConfig
-import com.stratio.deep.mongodb.{MongoEmbedDatabase, TestBsonData, MongodbConfigBuilder, MongodbConfig}
-import MongodbRowConverter._
+import org.scalatest.{FlatSpec, Matchers}
 
 import scala.collection.mutable.ArrayBuffer
 
-/**
- * Created by jsantos on 6/02/15.
- */
 class MongodbRowConverterSpec extends FlatSpec
 with Matchers
 with MongoEmbedDatabase
@@ -95,7 +91,8 @@ with TestBsonData {
 
   it should "apply dbobject to row mapping in a RDD context" in {
     withEmbedMongoFixture(complexFieldAndType2) { mongodProc =>
-      val mongodbRDD = new MongodbRDD(TestSQLContext, testConfig)
+      val mongodbPartitioner = new MongodbPartitioner(testConfig)
+      val mongodbRDD = new MongodbRDD(TestSQLContext, testConfig, mongodbPartitioner)
       val schema = MongodbSchema(mongodbRDD, 1.0).schema()
       val collected = toSQL(complexFieldAndType2.head,schema)
       MongodbRowConverter

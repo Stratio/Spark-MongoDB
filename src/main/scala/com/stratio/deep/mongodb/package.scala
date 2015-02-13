@@ -18,49 +18,8 @@
 
 package com.stratio.deep
 
-import com.stratio.deep.mongodb.schema.MongodbRowConverter
-import com.stratio.deep.mongodb.writer.{MongodbSimpleWriter, MongodbBatchWriter}
-import org.apache.spark.sql.{SQLContext, SchemaRDD}
 
 /**
- * Created by rmorandeira on 28/01/15.
- *
- * MongoDB helpers for getting/saving data.
+ * Whole MongoDB helpers.
  */
-package object mongodb {
-
-  implicit class MongodbContext(sqlContext: SQLContext) {
-    /**
-     * It retrieves a bunch of MongoDB objects
-     * given a MongDB configuration object.
-     * @param config MongoDB configuration object
-     * @return A schemaRDD
-     */
-    def fromMongoDB(config: DeepConfig): SchemaRDD = {
-      sqlContext.baseRelationToSchemaRDD(
-        MongodbRelation(config, None)(sqlContext))
-    }
-
-  }
-
-  implicit class MongodbSchemaRDD(schemaRDD: SchemaRDD) extends Serializable {
-
-    /**
-     * It allows storing data in Mongodb from some existing SchemaRDD
-     * @param config MongoDB configuration object
-     * @param batch It indicates whether it has to be saved in batch mode or not.
-     */
-    def saveToMongodb(config: DeepConfig, batch: Boolean = true): Unit = {
-      schemaRDD.foreachPartition(it => {
-        val writer =
-          if (batch) new MongodbBatchWriter(config)
-          else new MongodbSimpleWriter(config)
-        writer.save(it.map(row =>
-          MongodbRowConverter.rowAsDBObject(row, schemaRDD.schema)))
-        writer.close()
-      })
-    }
-
-  }
-
-}
+package object mongodb extends MongodbFunctions

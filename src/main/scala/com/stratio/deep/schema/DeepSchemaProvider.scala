@@ -21,8 +21,6 @@ package com.stratio.deep.schema
 import org.apache.spark.sql._
 
 /**
- * Created by rmorandeira on 3/02/15.
- *
  * Knows the way to provide some Data Source schema
  */
 trait DeepSchemaProvider {

@@ -18,15 +18,12 @@
 
 package com.stratio.deep.mongodb.schema
 
-import com.stratio.deep.DeepConfig
-import com.stratio.deep.mongodb.{MongoEmbedDatabase, TestBsonData, MongodbConfigBuilder, MongodbConfig}
+import com.stratio.deep.mongodb.partitioner.MongodbPartitioner
 import com.stratio.deep.mongodb.rdd.MongodbRDD
+import com.stratio.deep.mongodb.{MongoEmbedDatabase, MongodbConfig, MongodbConfigBuilder, TestBsonData}
 import org.apache.spark.sql.test.TestSQLContext
 import org.scalatest._
 
-/**
- * Created by rmorandeira on 4/02/15.
- */
 class MongodbSchemaSpec extends FlatSpec
 with Matchers
 with MongoEmbedDatabase
@@ -44,11 +41,14 @@ with TestBsonData {
     .set(MongodbConfig.SamplingRatio,1.0)
     .build()
 
+  val mongodbPartitioner = new MongodbPartitioner(testConfig)
+
+  val mongodbRDD = new MongodbRDD(TestSQLContext, testConfig, mongodbPartitioner)
+
   behavior of "A schema"
 
   it should "be inferred from rdd with primitives" in {
     withEmbedMongoFixture(primitiveFieldAndType) { mongodProc =>
-      val mongodbRDD = new MongodbRDD(TestSQLContext, testConfig)
       val schema = MongodbSchema(mongodbRDD, 1.0).schema()
 
       schema.fields should have size 7
@@ -60,7 +60,6 @@ with TestBsonData {
 
   it should "be inferred from rdd with complex fields" in {
     withEmbedMongoFixture(complexFieldAndType1) { mongodProc =>
-      val mongodbRDD = new MongodbRDD(TestSQLContext, testConfig)
       val schema = MongodbSchema(mongodbRDD, 1.0).schema()
 
       schema.fields should have size 12
@@ -71,7 +70,6 @@ with TestBsonData {
 
   it should "resolve type conflicts between fields" in {
     withEmbedMongoFixture(primitiveFieldValueTypeConflict) { mongodProc =>
-      val mongodbRDD = new MongodbRDD(TestSQLContext, testConfig)
       val schema = MongodbSchema(mongodbRDD, 1.0).schema()
 
       schema.fields should have size 7
@@ -82,7 +80,6 @@ with TestBsonData {
 
   it should "be inferred from rdd with more complex fields" in {
     withEmbedMongoFixture(complexFieldAndType2) { mongodProc =>
-      val mongodbRDD = new MongodbRDD(TestSQLContext, testConfig)
       val schema = MongodbSchema(mongodbRDD, 1.0).schema()
 
       schema.fields should have size 5

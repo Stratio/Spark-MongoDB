@@ -21,9 +21,6 @@ package com.stratio.deep
 import com.stratio.deep.DeepConfig.Property
 import org.scalatest.{FlatSpec, Matchers}
 
-/**
- * Created by jsantos on 10/02/15.
- */
 class DeepConfigSpec extends FlatSpec
 with Matchers
 with ConfigHelpers {

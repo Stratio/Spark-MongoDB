@@ -23,8 +23,6 @@ import com.stratio.deep.DeepConfig.Property
 import scala.reflect.ClassTag
 
 /**
- * Created by jsantos on 3/02/15.
- *
  * Abstract config builder, used to set a bunch of properties a build
  * a config object from them.
  *
@@ -66,13 +64,16 @@ abstract class DeepConfigBuilder[Builder<:DeepConfigBuilder[Builder] ](
    * @return The Deep configuration object.
    */
   def build(): DeepConfig = new DeepConfig {
+
     val properties = builder.properties
+
     require(
       requiredProperties.forall(properties.isDefinedAt),
       s"Not all properties are defined! : ${
         requiredProperties.diff(
           properties.keys.toList.intersect(requiredProperties))
       }")
+
   }
 
 }

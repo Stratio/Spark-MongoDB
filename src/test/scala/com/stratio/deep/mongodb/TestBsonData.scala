@@ -21,9 +21,6 @@ package com.stratio.deep.mongodb
 import com.mongodb.DBObject
 import com.mongodb.util.JSON
 
-/**
- * Created by rmorandeira on 4/02/15.
- */
 trait TestBsonData {
 
   val primitiveFieldAndType =

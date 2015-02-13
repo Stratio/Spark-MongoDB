@@ -23,8 +23,6 @@ import com.stratio.deep.DeepConfig
 import com.stratio.deep.mongodb.MongodbConfig
 
 /**
- * Created by jsantos on 4/02/15.
- *
  * A batch writer implementation for mongodb writer.
  * The used semantics for storing objects is 'replace'.
  *

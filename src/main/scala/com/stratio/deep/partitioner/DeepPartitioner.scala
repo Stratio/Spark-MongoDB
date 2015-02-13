@@ -3,13 +3,11 @@ package com.stratio.deep.partitioner
 import org.apache.spark.Partition
 
 /**
- * Created by rmorandeira on 6/02/15.
- *
  * Provides the way to compute and get spark partitions over
  * some Data Source.
  * @tparam T
  */
-trait DeepPartitioner[T <: Partition] {
+trait DeepPartitioner[T <: Partition] extends Serializable {
 
   /**
    * Retrieves some Data Source partitions

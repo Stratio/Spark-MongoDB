@@ -23,8 +23,11 @@ import com.stratio.deep.partitioner.DeepPartitionRange
 import org.apache.spark.Partition
 
 /**
- * Created by rmorandeira on 29/01/15.
+ * @param index Partition index
+ * @param hosts Hosts that hold partition data
+ * @param partitionRange Partition range
  */
-case class MongodbPartition(index: Int,
+case class MongodbPartition(
+  index: Int,
   hosts: Seq[String],
   partitionRange: DeepPartitionRange[DBObject]) extends Partition

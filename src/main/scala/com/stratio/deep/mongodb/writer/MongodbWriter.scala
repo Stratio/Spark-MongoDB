@@ -23,8 +23,6 @@ import com.stratio.deep.DeepConfig
 import com.stratio.deep.mongodb.MongodbConfig
 
 /**
- * Created by jsantos on 5/02/15.
- *
  * Abstract Mongodb writer.
  * Used for saving a bunch of mongodb objects
  * into specified database and collection

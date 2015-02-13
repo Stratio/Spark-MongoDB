@@ -24,8 +24,6 @@ import org.apache.spark.sql.SQLContext
 import MongodbConfig._
 
 /**
- * Created by rmorandeira on 29/01/15.
- *
  * Allows creation of MongoDB based tables using
  * the syntax CREATE TEMPORARY TABLE ... USING com.stratio.deep.mongodb.
  * Required options are detailed in [[com.stratio.deep.mongodb.MongodbConfig]]
@@ -37,7 +35,9 @@ class DefaultSource extends RelationProvider {
     parameters: Map[String, String]): BaseRelation = {
 
     /** We will assume hosts are provided like 'host:port,host2:port2,...'*/
-    val host = parameters.getOrElse(Host, notFound(Host)).split(",").toList
+    val host = parameters
+      .getOrElse(Host, notFound[String](Host))
+      .split(",").toList
 
     val database = parameters.getOrElse(Database, notFound(Database))
 
@@ -45,7 +45,7 @@ class DefaultSource extends RelationProvider {
 
     val samplingRatio = parameters
       .get(SamplingRatio)
-      .map(_.toDouble).getOrElse(1.0)
+      .map(_.toDouble).getOrElse(DefaultSamplingRatio)
 
     MongodbRelation(
       MongodbConfigBuilder()
