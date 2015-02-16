@@ -24,25 +24,33 @@ import org.apache.spark.sql.{SQLContext, SchemaRDD}
 
 /**
  * Created by rmorandeira on 28/01/15.
+ *
+ * MongoDB helpers for getting/saving data.
  */
 package object mongodb {
 
-  /**
-   * Adds a method, fromMongodb, to SQLContext that allows reading data stored in Mongodb.
-   */
   implicit class MongodbContext(sqlContext: SQLContext) {
+    /**
+     * It retrieves a bunch of MongoDB objects
+     * given a MongDB configuration object.
+     * @param config MongoDB configuration object
+     * @return A schemaRDD
+     */
     def fromMongoDB(config: DeepConfig): SchemaRDD = {
-      sqlContext.baseRelationToSchemaRDD(MongodbRelation(config, None)(sqlContext))
+      sqlContext.baseRelationToSchemaRDD(
+        MongodbRelation(config, None)(sqlContext))
     }
 
   }
 
-  /**
-   * Adds a method, fromMongodb, to schemaRDD that allows storing data in Mongodb.
-   */
   implicit class MongodbSchemaRDD(schemaRDD: SchemaRDD) extends Serializable {
 
-    def saveToMongodb(config: DeepConfig,batch: Boolean = true): Unit = {
+    /**
+     * It allows storing data in Mongodb from some existing SchemaRDD
+     * @param config MongoDB configuration object
+     * @param batch It indicates whether it has to be saved in batch mode or not.
+     */
+    def saveToMongodb(config: DeepConfig, batch: Boolean = true): Unit = {
       schemaRDD.foreachPartition(it => {
         val writer =
           if (batch) new MongodbBatchWriter(config)

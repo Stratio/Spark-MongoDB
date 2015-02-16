@@ -32,9 +32,11 @@ import org.bson.types.BasicBSONList
 import scala.collection.JavaConverters._
 
 /**
- * Created by rmorandeira on 29/01/15.
+ * A custom RDD schema for MongoDB.
+ * @param rdd RDD used to infer the schema
+ * @param samplingRatio Sampling ratio used to scan the RDD and extract
+ *                      used fields.
  */
-
 case class MongodbSchema(
   rdd: MongodbRDD,
   samplingRatio: Double) extends DeepSchemaProvider with Serializable {
@@ -75,6 +77,17 @@ case class MongodbSchema(
 
   }
 
+  /**
+   * It looks for the most compatible type between two given DataTypes.
+   * i.e.: {{{
+   *   val dataType1 = IntegerType
+   *   val dataType2 = DoubleType
+   *   assert(compatibleType(dataType1,dataType2)==DoubleType)
+   * }}}
+   * @param t1
+   * @param t2
+   * @return
+   */
   private def compatibleType(t1: DataType, t2: DataType): DataType = {
     HiveTypeCoercion.findTightestCommonType(t1, t2) match {
       case Some(commonType) => commonType

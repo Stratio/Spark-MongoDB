@@ -33,20 +33,29 @@ import com.stratio.deep.mongodb.MongodbConfig
  */
 abstract class MongodbWriter(config:DeepConfig) extends Serializable{
 
+  /**
+   * A MongoDB client is created for each writer.
+   */
   protected val mongoClient: MongoClient =
     MongoClient(config[List[String]](MongodbConfig.Host)
       .map(add => new ServerAddress(add)).toList)
 
+  /**
+   * A MongoDB collection created from the specified database and collection.
+   */
   protected val dbCollection: MongoCollection =
     mongoClient(config(MongodbConfig.Database))(config(MongodbConfig.Collection))
 
   /**
-   * Abstract method for storing a bunch of dbobjects
+   * Abstract method for storing a bunch of MongoDB objects.
    *
    * @param it Iterator of mongodb objects.
    */
   def save(it: Iterator[DBObject]): Unit
 
+  /**
+   * Close current MongoDB client.
+   */
   def close(): Unit = {
     mongoClient.close()
   }

@@ -25,6 +25,10 @@ import MongodbConfig._
 
 /**
  * Created by rmorandeira on 29/01/15.
+ *
+ * Allows creation of MongoDB based tables using
+ * the syntax CREATE TEMPORARY TABLE ... USING com.stratio.deep.mongodb.
+ * Required options are detailed in [[com.stratio.deep.mongodb.MongodbConfig]]
  */
 class DefaultSource extends RelationProvider {
 
