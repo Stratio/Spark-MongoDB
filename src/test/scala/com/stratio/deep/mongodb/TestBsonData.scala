@@ -33,6 +33,48 @@ trait TestBsonData {
           "null":null
       }""").asInstanceOf[DBObject] :: Nil
 
+  val primitiveFieldAndType5rows =
+    JSON.parse(
+      """{"string":"this is a simple string.",
+          "integer":10,
+          "long":21474836470,
+          "double":1.7976931348623157E308,
+          "boolean":true,
+          "null":null
+      }""").asInstanceOf[DBObject] ::
+      JSON.parse(
+        """{"string":"this is another simple string.",
+          "integer":11,
+          "long":21474836471,
+          "double":2.7976931348623157E308,
+          "boolean":false,
+          "null":null
+      }""").asInstanceOf[DBObject] ::
+      JSON.parse(
+        """{"string":"this is the third simple string.",
+          "integer":12,
+          "long":21474836472,
+          "double":3.7976931348623157E308,
+          "boolean":true,
+          "null":null
+      }""").asInstanceOf[DBObject] ::
+      JSON.parse(
+        """{"string":"this is the forth simple string.",
+          "integer":13,
+          "long":21474836473,
+          "double":4.7976931348623157E308,
+          "boolean":true,
+          "null":null
+      }""").asInstanceOf[DBObject] ::
+    JSON.parse(
+      """{"string":"this is the fifth simple string.",
+          "integer":14,
+          "long":21474836474,
+          "double":5.7976931348623157E308,
+          "boolean":false,
+          "null":null
+      }""").asInstanceOf[DBObject] :: Nil
+
   val primitiveFieldValueTypeConflict =
     JSON.parse(
       """{"num_num_1":11, "num_num_2":null, "num_num_3": 1.1,

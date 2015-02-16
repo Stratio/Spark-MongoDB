@@ -20,11 +20,17 @@
 
 package com.stratio.deep.mongodb.reader
 
-import com.mongodb.DBObject
+import com.mongodb.util.JSON
+import com.mongodb.{BasicDBObject, DBObject}
 import com.stratio.deep.mongodb.partitioner.MongodbPartition
-import com.stratio.deep.mongodb.{MongoEmbedDatabase, TestBsonData, MongodbConfig, MongodbConfigBuilder}
+import com.stratio.deep.mongodb._
 import com.stratio.deep.partitioner.DeepPartitionRange
+import org.apache.spark.sql.sources.Filter
+import org.apache.spark.sql.sources.EqualTo
+import org.apache.spark.sql.{SchemaRDD, SQLContext}
 import org.scalatest.{FlatSpec, Matchers}
+
+import scala.collection.mutable
 
 class MongodbReaderSpec extends FlatSpec
 with Matchers
@@ -86,5 +92,99 @@ with TestBsonData {
       posBefore should equal(!posAfter)
 
     }
+  }
+
+  it should "retrieve the data properly filtering & selecting some fields " +
+    "from a one row table" in {
+    withEmbedMongoFixture(primitiveFieldAndType) { mongodbProc =>
+      //Test data preparation
+      val requiredColumns = Array("string", "integer")
+      val filters = Array[Filter](EqualTo("boolean", true))
+      val mongodbReader =
+        new MongodbReader(testConfig, requiredColumns, filters)
+
+      mongodbReader.init(
+        MongodbPartition(0,
+          testConfig[Seq[String]](MongodbConfig.Host),
+          DeepPartitionRange[DBObject](None, None)))
+
+      //Data retrieving
+      var l = List[DBObject]()
+      while (mongodbReader.hasNext){
+        l = l :+ mongodbReader.next()
+      }
+
+      //Data validation
+      l.headOption.foreach{
+        case obj: BasicDBObject =>
+          obj.size() should equal(3)
+          obj.get("string") should equal(
+            primitiveFieldAndType.head.get("string"))
+          obj.get("integer") should equal(
+            primitiveFieldAndType.head.get("integer"))
+
+      }
+    }
+
+  }
+
+
+  it should "retrieve the data properly filtering & selecting some fields " +
+    "from a five rows table" in {
+    withEmbedMongoFixture(primitiveFieldAndType5rows) { mongodbProc =>
+
+      //Test data preparation
+      val requiredColumns = Array("string", "integer")
+      val filters = Array[Filter](EqualTo("boolean", true))
+      val mongodbReader =
+        new MongodbReader(testConfig, requiredColumns, filters)
+
+      mongodbReader.init(
+        MongodbPartition(0,
+          testConfig[Seq[String]](MongodbConfig.Host),
+          DeepPartitionRange[DBObject](None, None)))
+
+      val desiredData =
+        JSON.parse(
+          """{"string":"this is a simple string.",
+          "integer":10
+          }""").asInstanceOf[DBObject] ::
+          JSON.parse(
+            """{"string":"this is the third simple string.",
+          "integer":12
+          }""").asInstanceOf[DBObject] ::
+          JSON.parse(
+            """{"string":"this is the forth simple string.",
+          "integer":13
+          }""").asInstanceOf[DBObject] :: Nil
+
+      //Data retrieving
+      var l = List[BasicDBObject]()
+      while (mongodbReader.hasNext){
+        l = l :+ mongodbReader.next().asInstanceOf[BasicDBObject]
+      }
+
+      //Data validation
+
+      def pruneId(dbObject: BasicDBObject):BasicDBObject ={
+        import scala.collection.JavaConversions._
+        import scala.collection.JavaConverters._
+        new BasicDBObject(dbObject.toMap().asScala.filter{case (k,v) => k!="_id"})
+      }
+      val desiredL = l.map(pruneId)
+
+      l.size should equal(3)
+      desiredData.diff(desiredL) should equal (List())
+      l.headOption.foreach{
+        case obj: BasicDBObject =>
+          obj.size() should equal(3)
+          obj.get("string") should equal(
+            primitiveFieldAndType5rows.head.get("string"))
+          obj.get("integer") should equal(
+            primitiveFieldAndType5rows.head.get("integer"))
+
+      }
+    }
+
   }
 }

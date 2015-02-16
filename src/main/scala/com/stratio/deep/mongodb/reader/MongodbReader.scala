@@ -79,10 +79,10 @@ class MongodbReader(
       dbCursor = (for {
         client <- mongoClient
         collection <- Option(client(config(MongodbConfig.Database))(config(MongodbConfig.Collection)))
-        dbCursor <- Option(collection.find(queryPartition(partition, filters), selectFields(requiredColumns)))
+        dbCursor <- Option(collection.find(queryPartition(filters), selectFields(requiredColumns)))
       } yield {
         mongoPartition.partitionRange.minKey.foreach(min => dbCursor.addSpecial("$min", min))
-        mongoPartition.partitionRange.maxKey.foreach(min => dbCursor.addSpecial("$max", min))
+        mongoPartition.partitionRange.maxKey.foreach(max => dbCursor.addSpecial("$max", max))
         dbCursor
       }).headOption
 
@@ -94,12 +94,11 @@ class MongodbReader(
   /**
    * Create query partition using given filters.
    *
-   * @param partition the partition
+   * @param filters the Spark filters to be converted to Mongo filters
    * @return the dB object
    */
   private def queryPartition(
-    partition: Partition,
-    filters: Array[Filter]): DBObject = {
+        filters: Array[Filter]): DBObject = {
 
     val queryBuilder: QueryBuilder = QueryBuilder.start
 
