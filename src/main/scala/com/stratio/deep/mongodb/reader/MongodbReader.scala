@@ -127,7 +127,9 @@ class MongodbReader(
    * @return A mongodb object that represents required fields.
    */
   private def selectFields(fields: Array[String]): DBObject =
-    MongoDBObject(fields.toList.map(_ -> 1))
+    MongoDBObject(fields.toList.map(_ -> 1):::{
+      fields.find(_=="_id").map(_ -> 0).toList
+    })
 
 }
 
