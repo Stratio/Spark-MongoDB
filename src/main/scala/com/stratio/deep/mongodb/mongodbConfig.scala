@@ -57,6 +57,7 @@ object MongodbConfig {
   val SplitKey = "splitKey"
   val AllowSlaveReads = "allowSlaveReads"
   val Credentials = "credentials"
+  val PrimaryKey = "primaryKey"
 
   val all = List(
     Host,

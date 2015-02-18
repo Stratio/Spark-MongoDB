@@ -32,7 +32,10 @@ with TestBsonData {
   private val port: Int = 12345
   private val database: String = "testDb"
   private val collection: String = "testCol"
-  private val writeConcern : WriteConcern = WriteConcern.NORMAL
+  private val writeConcern: WriteConcern = WriteConcern.NORMAL
+  private val primaryKey: String = "att2"
+  private val wrongPrimaryKey: String = "non-existentColumn"
+
 
   val testConfig = MongodbConfigBuilder()
     .set(MongodbConfig.Host, List(host + ":" + port))
@@ -40,6 +43,24 @@ with TestBsonData {
     .set(MongodbConfig.Collection, collection)
     .set(MongodbConfig.SamplingRatio, 1.0)
     .set(MongodbConfig.WriteConcern, writeConcern)
+    .build()
+
+  val testConfigWithPk = MongodbConfigBuilder()
+    .set(MongodbConfig.Host, List(host + ":" + port))
+    .set(MongodbConfig.Database, database)
+    .set(MongodbConfig.Collection, collection)
+    .set(MongodbConfig.SamplingRatio, 1.0)
+    .set(MongodbConfig.WriteConcern, writeConcern)
+    .set(MongodbConfig.PrimaryKey, primaryKey)
+    .build()
+
+  val testConfigWithWrongPk = MongodbConfigBuilder()
+    .set(MongodbConfig.Host, List(host + ":" + port))
+    .set(MongodbConfig.Database, database)
+    .set(MongodbConfig.Collection, collection)
+    .set(MongodbConfig.SamplingRatio, 1.0)
+    .set(MongodbConfig.WriteConcern, writeConcern)
+    .set(MongodbConfig.PrimaryKey, wrongPrimaryKey)
     .build()
 
   val dbObject = JSON.parse(
@@ -61,7 +82,7 @@ with TestBsonData {
 
       val dbOIterator = List(dbObject).iterator
 
-      mongodbSimpleWriter.save(dbOIterator)
+      mongodbSimpleWriter.saveWithPk(dbOIterator)
 
       val mongodbClient = new MongoClient(host, port)
 
@@ -72,7 +93,6 @@ with TestBsonData {
       import scala.collection.JavaConversions._
 
       dbCursor.iterator().toList should equal(List(dbObject))
-
 
     }
   }
@@ -85,7 +105,7 @@ with TestBsonData {
 
       val dbOIterator = List(dbObject).iterator
 
-      mongodbBatchWriter.save(dbOIterator)
+      mongodbBatchWriter.saveWithPk(dbOIterator)
 
       val mongodbClient = new MongoClient(host, port)
 
@@ -97,7 +117,56 @@ with TestBsonData {
 
       dbCursor.iterator().toList should equal(List(dbObject))
 
+    }
+  }
 
+  it should "manage the primary key rightly, it has to read the same value " +
+    "from the primary key as from the _id column" in {
+    withEmbedMongoFixture(List()) { mongodbProc =>
+
+      val mongodbBatchWriter = new MongodbBatchWriter(testConfigWithPk)
+
+      val dbOIterator = List(dbObject).iterator
+
+      mongodbBatchWriter.saveWithPk(dbOIterator)
+
+      val mongodbClient = new MongoClient(host, port)
+
+      val dbCollection = mongodbClient.getDB(database).getCollection(collection)
+
+      val dbCursor = dbCollection.find()
+
+      import scala.collection.JavaConversions._
+
+      dbCursor.iterator().toList.forall { case obj: BasicDBObject =>
+        obj.get("_id") == obj.get("att2")
+
+      }
+    }
+  }
+
+  it should "manage the incorrect primary key, created in a column that" +
+    " doesn't exist, rightly" in {
+    withEmbedMongoFixture(List()) { mongodbProc =>
+
+      val mongodbBatchWriter = new MongodbBatchWriter(testConfigWithWrongPk)
+
+      val dbOIterator = List(dbObject).iterator
+
+      mongodbBatchWriter.saveWithPk(dbOIterator)
+
+      val mongodbClient = new MongoClient(host, port)
+
+      val dbCollection = mongodbClient.getDB(database).getCollection(collection)
+
+      val dbCursor = dbCollection.find()
+
+      import scala.collection.JavaConversions._
+
+      dbCursor.iterator().toList.forall { case obj: BasicDBObject =>
+        obj.get("_id") != obj.get("non-existentColumn")
+
+      }
     }
   }
 }

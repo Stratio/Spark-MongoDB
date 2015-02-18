@@ -57,7 +57,7 @@ class MongodbSchemaRDD(schemaRDD: SchemaRDD) extends Serializable {
       val writer =
         if (batch) new MongodbBatchWriter(config)
         else new MongodbSimpleWriter(config)
-      writer.save(it.map(row =>
+      writer.saveWithPk(it.map(row =>
         MongodbRowConverter.rowAsDBObject(row, schemaRDD.schema)))
       writer.close()
     })

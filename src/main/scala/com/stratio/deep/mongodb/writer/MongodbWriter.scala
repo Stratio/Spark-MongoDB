@@ -48,6 +48,22 @@ abstract class MongodbWriter(config: DeepConfig) extends Serializable {
     mongoClient(config(MongodbConfig.Database))(config(MongodbConfig.Collection))
 
   /**
+   * Abstract method that checks if a primary key exists in provided configuration
+   * and calls the 'save' method afterwards.
+   *
+   * @param it DBObject iterator.
+   */
+  def saveWithPk (it: Iterator[DBObject]): Unit = {
+    config.get[String](MongodbConfig.PrimaryKey).fold(
+      save(it)) { pk =>
+      save(it.map {
+        case obj: BasicDBObject =>
+          obj.append("_id", obj.get(pk))
+      })
+    }
+  }
+
+  /**
    * Abstract method for storing a bunch of MongoDB objects.
    *
    * @param it Iterator of mongodb objects.
