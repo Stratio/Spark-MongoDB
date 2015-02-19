@@ -1,5 +1,24 @@
+/*
+ *  Licensed to STRATIO (C) under one or more contributor license agreements.
+ *  See the NOTICE file distributed with this work for additional information
+ *  regarding copyright ownership. The STRATIO (C) licenses this file
+ *  to you under the Apache License, Version 2.0 (the
+ *  "License"); you may not use this file except in compliance
+ *  with the License. You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing,
+ *  software distributed under the License is distributed on an
+ *  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ *  KIND, either express or implied. See the License for the
+ *  specific language governing permissions and limitations
+ *  under the License.
+ */
+
 package com.stratio.deep.mongodb.schema
 
+import com.mongodb.casbah.Imports._
 import com.stratio.deep.mongodb.rdd.MongodbRDD
 import com.stratio.deep.schema.DeepSchemaProvider
 import org.apache.spark.SparkContext._
@@ -13,9 +32,11 @@ import org.bson.types.BasicBSONList
 import scala.collection.JavaConverters._
 
 /**
- * Created by rmorandeira on 29/01/15.
+ * A custom RDD schema for MongoDB.
+ * @param rdd RDD used to infer the schema
+ * @param samplingRatio Sampling ratio used to scan the RDD and extract
+ *                      used fields.
  */
-
 case class MongodbSchema(
   rdd: MongodbRDD,
   samplingRatio: Double) extends DeepSchemaProvider with Serializable {
@@ -27,7 +48,7 @@ case class MongodbSchema(
 
     val structFields = schemaData.flatMap {
       dbo => {
-        val doc: Map[String, AnyRef] = dbo.asInstanceOf[BasicBSONObject].asScala.toMap
+        val doc: Map[String, AnyRef] = dbo.seq.toMap
         val fields = doc.mapValues(f => convertToStruct(f))
         fields
       }
@@ -38,24 +59,35 @@ case class MongodbSchema(
   }
 
   private def convertToStruct(dataType: Any): DataType = dataType match {
-    case bl: BasicBSONList =>
-      typeOfArray(bl.asScala)
+    case bl: BasicDBList =>
+      typeOfArray(bl)
 
-    case bo: BasicBSONObject => {
-      val fields = bo.asScala.map {
+    case bo: DBObject => {
+      val fields = bo.map {
         case (k, v) =>
           StructField(k, convertToStruct(v))
       }.toSeq
       StructType(fields)
     }
 
-    case elem => {
+    case elem =>
       val elemType: PartialFunction[Any, DataType] =
         ScalaReflection.typeOfObject.orElse { case _ => StringType}
       elemType(elem)
-    }
+
   }
 
+  /**
+   * It looks for the most compatible type between two given DataTypes.
+   * i.e.: {{{
+   *   val dataType1 = IntegerType
+   *   val dataType2 = DoubleType
+   *   assert(compatibleType(dataType1,dataType2)==DoubleType)
+   * }}}
+   * @param t1
+   * @param t2
+   * @return
+   */
   private def compatibleType(t1: DataType, t2: DataType): DataType = {
     HiveTypeCoercion.findTightestCommonType(t1, t2) match {
       case Some(commonType) => commonType

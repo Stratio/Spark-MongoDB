@@ -1,11 +1,26 @@
-package com.stratio.deep.mongodb.schema
+/*
+ *  Licensed to STRATIO (C) under one or more contributor license agreements.
+ *  See the NOTICE file distributed with this work for additional information
+ *  regarding copyright ownership. The STRATIO (C) licenses this file
+ *  to you under the Apache License, Version 2.0 (the
+ *  "License"); you may not use this file except in compliance
+ *  with the License. You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing,
+ *  software distributed under the License is distributed on an
+ *  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ *  KIND, either express or implied. See the License for the
+ *  specific language governing permissions and limitations
+ *  under the License.
+ */
+
+package com.stratio.deep.mongodb
 
 import com.mongodb.DBObject
 import com.mongodb.util.JSON
 
-/**
- * Created by rmorandeira on 4/02/15.
- */
 trait TestBsonData {
 
   val primitiveFieldAndType =
@@ -15,6 +30,48 @@ trait TestBsonData {
           "long":21474836470,
           "double":1.7976931348623157E308,
           "boolean":true,
+          "null":null
+      }""").asInstanceOf[DBObject] :: Nil
+
+  val primitiveFieldAndType5rows =
+    JSON.parse(
+      """{"string":"this is a simple string.",
+          "integer":10,
+          "long":21474836470,
+          "double":1.7976931348623157E308,
+          "boolean":true,
+          "null":null
+      }""").asInstanceOf[DBObject] ::
+      JSON.parse(
+        """{"string":"this is another simple string.",
+          "integer":11,
+          "long":21474836471,
+          "double":2.7976931348623157E308,
+          "boolean":false,
+          "null":null
+      }""").asInstanceOf[DBObject] ::
+      JSON.parse(
+        """{"string":"this is the third simple string.",
+          "integer":12,
+          "long":21474836472,
+          "double":3.7976931348623157E308,
+          "boolean":true,
+          "null":null
+      }""").asInstanceOf[DBObject] ::
+      JSON.parse(
+        """{"string":"this is the forth simple string.",
+          "integer":13,
+          "long":21474836473,
+          "double":4.7976931348623157E308,
+          "boolean":true,
+          "null":null
+      }""").asInstanceOf[DBObject] ::
+    JSON.parse(
+      """{"string":"this is the fifth simple string.",
+          "integer":14,
+          "long":21474836474,
+          "double":5.7976931348623157E308,
+          "boolean":false,
           "null":null
       }""").asInstanceOf[DBObject] :: Nil
 

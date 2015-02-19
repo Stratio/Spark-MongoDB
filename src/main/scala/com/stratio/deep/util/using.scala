@@ -16,22 +16,32 @@
  *  under the License.
  */
 
-package com.stratio.deep.mongodb.writer
+package com.stratio.deep.util
 
-import com.mongodb.casbah.Imports._
-import com.stratio.deep.DeepConfig
-import com.stratio.deep.mongodb.MongodbConfig
+import scala.language.reflectiveCalls
+import scala.util.Try
 
 /**
- * A simple mongodb writer.
- *
- * @param config Configuration parameters (host,database,collection,...)
+ * DSL helper for enclosing some functionality into a closeable type.
+ * Helper will be responsible of closing the object.
+ * i.e.:{{{
+ *   import java.io._
+ *   val writer = new PrintWriter(new File("test.txt" ))
+ *   using(writer){ w =>
+ *    w.append("hi!")
+ *   }
+ * }}}
  */
-class MongodbSimpleWriter(
-  config: DeepConfig) extends MongodbWriter(config) {
+object using {
 
-  def save(it: Iterator[DBObject]): Unit =
-    it.foreach(dbo =>
-      dbCollection.save(dbo, config(MongodbConfig.WriteConcern)))
+  type AutoClosable = { def close(): Unit }
+
+  def apply[A <: AutoClosable, B](resource: A)(code: A => B): B =
+    try {
+      code(resource)
+    }
+    finally {
+      Try(resource.close())
+    }
 
 }

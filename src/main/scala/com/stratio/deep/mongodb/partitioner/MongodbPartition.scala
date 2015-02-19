@@ -16,22 +16,18 @@
  *  under the License.
  */
 
-package com.stratio.deep.mongodb.writer
+package com.stratio.deep.mongodb.partitioner
 
 import com.mongodb.casbah.Imports._
-import com.stratio.deep.DeepConfig
-import com.stratio.deep.mongodb.MongodbConfig
+import com.stratio.deep.partitioner.DeepPartitionRange
+import org.apache.spark.Partition
 
 /**
- * A simple mongodb writer.
- *
- * @param config Configuration parameters (host,database,collection,...)
+ * @param index Partition index
+ * @param hosts Hosts that hold partition data
+ * @param partitionRange Partition range
  */
-class MongodbSimpleWriter(
-  config: DeepConfig) extends MongodbWriter(config) {
-
-  def save(it: Iterator[DBObject]): Unit =
-    it.foreach(dbo =>
-      dbCollection.save(dbo, config(MongodbConfig.WriteConcern)))
-
-}
+case class MongodbPartition(
+  index: Int,
+  hosts: Seq[String],
+  partitionRange: DeepPartitionRange[DBObject]) extends Partition
