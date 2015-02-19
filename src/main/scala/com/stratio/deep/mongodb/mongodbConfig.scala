@@ -19,6 +19,7 @@
 package com.stratio.deep.mongodb
 
 import com.mongodb
+import com.mongodb.MongoCredential
 import com.stratio.deep.DeepConfig._
 import com.stratio.deep.DeepConfigBuilder
 import com.stratio.deep.mongodb.MongodbConfig._
@@ -29,18 +30,13 @@ import com.stratio.deep.mongodb.MongodbConfig._
  * A specialized deep configuration builder.
  * It focuses on mongodb config parameters
  * such as host,database,collection, samplingRatio (for schema infer)
- * @param properties Initial properties map
+ * @param props Initial properties map
  */
 case class MongodbConfigBuilder(
-  override val properties: Map[Property, Any] = Map(
-    //default values
-    SamplingRatio -> DefaultSamplingRatio,
-    WriteConcern -> DefaultWriteConcern,
-    SplitKey -> DefaultSplitKey,
-    SplitSize -> DefaultSplitSize,
-    AllowSlaveReads -> false
-
-  )) extends DeepConfigBuilder[MongodbConfigBuilder](properties) {
+  props: Map[Property, Any] = Defaults
+) extends {
+  override val properties = Defaults ++ props
+} with DeepConfigBuilder[MongodbConfigBuilder](properties) {
 
   val requiredProperties: List[Property] = MongodbConfig.all
 
@@ -60,8 +56,16 @@ object MongodbConfig {
   val SplitSize = "splitSize"
   val SplitKey = "splitKey"
   val AllowSlaveReads = "allowSlaveReads"
+  val Credentials = "credentials"
 
-  val all = List(Host, Database, Collection, SamplingRatio, WriteConcern, SplitKey, SplitSize)
+  val all = List(
+    Host,
+    Database,
+    Collection,
+    SamplingRatio,
+    WriteConcern,
+    SplitKey,
+    SplitSize)
 
   //  Default values
 
@@ -69,5 +73,15 @@ object MongodbConfig {
   val DefaultWriteConcern = mongodb.WriteConcern.ACKNOWLEDGED
   val DefaultSplitKey = "_id"
   val DefaultSplitSize = 10
+  val DefaultAllowSlaveReads = false
+  val DefaultCredentials = List[MongoCredential]()
+
+  val Defaults = Map(
+    SamplingRatio -> DefaultSamplingRatio,
+    WriteConcern -> DefaultWriteConcern,
+    SplitKey -> DefaultSplitKey,
+    SplitSize -> DefaultSplitSize,
+    AllowSlaveReads -> DefaultAllowSlaveReads,
+    Credentials -> DefaultCredentials)
 
 }

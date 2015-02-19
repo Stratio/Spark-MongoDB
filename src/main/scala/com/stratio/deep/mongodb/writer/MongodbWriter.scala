@@ -18,6 +18,7 @@
 
 package com.stratio.deep.mongodb.writer
 
+import com.mongodb.MongoCredential
 import com.mongodb.casbah.Imports._
 import com.stratio.deep.DeepConfig
 import com.stratio.deep.mongodb.MongodbConfig
@@ -29,14 +30,16 @@ import com.stratio.deep.mongodb.MongodbConfig
  *
  * @param config Configuration parameters (host,database,collection,...)
  */
-abstract class MongodbWriter(config:DeepConfig) extends Serializable{
+abstract class MongodbWriter(config: DeepConfig) extends Serializable {
 
   /**
    * A MongoDB client is created for each writer.
    */
   protected val mongoClient: MongoClient =
-    MongoClient(config[List[String]](MongodbConfig.Host)
-      .map(add => new ServerAddress(add)).toList)
+    MongoClient(
+      config[List[String]](MongodbConfig.Host)
+        .map(add => new ServerAddress(add)).toList,
+      config[List[MongoCredential]](MongodbConfig.Credentials))
 
   /**
    * A MongoDB collection created from the specified database and collection.

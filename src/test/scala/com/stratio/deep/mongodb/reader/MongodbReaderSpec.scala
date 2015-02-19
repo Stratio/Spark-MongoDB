@@ -98,7 +98,7 @@ with TestBsonData {
     "from a one row table" in {
     withEmbedMongoFixture(primitiveFieldAndType) { mongodbProc =>
       //Test data preparation
-      val requiredColumns = Array("string", "integer")
+      val requiredColumns = Array("_id","string", "integer")
       val filters = Array[Filter](EqualTo("boolean", true))
       val mongodbReader =
         new MongodbReader(testConfig, requiredColumns, filters)
@@ -134,7 +134,7 @@ with TestBsonData {
     withEmbedMongoFixture(primitiveFieldAndType5rows) { mongodbProc =>
 
       //Test data preparation
-      val requiredColumns = Array("string", "integer")
+      val requiredColumns = Array("_id","string", "integer")
       val filters = Array[Filter](EqualTo("boolean", true))
       val mongodbReader =
         new MongodbReader(testConfig, requiredColumns, filters)

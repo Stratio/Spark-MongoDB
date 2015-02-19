@@ -37,6 +37,9 @@ class MongodbPartitioner(
     config[List[String]](MongodbConfig.Host)
       .map(add => new ServerAddress(add)).toList
 
+  @transient private val credentials =
+    config[List[MongoCredential]](MongodbConfig.Credentials)
+
   private val databaseName: String = config(MongodbConfig.Database)
 
   private val collectionName: String = config(MongodbConfig.Collection)
@@ -53,7 +56,7 @@ class MongodbPartitioner(
    * @return Whether this is a sharded collection or not
    */
   protected def isShardedCollection: Boolean =
-    using(MongoClient(hosts)) { mongoClient =>
+    using(MongoClient(hosts,credentials)) { mongoClient =>
       mongoClient.readPreference = ReadPreference.Nearest
       val collection = mongoClient(databaseName)(collectionName)
       collection.stats.ok && collection.stats.getBoolean("sharded", false)
@@ -63,7 +66,7 @@ class MongodbPartitioner(
    * @return MongoDB partitions as sharded chunks.
    */
   protected def computeShardedChunkPartitions(): Array[MongodbPartition] =
-    using(MongoClient(hosts)) { mongoClient =>
+    using(MongoClient(hosts,credentials)) { mongoClient =>
       mongoClient.readPreference = ReadPreference.Nearest
 
       Try {
@@ -102,7 +105,7 @@ class MongodbPartitioner(
    * @return Array MongoDB not sharded partitions.
    */
   protected def computeNotShardedPartitions(): Array[MongodbPartition] =
-    using(MongoClient(hosts)) { mongoClient =>
+    using(MongoClient(hosts,credentials)) { mongoClient =>
       mongoClient.readPreference = ReadPreference.Nearest
       val ranges = splitRanges()
 
@@ -132,7 +135,7 @@ class MongodbPartitioner(
       "maxChunkSize" -> config(MongodbConfig.SplitSize)
     )
 
-    using(MongoClient(hosts)) { mongoClient =>
+    using(MongoClient(hosts,credentials)) { mongoClient =>
       mongoClient.readPreference = ReadPreference.Nearest
       Try {
         val data = mongoClient("admin").command(cmd)
@@ -164,7 +167,7 @@ class MongodbPartitioner(
    * @return Map of shards.
    */
   protected def describeShardsMap(): Map[String, Seq[String]] =
-    using(MongoClient(hosts)) { mongoClient =>
+    using(MongoClient(hosts,credentials)) { mongoClient =>
       mongoClient.readPreference = ReadPreference.Nearest
       val shardsCollection = mongoClient(ConfigDatabase)(ShardsCollection)
 

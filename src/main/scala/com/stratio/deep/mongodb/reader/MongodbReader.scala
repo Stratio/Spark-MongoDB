@@ -18,7 +18,7 @@
 
 package com.stratio.deep.mongodb.reader
 
-import com.mongodb.QueryBuilder
+import com.mongodb.{MongoCredential, QueryBuilder}
 import com.mongodb.casbah.Imports._
 import com.stratio.deep.DeepConfig
 import com.stratio.deep.mongodb.MongodbConfig
@@ -74,7 +74,7 @@ class MongodbReader(
 
       mongoClient = Option(MongoClient(
         mongoPartition.hosts.map(add => new ServerAddress(add)).toList,
-        List.empty[MongoCredential]))
+        config[List[MongoCredential]](MongodbConfig.Credentials)))
 
       dbCursor = (for {
         client <- mongoClient
@@ -98,7 +98,7 @@ class MongodbReader(
    * @return the dB object
    */
   private def queryPartition(
-        filters: Array[Filter]): DBObject = {
+    filters: Array[Filter]): DBObject = {
 
     val queryBuilder: QueryBuilder = QueryBuilder.start
 
@@ -127,9 +127,11 @@ class MongodbReader(
    * @return A mongodb object that represents required fields.
    */
   private def selectFields(fields: Array[String]): DBObject =
-    MongoDBObject(fields.toList.map(_ -> 1):::{
-      fields.find(_=="_id").map(_ -> 0).toList
-    })
+    MongoDBObject(
+      if (fields.isEmpty) List()
+      else fields.toList.filterNot(_ == "_id").map(_ -> 1) ::: {
+        List("_id" -> fields.find(_ == "_id").fold(0)(_ => 1))
+      })
 
 }
 
