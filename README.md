@@ -12,7 +12,7 @@ worlds opening to MongoDB the possibility of solving a wide range of new use cas
 
 ## Requirements
 
-This library requires Spark 1.2+, Scala 10.4+, casbah 2.8+
+This library requires Spark 1.3+, Scala 10.4+, casbah 2.8+
 
 ## Using the library
 
@@ -57,7 +57,7 @@ Spark context available as sc.
 
 ### Scala API
 
-To read a SchemaRDD from a Mongo collection, you can use the library by loading the implicits from `com.stratio.deep.mongodb._`.
+To read a DataFrame from a Mongo collection, you can use the library by loading the implicits from `com.stratio.deep.mongodb._`.
 
 ```
 scala> import com.mongodb.casbah.{WriteConcern => MongodbWriteConcern}
@@ -91,9 +91,9 @@ scala> mongoRDD.registerTempTable("students")
 scala> sqlContext.sql("SELECT name, enrolled FROM students")
 
 ```
-In the example we can see how to use the fromMongoDB() function to read from MongoDB and transform it to a SchemaRDD.
+In the example we can see how to use the fromMongoDB() function to read from MongoDB and transform it to a DataFrame.
 
-To save a SchemaRDD in MongoDB you should use the saveToMongodb() function as follows:
+To save a DataFrame in MongoDB you should use the saveToMongodb() function as follows:
 
 ```
 
@@ -103,7 +103,7 @@ scala> val sqlContext = new SQLContext(sc)
 scala> import sqlContext._
 
 scala> case class Student(name: String, age: Int)
-scala> val rdd: SchemaRDD = sc.parallelize(List(Student("Torcuato", 27), Student("Rosalinda", 34)))
+scala> val rdd: DataFrame = createDataFrame(sc.parallelize(List(Student("Torcuato", 27), Student("Rosalinda", 34))))
 
 scala> import com.mongodb.casbah.{WriteConcern => MongodbWriteConcern}
 scala> import com.stratio.deep.mongodb._

@@ -34,7 +34,7 @@ class MongodbContext(sqlContext: SQLContext) {
    * It retrieves a bunch of MongoDB objects
    * given a MongDB configuration object.
    * @param config MongoDB configuration object
-   * @return A schemaRDD
+   * @return A dataFrame
    */
   def fromMongoDB(config: DeepConfig): DataFrame =
     sqlContext.baseRelationToDataFrame(
@@ -43,9 +43,9 @@ class MongodbContext(sqlContext: SQLContext) {
 }
 
 /**
- * @param schemaRDD Spark SchemaRDD
+ * @param dataFrame Spark SchemaRDD
  */
-class MongodbSchemaRDD(schemaRDD: DataFrame) extends Serializable {
+class MongodbSchemaRDD(dataFrame: DataFrame) extends Serializable {
 
   /**
    * It allows storing data in Mongodb from some existing SchemaRDD
@@ -53,12 +53,12 @@ class MongodbSchemaRDD(schemaRDD: DataFrame) extends Serializable {
    * @param batch It indicates whether it has to be saved in batch mode or not.
    */
   def saveToMongodb(config: DeepConfig, batch: Boolean = true): Unit =
-    schemaRDD.foreachPartition(it => {
+    dataFrame.foreachPartition(it => {
       val writer =
         if (batch) new MongodbBatchWriter(config)
         else new MongodbSimpleWriter(config)
       writer.saveWithPk(it.map(row =>
-        MongodbRowConverter.rowAsDBObject(row, schemaRDD.schema)))
+        MongodbRowConverter.rowAsDBObject(row, dataFrame.schema)))
       writer.close()
     })
 
@@ -72,7 +72,7 @@ trait MongodbFunctions {
   implicit def toMongodbContext(sqlContext: SQLContext): MongodbContext =
     new MongodbContext(sqlContext)
 
-  implicit def toMongodbSchemaRDD(schemaRDD: DataFrame): MongodbSchemaRDD =
-    new MongodbSchemaRDD(schemaRDD)
+  implicit def toMongodbSchemaRDD(dataFrame: DataFrame): MongodbSchemaRDD =
+    new MongodbSchemaRDD(dataFrame)
 
 }
