@@ -27,10 +27,7 @@ import com.stratio.deep.mongodb._
 import com.stratio.deep.partitioner.DeepPartitionRange
 import org.apache.spark.sql.sources.Filter
 import org.apache.spark.sql.sources.EqualTo
-import org.apache.spark.sql.{SchemaRDD, SQLContext}
 import org.scalatest.{FlatSpec, Matchers}
-
-import scala.collection.mutable
 
 class MongodbReaderSpec extends FlatSpec
 with Matchers
@@ -87,7 +84,7 @@ with TestBsonData {
           testConfig[Seq[String]](MongodbConfig.Host),
           DeepPartitionRange[DBObject](None, None)))
       val posBefore = mongodbReader.hasNext
-      val dbObject2 = mongodbReader.next()
+      mongodbReader.next()
       val posAfter = mongodbReader.hasNext
       posBefore should equal(!posAfter)
 
@@ -169,7 +166,7 @@ with TestBsonData {
       def pruneId(dbObject: BasicDBObject):BasicDBObject ={
         import scala.collection.JavaConversions._
         import scala.collection.JavaConverters._
-        new BasicDBObject(dbObject.toMap().asScala.filter{case (k,v) => k!="_id"})
+        new BasicDBObject(dbObject.toMap.asScala.filter{case (k,v) => k!="_id"})
       }
       val desiredL = l.map(pruneId)
 

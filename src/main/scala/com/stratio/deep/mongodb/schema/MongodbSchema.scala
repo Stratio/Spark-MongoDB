@@ -21,15 +21,9 @@ package com.stratio.deep.mongodb.schema
 import com.mongodb.casbah.Imports._
 import com.stratio.deep.mongodb.rdd.MongodbRDD
 import com.stratio.deep.schema.DeepSchemaProvider
-import org.apache.spark.SparkContext._
 import org.apache.spark.sql.catalyst.ScalaReflection
 import org.apache.spark.sql.catalyst.analysis.HiveTypeCoercion
-import org.apache.spark.sql.catalyst.types._
-import org.apache.spark.sql.{ArrayType, DataType}
-import org.bson.BasicBSONObject
-import org.bson.types.BasicBSONList
-
-import scala.collection.JavaConverters._
+import org.apache.spark.sql.types._
 
 /**
  * A custom RDD schema for MongoDB.
@@ -62,13 +56,12 @@ case class MongodbSchema(
     case bl: BasicDBList =>
       typeOfArray(bl)
 
-    case bo: DBObject => {
+    case bo: DBObject =>
       val fields = bo.map {
         case (k, v) =>
           StructField(k, convertToStruct(v))
       }.toSeq
       StructType(fields)
-    }
 
     case elem =>
       val elemType: PartialFunction[Any, DataType] =
@@ -84,9 +77,9 @@ case class MongodbSchema(
    *   val dataType2 = DoubleType
    *   assert(compatibleType(dataType1,dataType2)==DoubleType)
    * }}}
-   * @param t1
-   * @param t2
-   * @return
+   * @param t1 First DataType to compare
+   * @param t2 Second DataType to compare
+   * @return Compatible type for both t1 and t2
    */
   private def compatibleType(t1: DataType, t2: DataType): DataType = {
     HiveTypeCoercion.findTightestCommonType(t1, t2) match {

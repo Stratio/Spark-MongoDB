@@ -19,7 +19,7 @@
 package com.stratio.deep.mongodb
 
 import com.mongodb.WriteConcern
-import org.apache.spark.sql.catalyst.types._
+import org.apache.spark.sql.types._
 import org.scalatest.{FlatSpec, Matchers}
 
 class MongodbRelationSpec extends FlatSpec
@@ -39,7 +39,7 @@ with Matchers {
     .set(MongodbConfig.WriteConcern, writeConcern)
     .build()
 
-  val schema = new StructType(List(new StructField(
+  val schema = new StructType(Array(new StructField(
     "att1",IntegerType,false),
     new StructField(
       "att2",DoubleType,false),
@@ -50,7 +50,7 @@ with Matchers {
     new StructField(
       "att5",new ArrayType(IntegerType,false),false),
     new StructField(
-      "att6",new StructType(List(
+      "att6",new StructType(Array(
         new StructField("att61",IntegerType ,false),
         new StructField("att62",IntegerType,true)
       )),false)))
@@ -60,18 +60,18 @@ with Matchers {
   it should "prune schema to adapt it to required columns" in {
 
     MongodbRelation.pruneSchema(schema,Array()) should equal(
-      new StructType(List()))
+      new StructType(Array()))
 
     MongodbRelation.pruneSchema(schema,Array("fakeAtt")) should equal(
-      new StructType(List()))
+      new StructType(Array()))
 
     MongodbRelation.pruneSchema(schema,Array("att1")) should equal(
-      new StructType(List(
+      new StructType(Array(
         new StructField(
           "att1",IntegerType,false))))
 
     MongodbRelation.pruneSchema(schema,Array("att3","att1")) should equal(
-      new StructType(List(
+      new StructType(Array(
         new StructField(
           "att3",StringType,false),
         new StructField(

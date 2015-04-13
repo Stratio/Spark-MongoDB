@@ -35,7 +35,7 @@ class MongodbPartitioner(
 
   @transient private val hosts: List[ServerAddress] =
     config[List[String]](MongodbConfig.Host)
-      .map(add => new ServerAddress(add)).toList
+      .map(add => new ServerAddress(add))
 
   @transient private val credentials =
     config[List[MongoCredential]](MongodbConfig.Credentials)
@@ -102,7 +102,7 @@ class MongodbPartitioner(
     }
 
   /**
-   * @return Array MongoDB not sharded partitions.
+   * @return Array of not-sharded MongoDB partitions.
    */
   protected def computeNotShardedPartitions(): Array[MongodbPartition] =
     using(MongoClient(hosts,credentials)) { mongoClient =>

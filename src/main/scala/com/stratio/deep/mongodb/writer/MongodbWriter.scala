@@ -38,7 +38,7 @@ abstract class MongodbWriter(config: DeepConfig) extends Serializable {
   protected val mongoClient: MongoClient =
     MongoClient(
       config[List[String]](MongodbConfig.Host)
-        .map(add => new ServerAddress(add)).toList,
+        .map(add => new ServerAddress(add)),
       config[List[MongoCredential]](MongodbConfig.Credentials))
 
   /**

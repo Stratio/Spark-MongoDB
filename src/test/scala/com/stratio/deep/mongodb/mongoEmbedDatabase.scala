@@ -29,7 +29,7 @@ import de.flapdoodle.embed.process.runtime.Network
 trait MongoEmbedDatabase {
   private val runtimeConfig = new RuntimeConfigBuilder()
     .defaults(Command.MongoD)
-    .processOutput(ProcessOutput.getDefaultInstanceSilent())
+    .processOutput(ProcessOutput.getDefaultInstanceSilent)
     .build()
 
   protected def mongoStart(port: Int = 12345,

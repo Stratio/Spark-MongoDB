@@ -21,7 +21,7 @@ package com.stratio.deep.mongodb
 import com.stratio.deep.DeepConfig
 import com.stratio.deep.mongodb.schema.MongodbRowConverter
 import com.stratio.deep.mongodb.writer.{MongodbBatchWriter, MongodbSimpleWriter}
-import org.apache.spark.sql.{SQLContext, SchemaRDD}
+import org.apache.spark.sql.{SQLContext, DataFrame}
 
 import scala.language.implicitConversions
 
@@ -36,8 +36,8 @@ class MongodbContext(sqlContext: SQLContext) {
    * @param config MongoDB configuration object
    * @return A schemaRDD
    */
-  def fromMongoDB(config: DeepConfig): SchemaRDD =
-    sqlContext.baseRelationToSchemaRDD(
+  def fromMongoDB(config: DeepConfig): DataFrame =
+    sqlContext.baseRelationToDataFrame(
       MongodbRelation(config, None)(sqlContext))
 
 }
@@ -45,7 +45,7 @@ class MongodbContext(sqlContext: SQLContext) {
 /**
  * @param schemaRDD Spark SchemaRDD
  */
-class MongodbSchemaRDD(schemaRDD: SchemaRDD) extends Serializable {
+class MongodbSchemaRDD(schemaRDD: DataFrame) extends Serializable {
 
   /**
    * It allows storing data in Mongodb from some existing SchemaRDD
@@ -72,7 +72,7 @@ trait MongodbFunctions {
   implicit def toMongodbContext(sqlContext: SQLContext): MongodbContext =
     new MongodbContext(sqlContext)
 
-  implicit def toMongodbSchemaRDD(schemaRDD: SchemaRDD): MongodbSchemaRDD =
+  implicit def toMongodbSchemaRDD(schemaRDD: DataFrame): MongodbSchemaRDD =
     new MongodbSchemaRDD(schemaRDD)
 
 }

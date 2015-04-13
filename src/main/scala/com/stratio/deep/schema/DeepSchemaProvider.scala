@@ -18,7 +18,7 @@
 
 package com.stratio.deep.schema
 
-import org.apache.spark.sql._
+import org.apache.spark.sql.types.StructType
 
 /**
  * Knows the way to provide some Data Source schema

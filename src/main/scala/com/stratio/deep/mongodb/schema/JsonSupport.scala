@@ -18,8 +18,7 @@
 
 package com.stratio.deep.mongodb.schema
 
-import org.apache.spark.sql.catalyst.types._
-import org.apache.spark.sql.catalyst.types.decimal.Decimal
+import org.apache.spark.sql.types._
 
 /**
  * Json - Scala object transformation support.

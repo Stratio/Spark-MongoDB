@@ -23,8 +23,9 @@ import com.stratio.deep.mongodb.partitioner.MongodbPartitioner
 import com.stratio.deep.mongodb.rdd.MongodbRDD
 import com.stratio.deep.mongodb.schema.{MongodbRowConverter, MongodbSchema}
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql._
-import org.apache.spark.sql.sources.{Filter, PrunedFilteredScan}
+import org.apache.spark.sql.{Row, SQLContext}
+import org.apache.spark.sql.sources.{BaseRelation, Filter, PrunedFilteredScan}
+import org.apache.spark.sql.types._
 
 /**
  * A MongoDB baseRelation that can eliminate unneeded columns
@@ -40,7 +41,8 @@ import org.apache.spark.sql.sources.{Filter, PrunedFilteredScan}
 case class MongodbRelation(
   config: DeepConfig,
   schemaProvided: Option[StructType] = None)(
-  @transient val sqlContext: SQLContext) extends PrunedFilteredScan {
+  @transient val sqlContext: SQLContext) extends BaseRelation
+with PrunedFilteredScan {
 
   import MongodbRelation._
 
@@ -60,8 +62,8 @@ case class MongodbRelation(
   override val schema: StructType = schemaProvided.getOrElse(lazySchema)
 
   override def buildScan(
-    requiredColumns : Array[String],
-    filters : Array[Filter]): RDD[Row] = {
+    requiredColumns: Array[String],
+    filters: Array[Filter]): RDD[Row] = {
 
     val rdd = new MongodbRDD(
       sqlContext,

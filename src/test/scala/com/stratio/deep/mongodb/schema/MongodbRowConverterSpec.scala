@@ -25,8 +25,8 @@ import com.stratio.deep.mongodb.rdd.MongodbRDD
 import com.stratio.deep.mongodb.schema.MongodbRowConverter._
 import com.stratio.deep.mongodb.{MongoEmbedDatabase, MongodbConfig, MongodbConfigBuilder, TestBsonData}
 import org.apache.spark.sql.catalyst.expressions.GenericRow
-import org.apache.spark.sql.catalyst.types.{StructType, _}
 import org.apache.spark.sql.test.TestSQLContext
+import org.apache.spark.sql.types._
 import org.scalatest.{FlatSpec, Matchers}
 
 import scala.collection.mutable.ArrayBuffer
@@ -62,12 +62,12 @@ with TestBsonData {
     new ArrayBuffer[Int]().+=(1).+=(2).+=(3) -> new StructField(
       "att5",new ArrayType(IntegerType,false),false),
     new GenericRow(List(1,null).toArray) -> new StructField(
-      "att6",new StructType(List(
+      "att6",new StructType(Array(
         new StructField("att61",IntegerType ,false),
         new StructField("att62",IntegerType,true)
       )),false))
 
-  val rowSchema = new StructType(valueWithType.map(_._2))
+  val rowSchema = new StructType(valueWithType.map(_._2).toArray)
 
   val row = new GenericRow(valueWithType.map(_._1).toArray)
 
