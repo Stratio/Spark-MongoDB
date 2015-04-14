@@ -45,22 +45,24 @@ class MongodbContext(sqlContext: SQLContext) {
 /**
  * @param dataFrame Spark SchemaRDD
  */
-class MongodbSchemaRDD(dataFrame: DataFrame) extends Serializable {
+class MongodbDataFrame(dataFrame: DataFrame) extends Serializable {
 
   /**
    * It allows storing data in Mongodb from some existing SchemaRDD
    * @param config MongoDB configuration object
    * @param batch It indicates whether it has to be saved in batch mode or not.
    */
-  def saveToMongodb(config: DeepConfig, batch: Boolean = true): Unit =
+  def saveToMongodb(config: DeepConfig, batch: Boolean = true): Unit = {
+    val schema = dataFrame.schema
     dataFrame.foreachPartition(it => {
       val writer =
         if (batch) new MongodbBatchWriter(config)
         else new MongodbSimpleWriter(config)
       writer.saveWithPk(it.map(row =>
-        MongodbRowConverter.rowAsDBObject(row, dataFrame.schema)))
+        MongodbRowConverter.rowAsDBObject(row, schema)))
       writer.close()
     })
+  }
 
 }
 
@@ -72,7 +74,7 @@ trait MongodbFunctions {
   implicit def toMongodbContext(sqlContext: SQLContext): MongodbContext =
     new MongodbContext(sqlContext)
 
-  implicit def toMongodbSchemaRDD(dataFrame: DataFrame): MongodbSchemaRDD =
-    new MongodbSchemaRDD(dataFrame)
+  implicit def toMongodbSchemaRDD(dataFrame: DataFrame): MongodbDataFrame =
+    new MongodbDataFrame(dataFrame)
 
 }

@@ -88,7 +88,7 @@ scala> val mongoRDD = sqlContext.fromMongoDB(readConfig)
 
 scala> mongoRDD.registerTempTable("students")
 
-scala> sqlContext.sql("SELECT name, enrolled FROM students")
+scala> sqlContext.sql("SELECT name, age FROM students")
 
 ```
 In the example we can see how to use the fromMongoDB() function to read from MongoDB and transform it to a DataFrame.
@@ -103,7 +103,7 @@ scala> val sqlContext = new SQLContext(sc)
 scala> import sqlContext._
 
 scala> case class Student(name: String, age: Int)
-scala> val rdd: DataFrame = createDataFrame(sc.parallelize(List(Student("Torcuato", 27), Student("Rosalinda", 34))))
+scala> val dataFrame: DataFrame = createDataFrame(sc.parallelize(List(Student("Torcuato", 27), Student("Rosalinda", 34))))
 
 scala> import com.mongodb.casbah.{WriteConcern => MongodbWriteConcern}
 scala> import com.stratio.deep.mongodb._
@@ -111,7 +111,7 @@ scala> import MongodbConfig._
 
 scala> val saveConfig = MongodbConfigBuilder(Map(Host -> List("host:port"), Database -> "highschool", Collection -> "students", SamplingRatio -> 1.0, WriteConcern -> MongodbWriteConcern.Normal, SplitSize -> 8, SplitKey -> "_id", SplitSize -> 8, SplitKey -> "_id"))
 
-scala> rdd.saveToMongodb(saveConfig.build)
+scala> dataFrame.saveToMongodb(saveConfig.build)
 
 ```
 
