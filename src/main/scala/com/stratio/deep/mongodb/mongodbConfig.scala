@@ -75,7 +75,7 @@ object MongodbConfig {
   val DefaultSplitKey = "_id"
   val DefaultSplitSize = 10
   val DefaultAllowSlaveReads = false
-  val DefaultCredentials = List[MongoCredential]()
+  val DefaultCredentials = List[MongodbCredentials]()
 
   val Defaults = Map(
     SamplingRatio -> DefaultSamplingRatio,

@@ -20,7 +20,7 @@ package com.stratio.deep.mongodb.partitioner
 
 import com.mongodb.casbah.Imports._
 import com.stratio.deep.DeepConfig
-import com.stratio.deep.mongodb.MongodbConfig
+import com.stratio.deep.mongodb.{MongodbCredentials, MongodbConfig}
 import com.stratio.deep.mongodb.partitioner.MongodbPartitioner._
 import com.stratio.deep.partitioner.{DeepPartitionRange, DeepPartitioner}
 import com.stratio.deep.util.using
@@ -37,8 +37,11 @@ class MongodbPartitioner(
     config[List[String]](MongodbConfig.Host)
       .map(add => new ServerAddress(add))
 
-  @transient private val credentials =
-    config[List[MongoCredential]](MongodbConfig.Credentials)
+  @transient private val credentials: List[MongoCredential] =
+    config[List[MongodbCredentials]](MongodbConfig.Credentials).map{
+      case MongodbCredentials(user,database,password) =>
+        MongoCredential.createCredential(user,database,password)
+    }
 
   private val databaseName: String = config(MongodbConfig.Database)
 
