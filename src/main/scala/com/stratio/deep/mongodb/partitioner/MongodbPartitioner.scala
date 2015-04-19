@@ -20,7 +20,7 @@ package com.stratio.deep.mongodb.partitioner
 
 import com.mongodb.casbah.Imports._
 import com.stratio.deep.DeepConfig
-import com.stratio.deep.mongodb.MongodbConfig
+import com.stratio.deep.mongodb.{MongodbCredentials, MongodbConfig}
 import com.stratio.deep.mongodb.partitioner.MongodbPartitioner._
 import com.stratio.deep.partitioner.{DeepPartitionRange, DeepPartitioner}
 import com.stratio.deep.util.using
@@ -37,8 +37,12 @@ class MongodbPartitioner(
     config[List[String]](MongodbConfig.Host)
       .map(add => new ServerAddress(add)).toList
 
-  @transient private val credentials =
-    config[List[MongoCredential]](MongodbConfig.Credentials)
+  @transient private val credentials: List[MongoCredential] =
+    config[List[MongodbCredentials]](MongodbConfig.Credentials).map {
+      case MongodbCredentials(user, database, password) =>
+        MongoCredential.createCredential(user, database, password)
+    }
+
 
   private val databaseName: String = config(MongodbConfig.Database)
 
@@ -56,7 +60,7 @@ class MongodbPartitioner(
    * @return Whether this is a sharded collection or not
    */
   protected def isShardedCollection: Boolean =
-    using(MongoClient(hosts,credentials)) { mongoClient =>
+    using(MongoClient(hosts, credentials)) { mongoClient =>
       mongoClient.readPreference = ReadPreference.Nearest
       val collection = mongoClient(databaseName)(collectionName)
       collection.stats.ok && collection.stats.getBoolean("sharded", false)
@@ -66,7 +70,7 @@ class MongodbPartitioner(
    * @return MongoDB partitions as sharded chunks.
    */
   protected def computeShardedChunkPartitions(): Array[MongodbPartition] =
-    using(MongoClient(hosts,credentials)) { mongoClient =>
+    using(MongoClient(hosts, credentials)) { mongoClient =>
       mongoClient.readPreference = ReadPreference.Nearest
 
       Try {
@@ -105,7 +109,7 @@ class MongodbPartitioner(
    * @return Array MongoDB not sharded partitions.
    */
   protected def computeNotShardedPartitions(): Array[MongodbPartition] =
-    using(MongoClient(hosts,credentials)) { mongoClient =>
+    using(MongoClient(hosts, credentials)) { mongoClient =>
       mongoClient.readPreference = ReadPreference.Nearest
       val ranges = splitRanges()
 
@@ -135,7 +139,7 @@ class MongodbPartitioner(
       "maxChunkSize" -> config(MongodbConfig.SplitSize)
     )
 
-    using(MongoClient(hosts,credentials)) { mongoClient =>
+    using(MongoClient(hosts, credentials)) { mongoClient =>
       mongoClient.readPreference = ReadPreference.Nearest
       Try {
         val data = mongoClient("admin").command(cmd)
@@ -167,7 +171,7 @@ class MongodbPartitioner(
    * @return Map of shards.
    */
   protected def describeShardsMap(): Map[String, Seq[String]] =
-    using(MongoClient(hosts,credentials)) { mongoClient =>
+    using(MongoClient(hosts, credentials)) { mongoClient =>
       mongoClient.readPreference = ReadPreference.Nearest
       val shardsCollection = mongoClient(ConfigDatabase)(ShardsCollection)
 
