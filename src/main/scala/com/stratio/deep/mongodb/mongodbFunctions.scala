@@ -21,6 +21,7 @@ package com.stratio.deep.mongodb
 import com.stratio.deep.DeepConfig
 import com.stratio.deep.mongodb.schema.MongodbRowConverter
 import com.stratio.deep.mongodb.writer.{MongodbBatchWriter, MongodbSimpleWriter}
+import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{SQLContext, DataFrame}
 
 import scala.language.implicitConversions
@@ -36,9 +37,9 @@ class MongodbContext(sqlContext: SQLContext) {
    * @param config MongoDB configuration object
    * @return A dataFrame
    */
-  def fromMongoDB(config: DeepConfig): DataFrame =
+  def fromMongoDB(config: DeepConfig,schema:Option[StructType]=None): DataFrame =
     sqlContext.baseRelationToDataFrame(
-      MongodbRelation(config, None)(sqlContext))
+      MongodbRelation(config, schema)(sqlContext))
 
 }
 
