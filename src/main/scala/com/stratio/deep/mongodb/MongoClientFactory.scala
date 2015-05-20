@@ -22,6 +22,27 @@ object MongoClientFactory {
     MongoClient(hostPort, credentials)
   }
 
+  def createClient(hostPort : List[ServerAddress], credentials : List[MongoCredential]) : Client = MongoClient(hostPort, credentials)
+
+  def createClient(hostPort : List[ServerAddress], credentials : List[MongoCredential], sslOptions: MongodbSSLOptions) : Client = {
+
+    if(sslOptions.keyStore.nonEmpty) {
+      System.setProperty("javax.net.ssl.keyStore", sslOptions.keyStore)
+      if (sslOptions.keyStorePassword.nonEmpty)
+        System.setProperty("javax.net.ssl.keyStorePassword", sslOptions.keyStorePassword)
+    }
+    if(sslOptions.trustStore.nonEmpty) {
+      System.setProperty("javax.net.ssl.trustStore", sslOptions.trustStore)
+      if (sslOptions.trustStorePassword.nonEmpty)
+        System.setProperty("javax.net.ssl.trustStorePassword", sslOptions.trustStorePassword)
+    }
+
+    val options = new MongoClientOptions.Builder().socketFactory(SSLSocketFactory.getDefault()).build()
+    MongoClient(hostPort, credentials, options)
+  }
+
+  /**************************************************************************************************************************************/
+
   def createClient(host : String, port : Int, keyStore: Option[String], keyStorePassword: Option[String], trustStore: Option[String], trustStorePassword: Option[String] ): Client={
 
     //sslOptions.map(option=> System.setProperty("javax.net.ssl."+option._1, option._2))
