@@ -20,7 +20,7 @@
 <modelVersion>4.0.0</modelVersion>
 <groupId>com.stratio</groupId>
 <artifactId>spark-mongodb</artifactId>
-<version>0.8.0</version>
+<version>0.8.1</version>
 <packaging>jar</packaging>
 <name>spark-mongodb</name>
 <description>A Spark SQl library for MongoDB</description>
