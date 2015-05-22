@@ -18,6 +18,7 @@
 
 package com.stratio.deep.mongodb
 
+import com.mongodb.MongoCredential
 import com.stratio.deep.DeepConfig._
 import org.apache.spark.sql.sources._
 import org.apache.spark.sql.SQLContext
@@ -46,13 +47,29 @@ class DefaultSource extends RelationProvider {
     val samplingRatio = parameters
       .get(SamplingRatio)
       .map(_.toDouble).getOrElse(DefaultSamplingRatio)
+/**¡¡¡¡¡¡¡¡¡¡¡¡REVISAR¡¡¡¡¡¡¡¡REVISAR¡¡¡¡¡¡¡¡¡¡¡¡REVISAR!!!!!!!!!!!!!REVISAR!!!!!!**/
+    /** We will assume credentials are provided like 'user,database,password;user,database,password;...'*/
+    val credentials = parameters
+      .getOrElse(Credentials, notFound(Credentials)).split(";").toList
+    .map{
+      case MongodbCredentials(user,database,password) =>
+        MongoCredential.createCredential(user,database,password)}
+    /** We will assume ssloptions are provided like 'keyStore,keyStorePassword,trustStore,trustStorePassword'*/
+    val ssloptions= parameters
+      .getOrElse(SSLOptions, notFound(SSLOptions)).map{
+      case MongodbSSLOptions(keyStore, keyStorePassword, trustStore, trustStorePassword) => MongodbSSLOptions
+    }
 
+/*******************************************************************************************************/
     MongodbRelation(
       MongodbConfigBuilder()
         .set(Host,host)
         .set(Database,database)
         .set(Collection,collection)
-        .set(SamplingRatio,samplingRatio).build())(sqlContext)
+        .set(SamplingRatio,samplingRatio)
+        .set(Credentials, credentials)
+        .set(SSLOptions, ssloptions)
+        .build())(sqlContext)
 
   }
 
