@@ -9,11 +9,12 @@ import com.mongodb.casbah.{MongoClient, MongoClientOptions}
 /**
  * Created by pmadrigal on 18/05/15.
  */
-object MongoClientFactory {
+object MongodbClientFactory {
 
   type Client = MongoClient
 
-  def createClient(host : String, port : Int) : Client = MongoClient(host, port)
+  // Used in MongodbPartitioner "Shard"
+  def createClient(host : String) : Client = MongoClient(host)
 
   def createClient(host : String, port : Int, user: String, database: String, password :String) : Client = {
 

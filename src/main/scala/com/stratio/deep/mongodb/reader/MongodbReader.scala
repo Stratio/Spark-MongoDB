@@ -21,8 +21,7 @@ package com.stratio.deep.mongodb.reader
 import com.mongodb.{MongoCredential, QueryBuilder}
 import com.mongodb.casbah.Imports._
 import com.stratio.deep.DeepConfig
-import com.stratio.deep.mongodb.MongoClientFactory
-import com.stratio.deep.mongodb.MongodbConfig
+import com.stratio.deep.mongodb.{MongodbCredentials, MongodbSSLOptions, MongodbClientFactory, MongodbConfig}
 import com.stratio.deep.mongodb.partitioner.MongodbPartition
 import org.apache.spark.Partition
 import org.apache.spark.sql.sources._
@@ -39,7 +38,7 @@ class MongodbReader(
   requiredColumns: Array[String],
   filters: Array[Filter]) {
 
-  private var mongoClient: Option[MongoClientFactory.Client] = None
+  private var mongoClient: Option[MongodbClientFactory.Client] = None
 
   private var dbCursor: Option[MongoCursor] = None
 
@@ -73,9 +72,12 @@ class MongodbReader(
     Try {
       val mongoPartition = partition.asInstanceOf[MongodbPartition]
 
-      mongoClient = Option(MongoClientFactory.createClient(
+      mongoClient = Option(MongodbClientFactory.createClient(
         mongoPartition.hosts.map(add => new ServerAddress(add)).toList,
-        config[List[MongoCredential]](MongodbConfig.Credentials)))
+        config[List[MongodbCredentials]](MongodbConfig.Credentials).map{
+          case MongodbCredentials(user,database,password) =>
+            MongoCredential.createCredential(user,database,password)},
+        config[MongodbSSLOptions](MongodbConfig.SSLOptions)))
 
       dbCursor = (for {
         client <- mongoClient

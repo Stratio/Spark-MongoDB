@@ -18,10 +18,10 @@
 
 package com.stratio.deep.mongodb.writer
 
-import com.mongodb.MongoCredential
+import com.mongodb.{ServerAddress, MongoCredential}
 import com.mongodb.casbah.Imports._
 import com.stratio.deep.DeepConfig
-import com.stratio.deep.mongodb.MongodbConfig
+import com.stratio.deep.mongodb.{MongodbSSLOptions, MongodbCredentials, MongodbClientFactory, MongodbConfig}
 
 /**
  * Abstract Mongodb writer.
@@ -35,11 +35,14 @@ abstract class MongodbWriter(config: DeepConfig) extends Serializable {
   /**
    * A MongoDB client is created for each writer.
    */
-  protected val mongoClient: MongoClient =
-    MongoClient(
+  protected val mongoClient: MongodbClientFactory.Client =
+    MongodbClientFactory.createClient(
       config[List[String]](MongodbConfig.Host)
         .map(add => new ServerAddress(add)),
-      config[List[MongoCredential]](MongodbConfig.Credentials))
+      config[List[MongodbCredentials]](MongodbConfig.Credentials).map{
+        case MongodbCredentials(user,database,password) =>
+          MongoCredential.createCredential(user,database,password)},
+      config[MongodbSSLOptions](MongodbConfig.SSLOptions))
 
   /**
    * A MongoDB collection created from the specified database and collection.

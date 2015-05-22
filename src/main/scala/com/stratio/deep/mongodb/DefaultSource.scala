@@ -31,8 +31,8 @@ import MongodbConfig._
 class DefaultSource extends RelationProvider {
 
   override def createRelation(
-    sqlContext: SQLContext,
-    parameters: Map[String, String]): BaseRelation = {
+                               sqlContext: SQLContext,
+                               parameters: Map[String, String]): BaseRelation = {
 
     /** We will assume hosts are provided like 'host:port,host2:port2,...'*/
     val host = parameters

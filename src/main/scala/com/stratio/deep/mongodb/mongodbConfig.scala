@@ -33,8 +33,8 @@ import com.stratio.deep.mongodb.MongodbConfig._
  * @param props Initial properties map
  */
 case class MongodbConfigBuilder(
-  props: Map[Property, Any] = Defaults
-) extends {
+                                 props: Map[Property, Any] = Defaults
+                                 ) extends {
   override val properties = Defaults ++ props
 } with DeepConfigBuilder[MongodbConfigBuilder](properties) {
 
@@ -58,6 +58,7 @@ object MongodbConfig {
   val AllowSlaveReads = "allowSlaveReads"
   val Credentials = "credentials"
   val PrimaryKey = "primaryKey"
+  val SSLOptions = "ssloptions"
 
   val all = List(
     Host,
@@ -76,6 +77,7 @@ object MongodbConfig {
   val DefaultSplitSize = 10
   val DefaultAllowSlaveReads = false
   val DefaultCredentials = List[MongodbCredentials]()
+  val DefaultSSLOptions = MongodbSSLOptions
 
   val Defaults = Map(
     SamplingRatio -> DefaultSamplingRatio,
@@ -83,6 +85,7 @@ object MongodbConfig {
     SplitKey -> DefaultSplitKey,
     SplitSize -> DefaultSplitSize,
     AllowSlaveReads -> DefaultAllowSlaveReads,
-    Credentials -> DefaultCredentials)
+    Credentials -> DefaultCredentials,
+    SSLOptions -> DefaultSSLOptions)
 
 }
