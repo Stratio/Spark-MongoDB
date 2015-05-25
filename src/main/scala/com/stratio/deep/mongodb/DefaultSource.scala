@@ -35,7 +35,7 @@ class DefaultSource extends RelationProvider {
                                sqlContext: SQLContext,
                                parameters: Map[String, String]): BaseRelation = {
 
-    /** We will assume hosts are provided like 'host:port,host2:port2,...'*/
+    /** We will assume hosts are provided like 'host:port,host2:port2,...' */
     val host = parameters
       .getOrElse(Host, notFound[String](Host))
       .split(",").toList
@@ -47,20 +47,17 @@ class DefaultSource extends RelationProvider {
     val samplingRatio = parameters
       .get(SamplingRatio)
       .map(_.toDouble).getOrElse(DefaultSamplingRatio)
-/**¡¡¡¡¡¡¡¡¡¡¡¡REVISAR¡¡¡¡¡¡¡¡REVISAR¡¡¡¡¡¡¡¡¡¡¡¡REVISAR!!!!!!!!!!!!!REVISAR!!!!!!**/
-    /** We will assume credentials are provided like 'user,database,password;user,database,password;...'*/
-    val credentials = parameters
-      .getOrElse(Credentials, notFound(Credentials)).split(";").toList
-    .map{
-      case MongodbCredentials(user,database,password) =>
-        MongoCredential.createCredential(user,database,password)}
-    /** We will assume ssloptions are provided like 'keyStore,keyStorePassword,trustStore,trustStorePassword'*/
-    val ssloptions= parameters
-      .getOrElse(SSLOptions, notFound(SSLOptions)).map{
-      case MongodbSSLOptions(keyStore, keyStorePassword, trustStore, trustStorePassword) => MongodbSSLOptions
-    }
 
-/*******************************************************************************************************/
+    /** We will assume credentials are provided like 'user,database,password;user,database,password;...' */
+    val credentials = parameters
+      .getOrElse(Credentials, notFound(Credentials)).split(";").map(credential => credential.split(","))
+      .map(credentials => MongoCredential.createCredential(credentials(0), credentials(1), credentials(2).toCharArray))
+
+    /** We will assume ssloptions are provided like 'keyStore,keyStorePassword,trustStore,trustStorePassword' */
+    val ssloption = parameters
+      .getOrElse(SSLOptions, notFound(SSLOptions)).split(",")
+    val ssloptions = MongodbSSLOptions(Some(ssloption(0)), Some(ssloption(1)), ssloption(2), Some(ssloption(3)))
+
     MongodbRelation(
       MongodbConfigBuilder()
         .set(Host,host)
