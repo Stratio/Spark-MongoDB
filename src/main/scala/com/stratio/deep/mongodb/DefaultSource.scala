@@ -48,24 +48,35 @@ class DefaultSource extends RelationProvider {
       .get(SamplingRatio)
       .map(_.toDouble).getOrElse(DefaultSamplingRatio)
 
-    /** We will assume credentials are provided like 'user,database,password;user,database,password;...' */
-    val credentials = parameters
-      .getOrElse(Credentials, notFound(Credentials)).split(";").map(credential => credential.split(","))
-      .map(credentials => MongoCredential.createCredential(credentials(0), credentials(1), credentials(2).toCharArray))
+    val properties :Map[String, Any] =
+      Map(Host -> host, Database -> database, Collection -> collection , SamplingRatio -> samplingRatio)
 
-    /** We will assume ssloptions are provided like 'keyStore,keyStorePassword,trustStore,trustStorePassword' */
-    val ssloption = parameters
-      .getOrElse(SSLOptions, notFound(SSLOptions)).split(",")
-    val ssloptions = MongodbSSLOptions(Some(ssloption(0)), Some(ssloption(1)), ssloption(2), Some(ssloption(3)))
+    val optionalProperties: List[String] = List(Credentials,SSLOptions)
+    val finalMap = (properties /: optionalProperties){    //TODO improve code
+      case (properties,Credentials) =>
+        /** We will assume credentials are provided like 'user,database,password;user,database,password;...' */
+        val credentialInput = parameters.getOrElse(Credentials, " ")
+        if(credentialInput.compareTo(" ")!=0){
+          val credentials= credentialInput
+            .split(";")
+            .map(credential => credential.split(",")).toList
+            .map(credentials => MongoCredential.createCredential(credentials(0), credentials(1), credentials(2).toCharArray))
+          properties.+(Credentials -> credentials)
+        } else properties
+      case (properties,SSLOptions) =>
+        /** We will assume ssloptions are provided like '/path/keystorefile,keystorepassword,/path/truststorefile,truststorepassword' */
+        val ssloptionInput = parameters.getOrElse(SSLOptions, " ")
+        if(ssloptionInput.compareTo(" ")!=0) {
+          val ssloption = ssloptionInput.split(",")
+          val ssloptions = MongodbSSLOptions(Some(ssloption(0)), Some(ssloption(1)), ssloption(2), Some(ssloption(3)))
+          properties.+(SSLOptions -> ssloptions)
+        }
+        else properties
+    }
 
     MongodbRelation(
       MongodbConfigBuilder()
-        .set(Host,host)
-        .set(Database,database)
-        .set(Collection,collection)
-        .set(SamplingRatio,samplingRatio)
-        .set(Credentials, credentials)
-        .set(SSLOptions, ssloptions)
+        .apply(finalMap)
         .build())(sqlContext)
 
   }

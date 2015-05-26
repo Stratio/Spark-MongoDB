@@ -24,21 +24,31 @@ object MongodbClientFactory {
 
   def createClient(hostPort : List[ServerAddress], credentials : List[MongoCredential]) : Client = MongoClient(hostPort, credentials)
 
-  def createClient(hostPort : List[ServerAddress], credentials : List[MongoCredential], sslOptions: MongodbSSLOptions) : Client = {
+  def createClient(
+    hostPort : List[ServerAddress],
+    credentials : List[MongoCredential],
+    optionSSLOptions: Option[MongodbSSLOptions]) : Client = {
 
-    if(sslOptions.keyStore.nonEmpty) {
-      System.setProperty("javax.net.ssl.keyStore", sslOptions.keyStore.get)
-      if (sslOptions.keyStorePassword.nonEmpty)
-        System.setProperty("javax.net.ssl.keyStorePassword", sslOptions.keyStorePassword.get)
-    }
-    if(sslOptions.trustStore.nonEmpty) {
-      System.setProperty("javax.net.ssl.trustStore", sslOptions.trustStore)
-      if (sslOptions.trustStorePassword.nonEmpty)
-        System.setProperty("javax.net.ssl.trustStorePassword", sslOptions.trustStorePassword.get)
+    optionSSLOptions match{
+      case Some(sslOptions) =>
+
+        if(sslOptions.keyStore.nonEmpty) {
+          System.setProperty("javax.net.ssl.keyStore", sslOptions.keyStore.get)
+          if (sslOptions.keyStorePassword.nonEmpty)
+            System.setProperty("javax.net.ssl.keyStorePassword", sslOptions.keyStorePassword.get)
+        }
+        if(sslOptions.trustStore.nonEmpty) {
+          System.setProperty("javax.net.ssl.trustStore", sslOptions.trustStore)
+          if (sslOptions.trustStorePassword.nonEmpty)
+            System.setProperty("javax.net.ssl.trustStorePassword", sslOptions.trustStorePassword.get)
+        }
+
+        val options = new MongoClientOptions.Builder().socketFactory(SSLSocketFactory.getDefault()).build()
+        MongoClient(hostPort, credentials, options)
+
+      case _ => MongoClient(hostPort, credentials)
     }
 
-    val options = new MongoClientOptions.Builder().socketFactory(SSLSocketFactory.getDefault()).build()
-    MongoClient(hostPort, credentials, options)
   }
 
 }

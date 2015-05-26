@@ -42,7 +42,7 @@ abstract class MongodbWriter(config: DeepConfig) extends Serializable {
       config[List[MongodbCredentials]](MongodbConfig.Credentials).map{
         case MongodbCredentials(user,database,password) =>
           MongoCredential.createCredential(user,database,password)},
-      config[MongodbSSLOptions](MongodbConfig.SSLOptions))
+      config.get[MongodbSSLOptions](MongodbConfig.SSLOptions))
 
   /**
    * A MongoDB collection created from the specified database and collection.

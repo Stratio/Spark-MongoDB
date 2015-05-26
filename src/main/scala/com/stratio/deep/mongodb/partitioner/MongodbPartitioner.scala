@@ -44,16 +44,9 @@ class MongodbPartitioner(
         MongoCredential.createCredential(user,database,password)
     }
 
-  @transient private val ssloptions: MongodbSSLOptions = config[MongodbSSLOptions](MongodbConfig.SSLOptions)
+  @transient private val ssloptions: Option[MongodbSSLOptions] =
+    config.get[MongodbSSLOptions](MongodbConfig.SSLOptions)
 
-/**
-  MongodbClientFactory.createClient(
-    mongoPartition.hosts.map(add => new ServerAddress(add)).toList,
-    config[List[MongodbCredentials]](MongodbConfig.Credentials).map{
-      case MongodbCredentials(user,database,password) =>
-        MongoCredential.createCredential(user,database,password)},
-    config[MongodbSSLOptions](MongodbConfig.SSLOptions))
-  */
   private val databaseName: String = config(MongodbConfig.Database)
 
   private val collectionName: String = config(MongodbConfig.Collection)
