@@ -134,7 +134,7 @@ If you want to use a SSL connection, you need to add some options to the previou
 
 #### Scala API 
 
-For both Scala examples you need to add this import, and add one option to the MongodbConfigBuilder:
+For both Scala examples you need to add this 'import', and add 'SSLOptions' to the MongodbConfigBuilder:
 
 ```
 scala> import com.stratio.deep.mongodb.MongodbSSLOptions._
@@ -150,8 +150,6 @@ In this case you only need to add SSL options when you create the temporary tabl
 sqlContext.sql("CREATE TEMPORARY TABLE students_table USING com.stratio.deep.mongodb OPTIONS (host 'host:port', database 'databaseName', collection 'collectionName', ssloptions '<path-to>/keyStoreFile.keystore,keyStorePassword,<path-to>/trustStoreFile.keystore,trustStorePassword')")
 
 ```
-
-Note: Only trustStoreFile is required.
 
 
 # License #
