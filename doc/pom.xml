@@ -19,19 +19,19 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
+    <groupId>com.stratio.spark-mongodb.doc</groupId>
+    <artifactId>spark-mongodb-doc</artifactId>
+    <name>Stratio Spark-MongoDB documentation</name>
+    <packaging>pom</packaging>
     <parent>
         <groupId>com.stratio</groupId>
-        <artifactId>spark-mongodb-parent</artifactId>
+        <artifactId>spark-mongodb</artifactId>
         <version>0.8.0</version>
     </parent>
     <properties>
         <jacoco.skip>true</jacoco.skip>
         <version>${project.version}</version>
     </properties>
-    <groupId>com.stratio.spark-mongodb.doc</groupId>
-    <artifactId>spark-mongodb-doc</artifactId>
-    <name>Stratio Spark-Mongodb documentation</name>
-    <packaging>pom</packaging>
     <build>
         <plugins>
             <plugin> 
