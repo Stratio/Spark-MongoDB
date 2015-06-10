@@ -132,7 +132,7 @@ In this case you only need to add SSL options when you create the temporary tabl
 
 
 License
-=======
+*******
 
 Licensed to STRATIO (C) under one or more contributor license agreements.
 See the NOTICE file distributed with this work for additional information
