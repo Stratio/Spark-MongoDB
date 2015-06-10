@@ -16,16 +16,16 @@ You can link against this library by putting the following lines in your program
 
 ::
 
-<groupId>com.stratio</groupId>
-<artifactId>spark-mongodb</artifactId>
-<version>LATEST</version>
+ <groupId>com.stratio</groupId>
+ <artifactId>spark-mongodb</artifactId>
+ <version>LATEST</version>
 
 There also exists the possibility of downloading the project by doing:
 
 ::
 
-git clone https://github.com/Stratio/spark-mongodb.git
-mvn clean install
+ git clone https://github.com/Stratio/spark-mongodb.git
+ mvn clean install
 
 In order to add the spark-mongodb jar file to Spark, you can use the --jars command line option.
 For example, to include it when starting the spark shell:
