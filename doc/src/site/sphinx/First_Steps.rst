@@ -131,7 +131,8 @@ In this case you only need to add SSL options when you create the temporary tabl
  sqlContext.sql("CREATE TEMPORARY TABLE students_table USING com.stratio.deep.mongodb OPTIONS (host 'host:port', database 'databaseName', collection 'collectionName', ssloptions '<path-to>/keyStoreFile.keystore,keyStorePassword,<path-to>/trustStoreFile.keystore,trustStorePassword')")
 
 
-# License #
+License
+=======
 
 Licensed to STRATIO (C) under one or more contributor license agreements.
 See the NOTICE file distributed with this work for additional information
