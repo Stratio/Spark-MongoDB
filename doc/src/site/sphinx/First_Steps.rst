@@ -23,6 +23,7 @@ You can link against this library by putting the following lines in your program
 There also exists the possibility of downloading the project by doing:
 
 ::
+
 git clone https://github.com/Stratio/spark-mongodb.git
 mvn clean install
 
@@ -30,6 +31,7 @@ In order to add the spark-mongodb jar file to Spark, you can use the --jars comm
 For example, to include it when starting the spark shell:
 
 ::
+
 $ bin/spark-shell --jars <path-to>/spark-mongodb-<version>.jar,<path-to>/casbah-commons_2.10-2.8.0.jar,<path-to>/casbah-core_2.10-2.8.0.jar,
 <path-to>/casbah-query_2.10-2.8.0.jar,<path-to>/mongo-java-driver-2.13.0.jar
 
