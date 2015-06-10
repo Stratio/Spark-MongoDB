@@ -5,7 +5,7 @@ We are going to introduce how to use our MongoDB provider for Apache Spark.
 
 Requirements
 ============
-This library requires Spark 1.3+, Scala 10.4+, casbah 2.8+
+This library requires Apache Spark 1.3+, Scala 10.4+, casbah 2.8+
 
 Using the library
 =================
