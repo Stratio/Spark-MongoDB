@@ -55,7 +55,7 @@ $ bin/spark-shell --jars <path-to>/spark-mongodb-<version>.jar,<path-to>/casbah-
 Scala API
 ---------
 
-To read a DataFrame from a Mongo collection, you can use the library by loading the implicits from `com.stratio.deep.mongodb._`.
+To read a DataFrame from a Mongo collection, you can use the library by loading the implicits from `com.stratio.provider.mongodb._`.
 
 ::
 
@@ -101,7 +101,7 @@ Mongo data can be queried from Python too:
 
  from pyspark.sql import SQLContext
  sqlContext = SQLContext(sc)
- sqlContext.sql("CREATE TEMPORARY TABLE students_table USING com.stratio.deep.mongodb OPTIONS (host 'host:port', database 'highschool', collection 'students')")
+ sqlContext.sql("CREATE TEMPORARY TABLE students_table USING com.stratio.provider.mongodb OPTIONS (host 'host:port', database 'highschool', collection 'students')")
  sqlContext.sql("SELECT * FROM students_table").collect()
 
 
@@ -127,7 +127,7 @@ In this case you only need to add SSL options when you create the temporary tabl
 
 ::
 
- sqlContext.sql("CREATE TEMPORARY TABLE students_table USING com.stratio.deep.mongodb OPTIONS (host 'host:port', database 'databaseName', collection 'collectionName', ssloptions '<path-to>/keyStoreFile.keystore,keyStorePassword,<path-to>/trustStoreFile.keystore,trustStorePassword')")
+ sqlContext.sql("CREATE TEMPORARY TABLE students_table USING com.stratio.provider.mongodb OPTIONS (host 'host:port', database 'databaseName', collection 'collectionName', ssloptions '<path-to>/keyStoreFile.keystore,keyStorePassword,<path-to>/trustStoreFile.keystore,trustStorePassword')")
 
 
 License
