@@ -38,20 +38,19 @@ For example, to include it when starting the spark shell:
 $ bin/spark-shell --jars <path-to>/spark-mongodb-<version>.jar,<path-to>/casbah-commons_2.10-2.8.0.jar,<path-to>/casbah-core_2.10-2.8.0.jar,
 <path-to>/casbah-query_2.10-2.8.0.jar,<path-to>/mongo-java-driver-2.13.0.jar
 
-Spark assembly has been built with Hive, including Datanucleus jars on classpath
 Welcome to
       ____              __
      / __/__  ___ _____/ /__
     _\ \/ _ \/ _ `/ __/  '_/
-   /___/ .__/\_,_/_/ /_/\_\   version 1.2.0
+   /___/ .__/\_,_/_/ /_/\_\   version 1.3.1
       /_/
 
-Using Scala version 2.10.4 (Java HotSpot(TM) 64-Bit Server VM, Java 1.7.0_76)
+Using Scala version 2.10.4 (OpenJDK 64-Bit Server VM, Java 1.7.0_79)
 Type in expressions to have them evaluated.
 Type :help for more information.
-15/02/11 13:21:56 Utils: Set SPARK_LOCAL_IP if you need to bind to another address
-15/02/11 13:21:56 NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
 Spark context available as sc.
+15/05/26 18:08:26 INFO SparkILoop: Created sql context (with Hive support)..
+SQL context available as sqlContext.
 
 ```
 
@@ -127,6 +126,28 @@ sqlContext = SQLContext(sc)
 sqlContext.sql("CREATE TEMPORARY TABLE students_table USING com.stratio.deep.mongodb OPTIONS (host 'host:port', database 'highschool', collection 'students')")
 
 sqlContext.sql("SELECT * FROM students_table").collect()
+
+```
+### SSL support
+
+If you want to use a SSL connection, you need to add some options to the previous examples:
+
+#### Scala API 
+
+For both Scala examples you need to add this 'import', and add 'SSLOptions' to the MongodbConfigBuilder:
+
+```
+scala> import com.stratio.deep.mongodb.MongodbSSLOptions._
+scala> val builder = MongodbConfigBuilder(Map(Host -> List("host:port"), Database -> "highschool", Collection -> "students", SamplingRatio -> 1.0, WriteConcern -> MongodbWriteConcern.Normal, SSLOptions -> MongodbSSLOptions("<path-to>/keyStoreFile.keystore","keyStorePassword","<path-to>/trustStoreFile.keystore","trustStorePassword")))
+
+```
+
+#### Python API 
+
+In this case you only need to add SSL options when you create the temporary table in the specified format below:
+
+```
+sqlContext.sql("CREATE TEMPORARY TABLE students_table USING com.stratio.deep.mongodb OPTIONS (host 'host:port', database 'databaseName', collection 'collectionName', ssloptions '<path-to>/keyStoreFile.keystore,keyStorePassword,<path-to>/trustStoreFile.keystore,trustStorePassword')")
 
 ```
 
