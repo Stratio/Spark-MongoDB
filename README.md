@@ -56,18 +56,18 @@ SQL context available as sqlContext.
 
 ### Scala API
 
-To read a DataFrame from a Mongo collection, you can use the library by loading the implicits from `com.stratio.deep.mongodb._`.
+To read a DataFrame from a Mongo collection, you can use the library by loading the implicits from `com.stratio.provider.mongodb._`.
 
 ```
 scala> import com.mongodb.casbah.{WriteConcern => MongodbWriteConcern}
 
-scala> import com.stratio.deep._
+scala> import com.stratio.provider._
 
-scala> import com.stratio.deep.mongodb._
+scala> import com.stratio.provider.mongodb._
 
-scala> import com.stratio.deep.mongodb.schema._
+scala> import com.stratio.provider.mongodb.schema._
 
-scala> import com.stratio.deep.mongodb.writer._
+scala> import com.stratio.provider.mongodb.writer._
 
 scala> import org.apache.spark.sql.SQLContext
 
@@ -75,11 +75,9 @@ scala> import DeepConfig._
 
 scala> import MongodbConfig._
 
-scala> val sqlContext: SQLContext = new SQLContext(sc)
-
 scala> val builder = MongodbConfigBuilder(Map(Host -> List("host:port"), Database -> "highschool", Collection -> "students", SamplingRatio -> 1.0, WriteConcern -> MongodbWriteConcern.Normal))
 
-builder: com.stratio.deep.mongodb.MongodbConfigBuilder = MongodbConfigBuilder(Map(database -> highschool, writeConcern -> WriteConcern { "getlasterror" : 1} / (Continue on error? false), schema_samplingRatio -> 1.0, collection -> students, host -> List(host:port)))
+builder: com.stratio.provider.mongodb.MongodbConfigBuilder = MongodbConfigBuilder(Map(database -> highschool, writeConcern -> WriteConcern { "getlasterror" : 1} / (Continue on error? false), schema_samplingRatio -> 1.0, collection -> students, host -> List(host:port)))
 
 scala> val readConfig = builder.build()
 
@@ -105,7 +103,7 @@ scala> case class Student(name: String, age: Int)
 scala> val dataFrame: DataFrame = createDataFrame(sc.parallelize(List(Student("Torcuato", 27), Student("Rosalinda", 34))))
 
 scala> import com.mongodb.casbah.{WriteConcern => MongodbWriteConcern}
-scala> import com.stratio.deep.mongodb._
+scala> import com.stratio.provider.mongodb._
 scala> import MongodbConfig._
 
 scala> val saveConfig = MongodbConfigBuilder(Map(Host -> List("host:port"), Database -> "highschool", Collection -> "students", SamplingRatio -> 1.0, WriteConcern -> MongodbWriteConcern.Normal, SplitSize -> 8, SplitKey -> "_id", SplitSize -> 8, SplitKey -> "_id"))
@@ -123,7 +121,7 @@ from pyspark.sql import SQLContext
 
 sqlContext = SQLContext(sc)
 
-sqlContext.sql("CREATE TEMPORARY TABLE students_table USING com.stratio.deep.mongodb OPTIONS (host 'host:port', database 'highschool', collection 'students')")
+sqlContext.sql("CREATE TEMPORARY TABLE students_table USING com.stratio.provider.mongodb OPTIONS (host 'host:port', database 'highschool', collection 'students')")
 
 sqlContext.sql("SELECT * FROM students_table").collect()
 
@@ -137,7 +135,7 @@ If you want to use a SSL connection, you need to add some options to the previou
 For both Scala examples you need to add this 'import', and add 'SSLOptions' to the MongodbConfigBuilder:
 
 ```
-scala> import com.stratio.deep.mongodb.MongodbSSLOptions._
+scala> import com.stratio.provider.mongodb.MongodbSSLOptions._
 scala> val builder = MongodbConfigBuilder(Map(Host -> List("host:port"), Database -> "highschool", Collection -> "students", SamplingRatio -> 1.0, WriteConcern -> MongodbWriteConcern.Normal, SSLOptions -> MongodbSSLOptions("<path-to>/keyStoreFile.keystore","keyStorePassword","<path-to>/trustStoreFile.keystore","trustStorePassword")))
 
 ```
@@ -147,7 +145,7 @@ scala> val builder = MongodbConfigBuilder(Map(Host -> List("host:port"), Databas
 In this case you only need to add SSL options when you create the temporary table in the specified format below:
 
 ```
-sqlContext.sql("CREATE TEMPORARY TABLE students_table USING com.stratio.deep.mongodb OPTIONS (host 'host:port', database 'databaseName', collection 'collectionName', ssloptions '<path-to>/keyStoreFile.keystore,keyStorePassword,<path-to>/trustStoreFile.keystore,trustStorePassword')")
+sqlContext.sql("CREATE TEMPORARY TABLE students_table USING com.stratio.provider.mongodb OPTIONS (host 'host:port', database 'databaseName', collection 'collectionName', ssloptions '<path-to>/keyStoreFile.keystore,keyStorePassword,<path-to>/trustStoreFile.keystore,trustStorePassword')")
 
 ```
 
