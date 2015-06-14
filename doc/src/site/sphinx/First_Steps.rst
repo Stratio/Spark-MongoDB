@@ -60,14 +60,13 @@ To read a DataFrame from a Mongo collection, you can use the library by loading 
 ::
 
  scala> import com.mongodb.casbah.{WriteConcern => MongodbWriteConcern}
- scala> import com.stratio.deep._
- scala> import com.stratio.deep.mongodb._
- scala> import com.stratio.deep.mongodb.schema._
- scala> import com.stratio.deep.mongodb.writer._
+ scala> import com.stratio.provider._
+ scala> import com.stratio.provider.mongodb._
+ scala> import com.stratio.provider.mongodb.schema._
+ scala> import com.stratio.provider.mongodb.writer._
  scala> import org.apache.spark.sql.SQLContext
  scala> import DeepConfig._
  scala> import MongodbConfig._
- scala> val sqlContext: SQLContext = new SQLContext(sc)
  scala> val builder = MongodbConfigBuilder(Map(Host -> List("host:port"), Database -> "highschool", Collection -> "students", SamplingRatio -> 1.0, WriteConcern -> MongodbWriteConcern.Normal))
  scala> val readConfig = builder.build()
  scala> val mongoRDD = sqlContext.fromMongoDB(readConfig)
@@ -87,7 +86,7 @@ To save a DataFrame in MongoDB you should use the saveToMongodb() function as fo
  scala> case class Student(name: String, age: Int)
  scala> val dataFrame: DataFrame = createDataFrame(sc.parallelize(List(Student("Torcuato", 27), Student("Rosalinda", 34))))
  scala> import com.mongodb.casbah.{WriteConcern => MongodbWriteConcern}
- scala> import com.stratio.deep.mongodb._
+ scala> import com.stratio.provider.mongodb._
  scala> import MongodbConfig._
  scala> val saveConfig = MongodbConfigBuilder(Map(Host -> List("host:port"), Database -> "highschool", Collection -> "students", SamplingRatio -> 1.0, WriteConcern -> MongodbWriteConcern.Normal, SplitSize -> 8, SplitKey -> "_id", SplitSize -> 8, SplitKey -> "_id"))
  scala> dataFrame.saveToMongodb(saveConfig.build)
@@ -118,7 +117,7 @@ For both Scala examples you need to add this 'import', and add 'SSLOptions' to t
 
 ::
 
- scala> import com.stratio.deep.mongodb.MongodbSSLOptions._
+ scala> import com.stratio.provider.mongodb.MongodbSSLOptions._
  scala> val builder = MongodbConfigBuilder(Map(Host -> List("host:port"), Database -> "highschool", Collection -> "students", SamplingRatio -> 1.0, WriteConcern -> MongodbWriteConcern.Normal, SSLOptions -> MongodbSSLOptions("<path-to>/keyStoreFile.keystore","keyStorePassword","<path-to>/trustStoreFile.keystore","trustStorePassword")))
 
 
