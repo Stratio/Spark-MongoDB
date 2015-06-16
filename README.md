@@ -35,7 +35,7 @@ In order to add the spark-mongodb jar file to Spark, you can use the --jars comm
 For example, to include it when starting the spark shell:
 
 ```
-$ bin/spark-shell --jars <path-to>/spark-mongodb-<version>.jar,<path-to>/casbah-commons_2.10-2.8.0.jar,<path-to>/casbah-core_2.10-2.8.0.jar,
+$ bin/spark-shell --jars <path-to>/spark-mongodb-core-<version>.jar,<path-to>/casbah-commons_2.10-2.8.0.jar,<path-to>/casbah-core_2.10-2.8.0.jar,
 <path-to>/casbah-query_2.10-2.8.0.jar,<path-to>/mongo-java-driver-2.13.0.jar
 
 Welcome to
