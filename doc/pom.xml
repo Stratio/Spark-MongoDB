@@ -26,7 +26,7 @@
     <parent>
         <groupId>com.stratio</groupId>
         <artifactId>spark-mongodb</artifactId>
-        <version>0.8.2</version>
+        <version>0.8.3</version>
     </parent>
     <properties>
         <jacoco.skip>true</jacoco.skip>
