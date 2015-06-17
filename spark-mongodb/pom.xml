@@ -431,6 +431,7 @@
                                         <group>stratio</group>
                                     </attributes>
                                 </mkdirs>
+
                                 <copyFile>
                                     <path>src/main/include/LICENSE</path>
                                     <toFile>/opt/sds/spark-mongodb/LICENSE</toFile>
