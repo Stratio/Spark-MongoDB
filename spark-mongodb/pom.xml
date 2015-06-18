@@ -440,6 +440,10 @@
                                     <path>src/main/include/NOTICE</path>
                                     <toFile>/opt/sds/spark-mongodb/NOTICE</toFile>
                                 </copyFile>
+                                <copyFile>
+                                    <path>target/spark-mongodb-core-0.8.3.jar</path>
+                                    <toFile>/opt/sds/spark/lib/mongodb/spark-mongodb-core-0.8.3.jar</toFile>
+                                </copyFile>
                             </assembly>
                             <defaults>
                                 <directoryAttributes>
