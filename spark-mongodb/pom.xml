@@ -29,7 +29,7 @@
     <parent>
         <groupId>com.stratio</groupId>
         <artifactId>spark-mongodb</artifactId>
-        <version>0.8.4</version>
+        <version>0.8.5-SNAPSHOT</version>
     </parent>
     <properties>
         <java.version>1.7.0</java.version>
@@ -452,8 +452,8 @@
                                     <toFile>/opt/sds/spark/lib/mongodb/mongo-java-driver-2.13.0.jar</toFile>
                                 </copyFile>
                                 <copyFile>
-                                    <path>target/spark-mongodb-core-0.8.4.jar</path>
-                                    <toFile>/opt/sds/spark/lib/mongodb/spark-mongodb-core-0.8.4.jar</toFile>
+                                    <path>target/spark-mongodb-core-0.8.5-SNAPSHOT.jar</path>
+                                    <toFile>/opt/sds/spark/lib/mongodb/spark-mongodb-core-0.8.5-SNAPSHOT.jar</toFile>
                                 </copyFile>
                             </assembly>
                             <defaults>
