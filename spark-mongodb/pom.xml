@@ -20,16 +20,16 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.stratio</groupId>
     <artifactId>spark-mongodb-core</artifactId>
-    <version>0.8.3</version>
-    <packaging>jar</packaging>
     <name>spark-mongodb core</name>
     <description>A Spark SQl library for MongoDB</description>
     <url>http://github.com/Stratio/spark-mongodb</url>
+    <packaging>jar</packaging>
+
 
     <parent>
         <groupId>com.stratio</groupId>
         <artifactId>spark-mongodb</artifactId>
-        <version>0.8.3</version>
+        <version>0.8.4</version>
     </parent>
     <properties>
         <java.version>1.7.0</java.version>
@@ -51,7 +51,6 @@
                 <role>contributor</role>
             </roles>
         </developer>
-
 
         <developer>
             <id>jsantos</id>
@@ -380,4 +379,117 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>package</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.stratio.mojo.unix</groupId>
+                        <artifactId>unix-maven-plugin</artifactId>
+                        <version>1.1.6</version>
+                        <extensions>true</extensions>
+                        <inherited>false</inherited>
+                        <configuration>
+                            <outputFileName>stratio-spark-mongodb</outputFileName>
+                            <contact><![CDATA[Stratio <jmgomez@stratio.com>]]></contact>
+                            <contactEmail>jmgomez@stratio.com</contactEmail>
+                            <deb>
+                                <section>devel</section>
+                            </deb>
+                            <rpm>
+                                <group>stratio</group>
+                            </rpm>
+                            <name>spark-mongodb</name>
+                            <excludeDirectoryAttributes>
+                                <dir>/etc</dir>
+                                <dir>/etc/init.d</dir>
+                                <dir>/etc/default</dir>
+                                <dir>/var</dir>
+                                <dir>/opt</dir>
+                                <dir>/usr</dir>
+                                <dir>/bin</dir>
+                            </excludeDirectoryAttributes>
+                            <assembly>
+                                <mkdirs>
+                                    <path>/opt/sds/spark/lib/mongodb</path>
+                                    <attributes>
+                                        <user>stratio</user>
+                                        <group>stratio</group>
+                                    </attributes>
+                                </mkdirs>
+                                <mkdirs>
+                                    <path>/opt/sds/spark-mongodb</path>
+                                    <attributes>
+                                        <user>stratio</user>
+                                        <group>stratio</group>
+                                    </attributes>
+                                </mkdirs>
+
+                                <copyFile>
+                                    <path>src/main/include/LICENSE</path>
+                                    <toFile>/opt/sds/spark-mongodb/LICENSE</toFile>
+                                </copyFile>
+                                <copyFile>
+                                    <path>src/main/include/NOTICE</path>
+                                    <toFile>/opt/sds/spark-mongodb/NOTICE</toFile>
+                                </copyFile>
+                                <copyFile>
+                                    <path>target/alternateLocation/casbah-commons_${scala.binary.version}-${casbah.version}.jar</path>
+                                    <toFile>/opt/sds/spark/lib/mongodb/casbah-commons_${scala.binary.version}-${casbah.version}.jar</toFile>
+                                </copyFile>
+                                <copyFile>
+                                    <path>target/alternateLocation/casbah-core_${scala.binary.version}-${casbah.version}.jar</path>
+                                    <toFile>/opt/sds/spark/lib/mongodb/casbah-core_${scala.binary.version}-${casbah.version}.jar</toFile>
+                                </copyFile>
+                                <copyFile>
+                                    <path>target/alternateLocation/casbah-query_${scala.binary.version}-${casbah.version}.jar</path>
+                                    <toFile>/opt/sds/spark/lib/mongodb/casbah-query_${scala.binary.version}-${casbah.version}.jar</toFile>
+                                </copyFile>
+                                <copyFile>
+                                    <path>target/alternateLocation/mongo-java-driver-2.13.0.jar</path>
+                                    <toFile>/opt/sds/spark/lib/mongodb/mongo-java-driver-2.13.0.jar</toFile>
+                                </copyFile>
+                                <copyFile>
+                                    <path>target/spark-mongodb-core-0.8.4.jar</path>
+                                    <toFile>/opt/sds/spark/lib/mongodb/spark-mongodb-core-0.8.4.jar</toFile>
+                                </copyFile>
+                            </assembly>
+                            <defaults>
+                                <directoryAttributes>
+                                    <mode>0755</mode>
+                                </directoryAttributes>
+                                <fileAttributes>
+                                    <mode>0644</mode>
+                                </fileAttributes>
+                            </defaults>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>deb</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>package-deb</goal>
+                                </goals>
+                                <configuration>
+                                    <architecture>all</architecture>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>rpm</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>package-rpm</goal>
+                                </goals>
+                                <configuration>
+                                    <architecture>noarch</architecture>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>
