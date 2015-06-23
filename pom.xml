@@ -27,17 +27,6 @@
     <description>A Spark SQl library for MongoDB</description>
     <url>http://github.com/Stratio/spark-mongodb</url>
 
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <java.version>1.7.0</java.version>
-        <scala.version>2.10.4</scala.version>
-        <scala.test.version>2.2.1</scala.test.version>
-        <scala.binary.version>2.10</scala.binary.version>
-        <scala.mock.version>3.2.1</scala.mock.version>
-        <spark.version>1.4.0</spark.version>
-        <casbah.version>2.8.0</casbah.version>
-    </properties>
-
     <parent>
         <groupId>com.stratio</groupId>
         <artifactId>parent</artifactId>
