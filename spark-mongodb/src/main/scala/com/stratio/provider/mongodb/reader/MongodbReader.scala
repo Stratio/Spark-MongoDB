@@ -101,7 +101,7 @@ class MongodbReader(
    * @param filters the Spark filters to be converted to Mongo filters
    * @return the dB object
    */
-  def queryPartition(//private
+  private def queryPartition(
     filters: Array[Filter]): DBObject = {
 
     val queryBuilder: QueryBuilder = QueryBuilder.start
