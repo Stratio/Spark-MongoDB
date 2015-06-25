@@ -25,6 +25,7 @@ import com.stratio.provider.mongodb.{MongodbCredentials, MongodbSSLOptions, Mong
 import com.stratio.provider.mongodb.partitioner.MongodbPartition
 import org.apache.spark.Partition
 import org.apache.spark.sql.sources._
+import org.apache.spark.sql.types.UTF8String
 import scala.util.Try
 
 /**
@@ -100,27 +101,34 @@ class MongodbReader(
    * @param filters the Spark filters to be converted to Mongo filters
    * @return the dB object
    */
-  private def queryPartition(
+  def queryPartition(//private
     filters: Array[Filter]): DBObject = {
 
     val queryBuilder: QueryBuilder = QueryBuilder.start
 
     filters.foreach {
       case EqualTo(attribute, value) =>
-        queryBuilder.put(attribute).is(value)
+        queryBuilder.put(attribute).is(convertToStandardType(value))
       case GreaterThan(attribute, value) =>
-        queryBuilder.put(attribute).greaterThan(value)
+        queryBuilder.put(attribute).greaterThan(convertToStandardType(value))
       case GreaterThanOrEqual(attribute, value) =>
-        queryBuilder.put(attribute).greaterThanEquals(value)
+        queryBuilder.put(attribute).greaterThanEquals(convertToStandardType(value))
       case In(attribute, values) =>
-        queryBuilder.put(attribute).in(values)
+        queryBuilder.put(attribute).in(values.map(convertToStandardType))
       case LessThan(attribute, value) =>
-        queryBuilder.put(attribute).lessThan(value)
+        queryBuilder.put(attribute).lessThan(convertToStandardType(value))
       case LessThanOrEqual(attribute, value) =>
-        queryBuilder.put(attribute).lessThanEquals(value)
+        queryBuilder.put(attribute).lessThanEquals(convertToStandardType(value))
     }
     queryBuilder.get
 
+  }
+
+  private def convertToStandardType(value: Any): Any = {
+    if (value.isInstanceOf[UTF8String])
+      value.toString
+    else
+      value
   }
 
   /**
