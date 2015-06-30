@@ -5,7 +5,7 @@ We are going to introduce how to use our MongoDB provider for Apache Spark.
 
 Requirements
 ============
-This library requires Apache Spark 1.3+, Scala 10.4+, casbah 2.8+
+This library requires Apache Spark 1.4+, Scala 10.4+, casbah 2.8+
 
 Using the library
 =================
@@ -40,14 +40,13 @@ $ bin/spark-shell --jars <path-to>/spark-mongodb-<version>.jar,<path-to>/casbah-
        ____              __
       / __/__  ___ _____/ /__
      _\ \/ _ \/ _ `/ __/  '_/
-    /___/ .__/\_,_/_/ /_/\_\   version 1.3.1
+    /___/ .__/\_,_/_/ /_/\_\   version 1.4.0
        /_/
  
  Using Scala version 2.10.4 (OpenJDK 64-Bit Server VM, Java 1.7.0_79)
  Type in expressions to have them evaluated.
  Type :help for more information.
  Spark context available as sc.
- 15/05/26 18:08:26 INFO SparkILoop: Created sql context (with Hive support)..
  SQL context available as sqlContext.
 
 

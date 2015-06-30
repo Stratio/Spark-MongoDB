@@ -4,15 +4,15 @@ Spark-Mongodb is a library that allows the user to read/write data with [Spark S
 from/into MongoDB collections.
 
 [MongoDB](http://www.mongodb.org/ "MongoDB website") provides a documental data model
-richer than typical key/value systems. [Spark](http://spark.incubator.apache.org/ "Spark website") is a
+richer than typical key/value systems. [Apache Spark](http://spark.incubator.apache.org/ "Spark website") is a
 fast and general-purpose cluster computing system that can run applications up to 100 times faster than Hadoop.
 
-Integrating MongoDB and Spark gives us a system that combines the best of both
+Integrating MongoDB and Apache Spark gives us a system that combines the best of both
 worlds opening to MongoDB the possibility of solving a wide range of new use cases.
 
 ## Requirements
 
-This library requires Spark 1.3+, Scala 10.4+, casbah 2.8+
+This library requires Apache Spark 1.4+, Scala 10.4+, casbah 2.8+
 
 ## Using the library
 
@@ -32,7 +32,7 @@ git clone https://github.com/Stratio/spark-mongodb.git
 mvn clean install
 ```
 In order to add the spark-mongodb jar file to Spark, you can use the --jars command line option.
-For example, to include it when starting the spark shell:
+For example, to include it when starting the spark-shell:
 
 ```
 $ bin/spark-shell --jars <path-to>/spark-mongodb-core-<version>.jar,<path-to>/casbah-commons_2.10-2.8.0.jar,<path-to>/casbah-core_2.10-2.8.0.jar,
@@ -42,14 +42,13 @@ Welcome to
       ____              __
      / __/__  ___ _____/ /__
     _\ \/ _ \/ _ `/ __/  '_/
-   /___/ .__/\_,_/_/ /_/\_\   version 1.3.1
+   /___/ .__/\_,_/_/ /_/\_\   version 1.4.0
       /_/
 
-Using Scala version 2.10.4 (OpenJDK 64-Bit Server VM, Java 1.7.0_79)
+Using Scala version 2.10.4 (Java HotSpot(TM) 64-Bit Server VM, Java 1.7.0_80)
 Type in expressions to have them evaluated.
 Type :help for more information.
 Spark context available as sc.
-15/05/26 18:08:26 INFO SparkILoop: Created sql context (with Hive support)..
 SQL context available as sqlContext.
 
 ```
