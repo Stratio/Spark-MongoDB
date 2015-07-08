@@ -14,6 +14,17 @@ worlds opening to MongoDB the possibility of solving a wide range of new use cas
 
 This library requires Apache Spark 1.4+, Scala 10.4+, casbah 2.8+
 
+##Latest compatible versions
+
+Spark-MongoDB | Apache Spark | Mongodb
+ :--: | :--: | :--:
+0.8.5 | 1.4.0 | 3.0.+
+0.8.4 | 1.4.0 | 3.0.+
+0.8.3 | 1.4.0 | 3.0.+
+0.8.2 | 1.4.0 | 3.0.+
+0.8.1 | 1.3.0 | 3.0.+
+0.8.0 | 1.2.1 | 3.0.+
+
 ## Using the library
 
 There are two ways of using Spark-Mongodb library:
