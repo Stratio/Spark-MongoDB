@@ -99,7 +99,6 @@ Mongo data can be queried from Python too:
 ::
 
  from pyspark.sql import SQLContext
- sqlContext = SQLContext(sc)
  sqlContext.sql("CREATE TEMPORARY TABLE students_table USING com.stratio.provider.mongodb OPTIONS (host 'host:port', database 'highschool', collection 'students')")
  sqlContext.sql("SELECT * FROM students_table").collect()
 

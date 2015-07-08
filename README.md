@@ -76,8 +76,6 @@ scala> import MongodbConfig._
 
 scala> val builder = MongodbConfigBuilder(Map(Host -> List("host:port"), Database -> "highschool", Collection -> "students", SamplingRatio -> 1.0, WriteConcern -> MongodbWriteConcern.Normal))
 
-builder: com.stratio.provider.mongodb.MongodbConfigBuilder = MongodbConfigBuilder(Map(database -> highschool, writeConcern -> WriteConcern { "getlasterror" : 1} / (Continue on error? false), schema_samplingRatio -> 1.0, collection -> students, host -> List(host:port)))
-
 scala> val readConfig = builder.build()
 
 scala> val mongoRDD = sqlContext.fromMongoDB(readConfig)
@@ -94,8 +92,6 @@ To save a DataFrame in MongoDB you should use the saveToMongodb() function as fo
 ```
 
 scala> import org.apache.spark.sql._
-scala> val sqlContext = new SQLContext(sc)
-
 scala> import sqlContext._
 
 scala> case class Student(name: String, age: Int)
