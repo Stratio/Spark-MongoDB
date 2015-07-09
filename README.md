@@ -33,8 +33,8 @@ You can link against this library by putting the following lines in your program
 
 ```
 <groupId>com.stratio</groupId>
-<artifactId>spark-mongodb</artifactId>
-<version>LATEST</version>
+<artifactId>spark-mongodb-core</artifactId>
+<version>LATEST_VERSION</version>
 ```
 There also exists the possibility of downloading the project by doing:
 
