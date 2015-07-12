@@ -20,8 +20,13 @@ package com.stratio.provider.mongodb
 
 import com.mongodb.MongoCredential
 import com.stratio.provider.DeepConfig._
-import org.apache.spark.sql.sources._
-import org.apache.spark.sql.SQLContext
+import org.apache.spark.sql.SaveMode._
+import org.apache.spark.sql.sources.BaseRelation
+import org.apache.spark.sql.sources.RelationProvider
+import org.apache.spark.sql.sources.SchemaRelationProvider
+import org.apache.spark.sql.sources.CreatableRelationProvider
+import org.apache.spark.sql.types.StructType
+import org.apache.spark.sql.{DataFrame, SaveMode, SQLContext}
 import MongodbConfig._
 
 /**
@@ -29,11 +34,54 @@ import MongodbConfig._
  * the syntax CREATE TEMPORARY TABLE ... USING com.stratio.deep.mongodb.
  * Required options are detailed in [[com.stratio.provider.mongodb.MongodbConfig]]
  */
-class DefaultSource extends RelationProvider {
+class DefaultSource extends RelationProvider with SchemaRelationProvider with CreatableRelationProvider{
 
   override def createRelation(
                                sqlContext: SQLContext,
                                parameters: Map[String, String]): BaseRelation = {
+
+    MongodbRelation(
+      MongodbConfigBuilder()
+        .apply(parseParameters(parameters))
+        .build())(sqlContext)
+
+  }
+  override def createRelation(
+                               sqlContext: SQLContext,
+                               parameters: Map[String, String],
+                               schema: StructType): BaseRelation = {
+
+    MongodbRelation(
+    MongodbConfigBuilder()
+      .apply(parseParameters(parameters))
+      .build())(sqlContext)
+
+  }
+
+  override def createRelation(
+                               sqlContext: SQLContext,
+                               mode: SaveMode,
+                               parameters: Map[String, String],
+                               data: DataFrame): BaseRelation = {
+
+    val mongodbRelation = MongodbRelation(
+      MongodbConfigBuilder()
+        .apply(parseParameters(parameters))
+        .build())(sqlContext)
+
+    mode match{
+      case Append         => mongodbRelation.insert(data, overwrite = false)
+      case Overwrite      => mongodbRelation.insert(data, overwrite = true)
+      case ErrorIfExists  => if(mongodbRelation.isEmptyCollection) mongodbRelation.insert(data, overwrite = false)
+        else throw new UnsupportedOperationException("Writing in a non-empty collection.")
+      case Ignore         => if(mongodbRelation.isEmptyCollection) mongodbRelation.insert(data, overwrite = false)
+    }
+
+    mongodbRelation
+
+  }
+
+  private def parseParameters(parameters : Map[String,String]): Map[String, Any] = {
 
     /** We will assume hosts are provided like 'host:port,host2:port2,...' */
     val host = parameters
@@ -73,12 +121,7 @@ class DefaultSource extends RelationProvider {
         }
         else properties
     }
-
-    MongodbRelation(
-      MongodbConfigBuilder()
-        .apply(finalMap)
-        .build())(sqlContext)
-
+    finalMap
   }
 
 }

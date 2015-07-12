@@ -74,6 +74,16 @@ abstract class MongodbWriter(config: DeepConfig) extends Serializable {
   def save(it: Iterator[DBObject]): Unit
 
   /**
+   * Drop MongoDB collection.
+   */
+  def dropCollection: Unit = dbCollection.dropCollection()
+
+  /**
+   * Drop MongoDB collection.
+   */
+  def isEmpty: Boolean = dbCollection.isEmpty
+
+  /**
    * Close current MongoDB client.
    */
   def close(): Unit = {

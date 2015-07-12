@@ -22,9 +22,10 @@ import com.stratio.provider.DeepConfig
 import com.stratio.provider.mongodb.partitioner.MongodbPartitioner
 import com.stratio.provider.mongodb.rdd.MongodbRDD
 import com.stratio.provider.mongodb.schema.{MongodbRowConverter, MongodbSchema}
+import com.stratio.provider.mongodb.writer.MongodbSimpleWriter
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.{Row, SQLContext}
-import org.apache.spark.sql.sources.{BaseRelation, Filter, PrunedFilteredScan}
+import org.apache.spark.sql.{DataFrame, Row, SQLContext}
+import org.apache.spark.sql.sources.{InsertableRelation, BaseRelation, Filter, PrunedFilteredScan}
 import org.apache.spark.sql.types._
 
 /**
@@ -42,7 +43,7 @@ case class MongodbRelation(
   config: DeepConfig,
   schemaProvided: Option[StructType] = None)(
   @transient val sqlContext: SQLContext) extends BaseRelation
-with PrunedFilteredScan {
+with PrunedFilteredScan with InsertableRelation {
 
   import MongodbRelation._
 
@@ -74,6 +75,21 @@ with PrunedFilteredScan {
 
     MongodbRowConverter.asRow(pruneSchema(schema, requiredColumns), rdd)
 
+  }
+
+  def isEmptyCollection: Boolean = new MongodbSimpleWriter(config).isEmpty
+
+  /**
+   * Insert data into the specified DataSource.
+   * @param data Data to insert.
+   * @param overwrite Boolean indicating whether to overwrite the data.
+   */
+  def insert(data: DataFrame, overwrite: Boolean): Unit = {
+    if(overwrite){
+      new MongodbSimpleWriter(config).dropCollection
+    }
+
+    data.saveToMongodb(config)
   }
 
 }
