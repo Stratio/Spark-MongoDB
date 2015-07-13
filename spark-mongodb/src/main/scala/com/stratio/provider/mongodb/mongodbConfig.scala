@@ -59,6 +59,7 @@ object MongodbConfig {
   val Credentials = "credentials"
   val PrimaryKey = "primaryKey"
   val SSLOptions = "ssloptions"
+  val ReadPreference = "readpreference"
 
   val all = List(
     Host,
@@ -85,5 +86,4 @@ object MongodbConfig {
     SplitSize -> DefaultSplitSize,
     AllowSlaveReads -> DefaultAllowSlaveReads,
     Credentials -> DefaultCredentials)
-
 }

@@ -6,3 +6,4 @@ Contents:
 
    about.rst
    First_Steps.rst
+   PoweredBy.rst

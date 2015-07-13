@@ -51,4 +51,18 @@ object MongodbClientFactory {
 
   }
 
+
+  def parseReadPreference(readPreference: Option[String]): com.mongodb.ReadPreference ={
+    readPreference match{
+      case Some("primary")            => com.mongodb.ReadPreference.primary()
+      case Some("secondary")          => com.mongodb.ReadPreference.secondary()
+      case Some("nearest")            => com.mongodb.ReadPreference.nearest()
+      case Some("primaryPreferred")   => com.mongodb.ReadPreference.primaryPreferred()
+      case Some("secondaryPreferred") => com.mongodb.ReadPreference.secondaryPreferred()
+      case _                          => com.mongodb.ReadPreference.secondaryPreferred()
+
+    }
+
+  }
+
 }
