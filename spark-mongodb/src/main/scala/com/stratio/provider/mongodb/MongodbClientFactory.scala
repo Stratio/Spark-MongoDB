@@ -24,10 +24,15 @@ object MongodbClientFactory {
 
   def createClient(hostPort : List[ServerAddress], credentials : List[MongoCredential]) : Client = MongoClient(hostPort, credentials)
 
+  def createClient(hostPort : List[ServerAddress], credentials : List[MongoCredential], readPreference: ReadPreference) : Client = {
+    val options = new MongoClientOptions.Builder().readPreference(readPreference).build()
+    MongoClient(hostPort, credentials, options)
+  }
+
   def createClient(
-    hostPort : List[ServerAddress],
-    credentials : List[MongoCredential],
-    optionSSLOptions: Option[MongodbSSLOptions]) : Client = {
+                    hostPort : List[ServerAddress],
+                    credentials : List[MongoCredential],
+                    optionSSLOptions: Option[MongodbSSLOptions]) : Client = {
 
     optionSSLOptions match{
       case Some(sslOptions) =>
@@ -52,15 +57,35 @@ object MongodbClientFactory {
   }
 
 
-  def parseReadPreference(readPreference: Option[String]): com.mongodb.ReadPreference ={
-    readPreference match{
-      case Some("primary")            => com.mongodb.ReadPreference.primary()
-      case Some("secondary")          => com.mongodb.ReadPreference.secondary()
-      case Some("nearest")            => com.mongodb.ReadPreference.nearest()
-      case Some("primaryPreferred")   => com.mongodb.ReadPreference.primaryPreferred()
-      case Some("secondaryPreferred") => com.mongodb.ReadPreference.secondaryPreferred()
-      case _                          => com.mongodb.ReadPreference.secondaryPreferred()
 
+  def createClient(
+    hostPort : List[ServerAddress],
+    credentials : List[MongoCredential],
+    optionSSLOptions: Option[MongodbSSLOptions],
+    readPreference: ReadPreference) : Client = {
+
+    optionSSLOptions match{
+      case Some(sslOptions) =>
+
+        if(sslOptions.keyStore.nonEmpty) {
+          System.setProperty("javax.net.ssl.keyStore", sslOptions.keyStore.get)
+          if (sslOptions.keyStorePassword.nonEmpty)
+            System.setProperty("javax.net.ssl.keyStorePassword", sslOptions.keyStorePassword.get)
+        }
+        if(sslOptions.trustStore.nonEmpty) {
+          System.setProperty("javax.net.ssl.trustStore", sslOptions.trustStore)
+          if (sslOptions.trustStorePassword.nonEmpty)
+            System.setProperty("javax.net.ssl.trustStorePassword", sslOptions.trustStorePassword.get)
+        }
+
+        val options = new MongoClientOptions.Builder()
+          .readPreference(readPreference)
+          .socketFactory(SSLSocketFactory.getDefault()).build()
+
+        MongoClient(hostPort, credentials, options)
+
+      case _ => val options = new MongoClientOptions.Builder().readPreference(readPreference).build()
+        MongoClient(hostPort, credentials, options)
     }
 
   }
