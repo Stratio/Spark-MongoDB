@@ -37,8 +37,8 @@ import MongodbConfig._
 class DefaultSource extends RelationProvider with SchemaRelationProvider with CreatableRelationProvider{
 
   override def createRelation(
-                               sqlContext: SQLContext,
-                               parameters: Map[String, String]): BaseRelation = {
+   sqlContext: SQLContext,
+   parameters: Map[String, String]): BaseRelation = {
 
     MongodbRelation(
       MongodbConfigBuilder()
@@ -47,9 +47,9 @@ class DefaultSource extends RelationProvider with SchemaRelationProvider with Cr
 
   }
   override def createRelation(
-                               sqlContext: SQLContext,
-                               parameters: Map[String, String],
-                               schema: StructType): BaseRelation = {
+   sqlContext: SQLContext,
+   parameters: Map[String, String],
+   schema: StructType): BaseRelation = {
 
     MongodbRelation(
     MongodbConfigBuilder()
@@ -59,10 +59,10 @@ class DefaultSource extends RelationProvider with SchemaRelationProvider with Cr
   }
 
   override def createRelation(
-                               sqlContext: SQLContext,
-                               mode: SaveMode,
-                               parameters: Map[String, String],
-                               data: DataFrame): BaseRelation = {
+   sqlContext: SQLContext,
+   mode: SaveMode,
+   parameters: Map[String, String],
+   data: DataFrame): BaseRelation = {
 
     val mongodbRelation = MongodbRelation(
       MongodbConfigBuilder()
@@ -73,7 +73,7 @@ class DefaultSource extends RelationProvider with SchemaRelationProvider with Cr
       case Append         => mongodbRelation.insert(data, overwrite = false)
       case Overwrite      => mongodbRelation.insert(data, overwrite = true)
       case ErrorIfExists  => if(mongodbRelation.isEmptyCollection) mongodbRelation.insert(data, overwrite = false)
-        else throw new UnsupportedOperationException("Writing in a non-empty collection.")
+      else throw new UnsupportedOperationException("Writing in a non-empty collection.")
       case Ignore         => if(mongodbRelation.isEmptyCollection) mongodbRelation.insert(data, overwrite = false)
     }
 
