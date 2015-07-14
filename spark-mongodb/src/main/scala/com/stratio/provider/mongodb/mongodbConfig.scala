@@ -78,7 +78,7 @@ object MongodbConfig {
   val DefaultSplitSize = 10
   val DefaultAllowSlaveReads = false
   val DefaultCredentials = List[MongodbCredentials]()
-  val DefaultReadPreference = "secondaryPreferred"
+  val DefaultReadPreference = "nearest"
 
   val Defaults = Map(
     SamplingRatio -> DefaultSamplingRatio,

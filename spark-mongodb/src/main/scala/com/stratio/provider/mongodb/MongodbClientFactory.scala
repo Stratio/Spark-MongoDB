@@ -34,25 +34,29 @@ object MongodbClientFactory {
                     credentials : List[MongoCredential],
                     optionSSLOptions: Option[MongodbSSLOptions]) : Client = {
 
-    optionSSLOptions match{
-      case Some(sslOptions) =>
+    if(optionSSLOptions.isDefined){
 
-        if(sslOptions.keyStore.nonEmpty) {
-          System.setProperty("javax.net.ssl.keyStore", sslOptions.keyStore.get)
-          if (sslOptions.keyStorePassword.nonEmpty)
-            System.setProperty("javax.net.ssl.keyStorePassword", sslOptions.keyStorePassword.get)
+        val keyStore = optionSSLOptions.get.keyStore
+        val keyStorePassword = optionSSLOptions.get.keyStorePassword
+        val trustStore = optionSSLOptions.get.trustStore
+        val trustStorePassword = optionSSLOptions.get.trustStorePassword
+
+        if(keyStore.nonEmpty) {
+          System.setProperty("javax.net.ssl.keyStore", keyStore.get)
+          if (keyStorePassword.nonEmpty)
+            System.setProperty("javax.net.ssl.keyStorePassword", keyStorePassword.get)
         }
-        if(sslOptions.trustStore.nonEmpty) {
-          System.setProperty("javax.net.ssl.trustStore", sslOptions.trustStore)
-          if (sslOptions.trustStorePassword.nonEmpty)
-            System.setProperty("javax.net.ssl.trustStorePassword", sslOptions.trustStorePassword.get)
+        if(trustStore.nonEmpty) {
+          System.setProperty("javax.net.ssl.trustStore", trustStore)
+          if (optionSSLOptions.get.trustStorePassword.nonEmpty)
+            System.setProperty("javax.net.ssl.trustStorePassword", trustStorePassword.get)
         }
 
         val options = new MongoClientOptions.Builder().socketFactory(SSLSocketFactory.getDefault()).build()
         MongoClient(hostPort, credentials, options)
-
-      case _ => MongoClient(hostPort, credentials)
     }
+    else
+      MongoClient(hostPort, credentials)
 
   }
 

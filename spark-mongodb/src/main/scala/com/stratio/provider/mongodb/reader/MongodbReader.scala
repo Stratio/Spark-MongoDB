@@ -78,7 +78,7 @@ class MongodbReader(
         config[List[MongodbCredentials]](MongodbConfig.Credentials).map{
           case MongodbCredentials(user,database,password) =>
             MongoCredential.createCredential(user,database,password)},
-        config.get[MongodbSSLOptions](MongodbConfig.SSLOptions)))
+        config.get[MongodbSSLOptions](MongodbConfig.SSLOptions), config[String](MongodbConfig.readPreference)))
 
       dbCursor = (for {
         client <- mongoClient
