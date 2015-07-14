@@ -19,7 +19,6 @@
 package com.stratio.provider.mongodb
 
 import com.mongodb
-import com.mongodb.casbah.Imports._
 import com.stratio.provider.DeepConfig._
 import com.stratio.provider.DeepConfigBuilder
 import com.stratio.provider.mongodb.MongodbConfig._
@@ -79,7 +78,7 @@ object MongodbConfig {
   val DefaultSplitSize = 10
   val DefaultAllowSlaveReads = false
   val DefaultCredentials = List[MongodbCredentials]()
-  val DefaultReadPreference = ReadPreference.SecondaryPreferred
+  val DefaultReadPreference = "secondaryPreferred"
 
   val Defaults = Map(
     SamplingRatio -> DefaultSamplingRatio,

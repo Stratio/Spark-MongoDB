@@ -24,8 +24,8 @@ object MongodbClientFactory {
 
   def createClient(hostPort : List[ServerAddress], credentials : List[MongoCredential]) : Client = MongoClient(hostPort, credentials)
 
-  def createClient(hostPort : List[ServerAddress], credentials : List[MongoCredential], readPreference: ReadPreference) : Client = {
-    val options = new MongoClientOptions.Builder().readPreference(readPreference).build()
+  def createClient(hostPort : List[ServerAddress], credentials : List[MongoCredential], readPreference: String) : Client = {
+    val options = new MongoClientOptions.Builder().readPreference(parseReadPreference(readPreference)).build()
     MongoClient(hostPort, credentials, options)
   }
 
@@ -56,13 +56,11 @@ object MongodbClientFactory {
 
   }
 
-
-
   def createClient(
     hostPort : List[ServerAddress],
     credentials : List[MongoCredential],
     optionSSLOptions: Option[MongodbSSLOptions],
-    readPreference: ReadPreference) : Client = {
+    readPreference: String) : Client = {
 
     optionSSLOptions match{
       case Some(sslOptions) =>
@@ -79,15 +77,26 @@ object MongodbClientFactory {
         }
 
         val options = new MongoClientOptions.Builder()
-          .readPreference(readPreference)
+          .readPreference(parseReadPreference(readPreference))
           .socketFactory(SSLSocketFactory.getDefault()).build()
 
         MongoClient(hostPort, credentials, options)
 
-      case _ => val options = new MongoClientOptions.Builder().readPreference(readPreference).build()
+      case _ => val options = new MongoClientOptions.Builder().readPreference(parseReadPreference(readPreference)).build()
         MongoClient(hostPort, credentials, options)
     }
 
+  }
+
+  private def parseReadPreference(readPreference: String): ReadPreference ={
+    readPreference match{
+      case "primary"             => ReadPreference.Primary
+      case "secondary"           => ReadPreference.Secondary
+      case "nearest"             => ReadPreference.Nearest
+      case "primaryPreferred"    => ReadPreference.primaryPreferred
+      case "secondaryPreferred"  => ReadPreference.SecondaryPreferred
+      case _                     => ReadPreference.SecondaryPreferred
+    }
   }
 
 }

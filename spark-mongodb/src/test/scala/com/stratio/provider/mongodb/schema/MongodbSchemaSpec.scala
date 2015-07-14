@@ -33,12 +33,14 @@ with TestBsonData {
   private val port: Int = 12345
   private val database: String = "testDb"
   private val collection: String = "testCol"
+  private val readPreference = "secondaryPreferred"
 
   val testConfig = MongodbConfigBuilder()
     .set(MongodbConfig.Host,List(host + ":" + port))
     .set(MongodbConfig.Database,database)
     .set(MongodbConfig.Collection,collection)
     .set(MongodbConfig.SamplingRatio,1.0)
+    .set(MongodbConfig.readPreference, readPreference)
     .build()
 
   val mongodbPartitioner = new MongodbPartitioner(testConfig)

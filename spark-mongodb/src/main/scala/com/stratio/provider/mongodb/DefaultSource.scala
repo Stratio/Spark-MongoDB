@@ -19,7 +19,6 @@
 package com.stratio.provider.mongodb
 
 import com.mongodb.MongoCredential
-import com.mongodb.casbah.Imports
 import com.mongodb.casbah.Imports._
 import com.stratio.provider.DeepConfig._
 import org.apache.spark.sql.SaveMode._
@@ -80,7 +79,6 @@ class DefaultSource extends RelationProvider with SchemaRelationProvider with Cr
     }
 
     mongodbRelation
-
   }
 
   private def parseParameters(parameters : Map[String,String]): Map[String, Any] = {
@@ -98,7 +96,7 @@ class DefaultSource extends RelationProvider with SchemaRelationProvider with Cr
       .get(SamplingRatio)
       .map(_.toDouble).getOrElse(DefaultSamplingRatio)
 
-    val readpreference = parseReadPreference(parameters.getOrElse(readPreference, "default"))
+    val readpreference = parameters.getOrElse(readPreference, DefaultReadPreference)
 
     val properties :Map[String, Any] =
       Map(Host -> host, Database -> database, Collection -> collection , SamplingRatio -> samplingRatio, readPreference -> readpreference)
@@ -126,17 +124,6 @@ class DefaultSource extends RelationProvider with SchemaRelationProvider with Cr
         else properties
     }
     finalMap
-  }
-
-  private def parseReadPreference(readPreference: String): ReadPreference ={
-    readPreference match{
-      case "primary"             => ReadPreference.Primary
-      case "secondary"           => ReadPreference.Secondary
-      case "nearest"             => ReadPreference.Nearest
-      case "primaryPreferred"    => ReadPreference.primaryPreferred
-      case "secondaryPreferred"  => ReadPreference.SecondaryPreferred
-      case _                     => ReadPreference.SecondaryPreferred
-    }
   }
 
 }
