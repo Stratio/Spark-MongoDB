@@ -28,7 +28,7 @@
     <parent>
         <groupId>com.stratio</groupId>
         <artifactId>spark-mongodb</artifactId>
-        <version>0.8.5</version>
+        <version>0.8.6</version>
     </parent>
     <properties>
 	<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -402,8 +402,8 @@
                                     <toFile>/opt/sds/spark/lib/mongodb/mongo-java-driver-2.13.0.jar</toFile>
                                 </copyFile>
                                 <copyFile>
-                                    <path>target/spark-mongodb-core-0.8.5.jar</path>
-                                    <toFile>/opt/sds/spark/lib/mongodb/spark-mongodb-core-0.8.5.jar</toFile>
+                                    <path>target/spark-mongodb-core-${project.version}.jar</path>
+                                    <toFile>/opt/sds/spark/lib/mongodb/spark-mongodb-core-${project.version}.jar</toFile>
                                 </copyFile>
                             </assembly>
                             <defaults>
