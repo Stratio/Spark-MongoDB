@@ -19,6 +19,7 @@
 package com.stratio.provider.mongodb
 
 import com.mongodb.MongoCredential
+import com.mongodb.casbah.Imports._
 import com.stratio.provider.DeepConfig._
 import org.apache.spark.sql.SaveMode._
 import org.apache.spark.sql.sources.BaseRelation
@@ -78,7 +79,6 @@ class DefaultSource extends RelationProvider with SchemaRelationProvider with Cr
     }
 
     mongodbRelation
-
   }
 
   private def parseParameters(parameters : Map[String,String]): Map[String, Any] = {
@@ -96,8 +96,10 @@ class DefaultSource extends RelationProvider with SchemaRelationProvider with Cr
       .get(SamplingRatio)
       .map(_.toDouble).getOrElse(DefaultSamplingRatio)
 
+    val readpreference = parameters.getOrElse(readPreference, DefaultReadPreference)
+
     val properties :Map[String, Any] =
-      Map(Host -> host, Database -> database, Collection -> collection , SamplingRatio -> samplingRatio)
+      Map(Host -> host, Database -> database, Collection -> collection , SamplingRatio -> samplingRatio, readPreference -> readpreference)
 
     val optionalProperties: List[String] = List(Credentials,SSLOptions)
     val finalMap = (properties /: optionalProperties){    //TODO improve code

@@ -40,7 +40,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'Streaming CEP'
+project = u'Spark-MongoDB'
 copyright = u'2015 Stratio'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -107,7 +107,7 @@ html_theme = 'stratio'
 # further.  For a list of options available for each theme, see the
 # documentation.
 html_theme_options = {    
-    'versions' : ['0.8.0'],
+    'versions' : ['0.8.5'],
     'github' : 'https://github.com/Stratio/spark-mongodb',
     'jira': 'https://github.com/Stratio/spark-mongodb/issues',
     'module_name' : 'spark-mongodb'
@@ -198,7 +198,7 @@ html_static_path = ['_static']
 #html_search_scorer = 'scorer.js'
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'StreamingCEPdoc'
+htmlhelp_basename = 'Spark-MongoDB'
 
 # -- Options for LaTeX output ---------------------------------------------
 
@@ -220,13 +220,12 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    ('index', 'StreamingCEP.tex', u'Streaming CEP Documentation',
-     u'David Morales, Alberto Rodríguez, Antonio Jesus Navarro', 'manual'),
+    ('index.rst', 'Index', u'Connectors Team', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
 # the title page.
-#latex_logo = None
+
 
 # For "manual" documents, if this is true, then toplevel headings are parts,
 # not chapters.
@@ -250,8 +249,8 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'streamingcep', u'Streaming CEP Documentation',
-     [u'David Morales, Alberto Rodríguez, Antonio Jesus Navarro'], 1)
+    ('about.rst',
+     [u'Connectors Team'], 1)
 ]
 
 # If true, show URL addresses after external links.
@@ -264,8 +263,7 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    ('index', 'StreamingCEP', u'Streaming CEP Documentation',
-     u'David Morales, Alberto Rodríguez, Antonio Jesus Navarro', 'StreamingCEP',
+    ('index', 'Index.rst', u'Documentation',
      'One line description of project.',
      'Miscellaneous'),
 ]

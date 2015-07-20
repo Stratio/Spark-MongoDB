@@ -19,7 +19,6 @@
 package com.stratio.provider.mongodb
 
 import com.mongodb
-import com.mongodb.MongoCredential
 import com.stratio.provider.DeepConfig._
 import com.stratio.provider.DeepConfigBuilder
 import com.stratio.provider.mongodb.MongodbConfig._
@@ -59,6 +58,7 @@ object MongodbConfig {
   val Credentials = "credentials"
   val PrimaryKey = "primaryKey"
   val SSLOptions = "ssloptions"
+  val readPreference = "readpreference"
 
   val all = List(
     Host,
@@ -67,7 +67,8 @@ object MongodbConfig {
     SamplingRatio,
     WriteConcern,
     SplitKey,
-    SplitSize)
+    SplitSize,
+    readPreference)
 
   //  Default values
 
@@ -77,6 +78,7 @@ object MongodbConfig {
   val DefaultSplitSize = 10
   val DefaultAllowSlaveReads = false
   val DefaultCredentials = List[MongodbCredentials]()
+  val DefaultReadPreference = "nearest"
 
   val Defaults = Map(
     SamplingRatio -> DefaultSamplingRatio,
@@ -84,6 +86,6 @@ object MongodbConfig {
     SplitKey -> DefaultSplitKey,
     SplitSize -> DefaultSplitSize,
     AllowSlaveReads -> DefaultAllowSlaveReads,
-    Credentials -> DefaultCredentials)
-
+    Credentials -> DefaultCredentials,
+    readPreference-> DefaultReadPreference)
 }
