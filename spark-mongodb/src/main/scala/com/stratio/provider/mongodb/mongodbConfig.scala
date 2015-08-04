@@ -56,9 +56,11 @@ object MongodbConfig {
   val SplitKey = "splitKey"
   val AllowSlaveReads = "allowSlaveReads"
   val Credentials = "credentials"
-  val PrimaryKey = "primaryKey"
+  val IdField = "_idField"
+  val SearchFields = "searchFields"
   val SSLOptions = "ssloptions"
   val readPreference = "readpreference"
+  val Language = "language"
 
   val all = List(
     Host,

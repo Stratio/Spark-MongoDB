@@ -30,25 +30,38 @@ import com.stratio.provider.mongodb.MongodbConfig
  * @param batchSize Group size to be inserted via bulk operation
  */
 class MongodbBatchWriter(
-  config: DeepConfig,
-  batchSize: Int = 100) extends MongodbWriter(config){
-  
+                          config: DeepConfig,
+                          batchSize: Int = 100) extends MongodbWriter(config) {
+
+  final val IdKey = "_id"
+
   def save(it: Iterator[DBObject]): Unit = {
-    val IdKey = "_id"
-    it.grouped(batchSize).foreach{ group =>
-      val bulkop = dbCollection.initializeUnorderedBulkOperation
+    val pkConfig: Option[Array[String]] = config.get[Array[String]](MongodbConfig.SearchFields)
+    val idFieldConfig: Option[String] = config.get[String](MongodbConfig.IdField)
+    it.grouped(batchSize).foreach { group =>
+      val bulkOperation = dbCollection.initializeUnorderedBulkOperation
       group.foreach { element =>
-        val idValue = Option(element.get(IdKey))
-        idValue match {
-          case Some(id) =>
-            val query = MongoDBObject(IdKey -> id)
-            bulkop.find(query).upsert().replaceOne(element)
-          case None =>
-            bulkop.insert(element)
-        }
+        if (idFieldConfig.isDefined || pkConfig.isDefined) {
+          val query = getUpdateQuery(element, pkConfig, idFieldConfig)
+          if (query.isEmpty) bulkOperation.insert(element) else bulkOperation.find(query).upsert().replaceOne(element)
+        } else bulkOperation.insert(element)
       }
-      bulkop.execute(config[WriteConcern](MongodbConfig.WriteConcern))
+      bulkOperation.execute(config[WriteConcern](MongodbConfig.WriteConcern))
     }
   }
 
+  private def getUpdateQuery(element: DBObject,
+                             pkConfig: Option[Array[String]],
+                             idFieldConfig: Option[String]): Map[String, AnyRef] = {
+    val idValue: Map[String, AnyRef] =
+      if (idFieldConfig.isDefined && element.contains(IdKey)) Map(IdKey -> element.get(IdKey))
+      else Map()
+    if(idValue.isEmpty) {
+      val pkValues: Map[String, AnyRef] =
+        if (pkConfig.isDefined)
+          pkConfig.get.flatMap(field => if (element.contains(field)) Some(field -> element.get(field)) else None).toMap
+        else Map()
+      pkValues
+    } else idValue
+  }
 }
