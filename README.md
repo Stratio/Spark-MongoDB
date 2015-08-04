@@ -130,6 +130,27 @@ sqlContext.sql("CREATE TEMPORARY TABLE students_table USING com.stratio.provider
 sqlContext.sql("SELECT * FROM students_table").collect()
 
 ```
+
+### R API
+
+Mongo data can also be queried from SparkR (sparkR shell example):
+
+Enter the SparkR shell from your SPARK_HOME:
+$ bin/sparkR --jars <path-to>/spark-mongodb-core-<version>.jar,<path-to>/casbah-commons_2.10-2.8.0.jar,<path-to>/casbah-core_2.10-2.8.0.jar,
+<path-to>/casbah-query_2.10-2.8.0.jar,<path-to>/mongo-java-driver-2.13.0.jar
+
+Then:
+
+```
+# credentials and samplingRatio optional
+df <- read.df(sqlContext, source= "com.stratio.provider.mongodb", host = "host:port", database = "highschool", collection = "students", splitSize = 8, splitKey = "_id", credentials="user1,database,password;user2,database2,password2", samplingRatio=1.0)
+
+registerTempTable(df, "students_table")
+
+collect(sql(sqlContext, "SELECT * FROM students_table"))
+
+```
+
 ### SSL support
 
 If you want to use a SSL connection, you need to add some options to the previous examples:
