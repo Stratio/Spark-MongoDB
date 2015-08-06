@@ -19,6 +19,7 @@
 package com.stratio.provider.mongodb.writer
 
 import com.mongodb._
+import com.mongodb.casbah.commons.MongoDBObject
 import com.mongodb.util.JSON
 import com.stratio.provider.mongodb.{MongoEmbedDatabase, TestBsonData, MongodbConfig, MongodbConfigBuilder}
 import org.scalatest.{FlatSpec, Matchers}
@@ -33,8 +34,10 @@ with TestBsonData {
   private val database: String = "testDb"
   private val collection: String = "testCol"
   private val writeConcern: WriteConcern = WriteConcern.NORMAL
-  private val primaryKey: String = "att2"
-  private val wrongPrimaryKey: String = "non-existentColumn"
+  private val idField: String = "att2"
+  private val searchField: String = "att3"
+  private val wrongIdField: String = "non-existentColumn"
+  private val language: String = "english"
 
 
   val testConfig = MongodbConfigBuilder()
@@ -51,7 +54,16 @@ with TestBsonData {
     .set(MongodbConfig.Collection, collection)
     .set(MongodbConfig.SamplingRatio, 1.0)
     .set(MongodbConfig.WriteConcern, writeConcern)
-    .set(MongodbConfig.PrimaryKey, primaryKey)
+    .set(MongodbConfig.IdField, idField)
+    .build()
+
+  val testConfigWithLanguage = MongodbConfigBuilder()
+    .set(MongodbConfig.Host, List(host + ":" + port))
+    .set(MongodbConfig.Database, database)
+    .set(MongodbConfig.Collection, collection)
+    .set(MongodbConfig.SamplingRatio, 1.0)
+    .set(MongodbConfig.WriteConcern, writeConcern)
+    .set(MongodbConfig.Language, language)
     .build()
 
   val testConfigWithWrongPk = MongodbConfigBuilder()
@@ -60,7 +72,16 @@ with TestBsonData {
     .set(MongodbConfig.Collection, collection)
     .set(MongodbConfig.SamplingRatio, 1.0)
     .set(MongodbConfig.WriteConcern, writeConcern)
-    .set(MongodbConfig.PrimaryKey, wrongPrimaryKey)
+    .set(MongodbConfig.IdField, wrongIdField)
+    .build()
+
+  val testConfigWithSearchFields = MongodbConfigBuilder()
+    .set(MongodbConfig.Host, List(host + ":" + port))
+    .set(MongodbConfig.Database, database)
+    .set(MongodbConfig.Collection, collection)
+    .set(MongodbConfig.SamplingRatio, 1.0)
+    .set(MongodbConfig.WriteConcern, writeConcern)
+    .set(MongodbConfig.SearchFields, searchField)
     .build()
 
   val dbObject = JSON.parse(
@@ -70,6 +91,31 @@ with TestBsonData {
           "att6" : { "att61" : 1 , "att62" :  null } ,
           "att2" : 2.0 ,
           "att1" : 1}""").asInstanceOf[DBObject]
+
+  val listDbObject = List(
+    JSON.parse(
+    """{ "att5" : [ 1 , 2 , 3] ,
+          "att4" :  null  ,
+          "att3" : "hi" ,
+          "att6" : { "att61" : 1 , "att62" :  null } ,
+          "att2" : 2.0 ,
+          "att1" : 1}""").asInstanceOf[DBObject],
+    JSON.parse(
+      """{ "att5" : [ 1 , 2 , 3] ,
+          "att4" :  null  ,
+          "att3" : "holo" ,
+          "att6" : { "att61" : 1 , "att62" :  null } ,
+          "att2" : 2.0 ,
+          "att1" : 1}""").asInstanceOf[DBObject])
+
+  val updateDbObject = List(
+    JSON.parse(
+      """{ "att5" : [ 1 , 2 , 3] ,
+          "att4" :  null  ,
+          "att3" : "holo" ,
+          "att6" : { "att61" : 1 , "att62" :  null } ,
+          "att2" : 2.0 ,
+          "att1" : 2}""").asInstanceOf[DBObject])
 
 
   behavior of "A writer"
@@ -140,8 +186,7 @@ with TestBsonData {
 
       dbCursor.iterator().toList.forall { case obj: BasicDBObject =>
         obj.get("_id") == obj.get("att2")
-
-      }
+      } should be (true)
     }
   }
 
@@ -166,7 +211,65 @@ with TestBsonData {
       dbCursor.iterator().toList.forall { case obj: BasicDBObject =>
         obj.get("_id") != obj.get("non-existentColumn")
 
-      }
+      } should be (true)
+    }
+  }
+
+  it should "manage the language field for text index" in {
+    withEmbedMongoFixture(List()) { mongodbProc =>
+
+      val mongodbBatchWriter = new MongodbBatchWriter(testConfigWithLanguage)
+
+      val dbOIterator = List(dbObject).iterator
+
+      mongodbBatchWriter.saveWithPk(dbOIterator)
+
+      val mongodbClient = new MongoClient(host, port)
+
+      val dbCollection = mongodbClient.getDB(database).getCollection(collection)
+
+      val dbCursor = dbCollection.find()
+
+      import scala.collection.JavaConversions._
+
+      dbCursor.iterator().toList.forall { case obj: BasicDBObject =>
+        obj.get("language") == language
+      } should be (true)
+    }
+  }
+
+  it should "manage the search fields and the update query, it has to read the same value from the search fields in " +
+    "configuration" in {
+    withEmbedMongoFixture(List()) { mongodbProc =>
+
+      val mongodbBatchWriter = new MongodbBatchWriter(testConfigWithPk)
+
+      val dbOIterator = listDbObject.iterator
+
+      val dbUpdateIterator = updateDbObject.iterator
+
+      mongodbBatchWriter.saveWithPk(dbOIterator)
+
+      val mongodbClient = new MongoClient(host, port)
+
+      val dbCollection = mongodbClient.getDB(database).getCollection(collection)
+
+      val dbCursor = dbCollection.find(MongoDBObject("att3" -> "holo"))
+
+      import scala.collection.JavaConversions._
+
+      dbCursor.iterator().toList.forall { case obj: BasicDBObject =>
+        obj.getInt("att1") == 1
+      } should be (true)
+
+      mongodbBatchWriter.saveWithPk(dbUpdateIterator)
+
+      val dbCursor2 = dbCollection.find(MongoDBObject("att3" -> "holo"))
+
+      dbCursor2.iterator().toList.forall { case obj: BasicDBObject =>
+        obj.getInt("att1") == 2
+      } should be (true)
+
     }
   }
 }

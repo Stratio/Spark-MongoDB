@@ -18,6 +18,7 @@
 
 package com.stratio.provider.mongodb.writer
 
+import com.mongodb.casbah.Imports
 import com.mongodb.{ServerAddress, MongoCredential}
 import com.mongodb.casbah.Imports._
 import com.stratio.provider.DeepConfig
@@ -52,18 +53,20 @@ abstract class MongodbWriter(config: DeepConfig) extends Serializable {
 
   /**
    * Abstract method that checks if a primary key exists in provided configuration
-   * and calls the 'save' method afterwards.
+   * and the language parameter.
+   * Then calls the 'save' method.
    *
    * @param it DBObject iterator.
    */
   def saveWithPk (it: Iterator[DBObject]): Unit = {
-    config.get[String](MongodbConfig.PrimaryKey).fold(
-      save(it)) { pk =>
-      save(it.map {
-        case obj: BasicDBObject =>
-          obj.append("_id", obj.get(pk))
-      })
-    }
+    val idFieldConfig = config.get[String](MongodbConfig.IdField)
+    val languageConfig = config.get[String](MongodbConfig.Language)
+    val itModified = it.map { case obj: BasicDBObject => {
+      if(idFieldConfig.isDefined) obj.append("_id", obj.get(idFieldConfig.get))
+      if(languageConfig.isDefined) obj.append("language", languageConfig.get)
+      obj
+    }}
+    save(itModified)
   }
 
   /**
