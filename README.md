@@ -135,9 +135,11 @@ sqlContext.sql("SELECT * FROM students_table").collect()
 
 Mongo data can also be queried from SparkR (sparkR shell example):
 
-Enter the SparkR shell from your SPARK_HOME:
+First, enter the SparkR shell from your SPARK_HOME.
+```
 $ bin/sparkR --jars <path-to>/spark-mongodb-core-<version>.jar,<path-to>/casbah-commons_2.10-2.8.0.jar,<path-to>/casbah-core_2.10-2.8.0.jar,
 <path-to>/casbah-query_2.10-2.8.0.jar,<path-to>/mongo-java-driver-2.13.0.jar
+```
 
 Then:
 
