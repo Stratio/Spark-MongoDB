@@ -28,7 +28,7 @@
     <parent>
         <groupId>com.stratio</groupId>
         <artifactId>spark-mongodb</artifactId>
-        <version>0.8.6</version>
+        <version>0.8.7</version>
     </parent>
     <properties>
 	<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
