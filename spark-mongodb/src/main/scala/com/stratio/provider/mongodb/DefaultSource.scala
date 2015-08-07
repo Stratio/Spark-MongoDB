@@ -110,7 +110,7 @@ class DefaultSource extends RelationProvider with SchemaRelationProvider with Cr
           val credentials= credentialInput
             .split(";")
             .map(credential => credential.split(",")).toList
-            .map(credentials => MongoCredential.createCredential(credentials(0), credentials(1), credentials(2).toCharArray))
+            .map(credentials => MongodbCredentials(credentials(0), credentials(1), credentials(2).toCharArray))
           properties.+(Credentials -> credentials)
         } else properties
       case (properties,SSLOptions) =>
