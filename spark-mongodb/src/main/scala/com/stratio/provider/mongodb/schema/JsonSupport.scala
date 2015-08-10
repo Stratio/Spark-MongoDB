@@ -18,6 +18,8 @@
 
 package com.stratio.provider.mongodb.schema
 
+import java.sql.Timestamp
+
 import org.apache.spark.sql.types._
 
 /**
@@ -46,6 +48,7 @@ trait JsonSupport {
         case DoubleType => toDouble(value)
         case DecimalType() => toDecimal(value)
         case BooleanType => value.asInstanceOf[Boolean]
+        case TimestampType => toTimestamp(value)
         case NullType => null
         case _ =>
           sys.error(s"Unsupported datatype conversion [${value.getClass}},$desiredType]")
@@ -84,6 +87,12 @@ trait JsonSupport {
       case value: java.math.BigInteger => Decimal(new java.math.BigDecimal(value))
       case value: java.lang.Double => Decimal(value)
       case value: java.math.BigDecimal => Decimal(value)
+    }
+  }
+
+  private def toTimestamp(value: Any): Timestamp = {
+    value match {
+      case value: java.util.Date => new Timestamp(value.getTime)
     }
   }
 

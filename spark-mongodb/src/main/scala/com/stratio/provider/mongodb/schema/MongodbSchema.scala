@@ -65,7 +65,10 @@ case class MongodbSchema(
 
     case elem =>
       val elemType: PartialFunction[Any, DataType] =
-        ScalaReflection.typeOfObject.orElse { case _ => StringType}
+        ScalaReflection.typeOfObject.orElse {
+          case date: java.util.Date => TimestampType
+          case _ => StringType
+        }
       elemType(elem)
 
   }
