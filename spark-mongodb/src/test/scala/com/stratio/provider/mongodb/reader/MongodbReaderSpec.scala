@@ -29,10 +29,9 @@ import com.mongodb.{BasicDBObject, DBObject}
 import com.stratio.provider.mongodb._
 import com.stratio.provider.mongodb.partitioner.MongodbPartition
 import com.stratio.provider.partitioner.DeepPartitionRange
-import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.sources.{EqualTo, Filter}
+import org.apache.spark.sql.test.TestSQLContext
 import org.apache.spark.sql.types._
-import org.apache.spark.{SparkConf, SparkContext}
 import org.scalatest.{FlatSpec, Matchers}
 
 class MongodbReaderSpec extends FlatSpec
@@ -102,11 +101,8 @@ with TestBsonData {
     import com.mongodb.casbah.Imports.DBObject
     val stringAndDate = List(DBObject("string" -> "this is a simple string.", "date" -> dfunc("Mon Aug 10 07:52:49 EDT 2015")))
 
-    val sc = new SparkContext(new SparkConf().setMaster("local[2]").setAppName("Test"))
-
     withEmbedMongoFixture(stringAndDate) { mongodbProc =>
-      val sqlContext = new SQLContext(sc)
-      val back = sqlContext.fromMongoDB(testConfig)
+      val back = TestSQLContext.fromMongoDB(testConfig)
       back.printSchema()
       assert(back.schema.fields.filter(_.name == "date").head.dataType == TimestampType)
       val timestamp = back.first().get(2).asInstanceOf[Timestamp]
