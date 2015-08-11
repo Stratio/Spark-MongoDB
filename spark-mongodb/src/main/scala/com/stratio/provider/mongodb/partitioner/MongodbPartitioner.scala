@@ -138,7 +138,7 @@ class MongodbPartitioner(
 
     val cmd: MongoDBObject = MongoDBObject(
       "splitVector" -> collectionFullName,
-      "keyPattern" -> MongoDBObject(MongodbConfig.SplitKey -> 1),
+      "keyPattern" -> MongoDBObject(config[String](MongodbConfig.SplitKey) -> 1),
       "force" -> false,
       "maxChunkSize" -> config(MongodbConfig.SplitSize)
     )
