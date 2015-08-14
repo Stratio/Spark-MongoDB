@@ -20,13 +20,18 @@
 
 package com.stratio.provider.mongodb.reader
 
+import java.sql.Timestamp
+import java.text.SimpleDateFormat
+import java.util.Locale
+
 import com.mongodb.util.JSON
 import com.mongodb.{BasicDBObject, DBObject}
-import com.stratio.provider.mongodb.partitioner.MongodbPartition
 import com.stratio.provider.mongodb._
+import com.stratio.provider.mongodb.partitioner.MongodbPartition
 import com.stratio.provider.partitioner.DeepPartitionRange
-import org.apache.spark.sql.sources.Filter
-import org.apache.spark.sql.sources.EqualTo
+import org.apache.spark.sql.sources.{EqualTo, Filter}
+import org.apache.spark.sql.test.TestSQLContext
+import org.apache.spark.sql.types._
 import org.scalatest.{FlatSpec, Matchers}
 
 class MongodbReaderSpec extends FlatSpec
@@ -88,6 +93,21 @@ with TestBsonData {
       val posAfter = mongodbReader.hasNext
       posBefore should equal(!posAfter)
 
+    }
+  }
+
+  it should "properly read java.util.Date (mongodb Date) type as Timestamp" in {
+    val dfunc = (s: String) => new SimpleDateFormat("EEE MMM dd HH:mm:ss Z yyyy", Locale.ENGLISH).parse(s)
+    import com.mongodb.casbah.Imports.DBObject
+    val stringAndDate = List(DBObject("string" -> "this is a simple string.", "date" -> dfunc("Mon Aug 10 07:52:49 EDT 2015")))
+
+    withEmbedMongoFixture(stringAndDate) { mongodbProc =>
+      val back = TestSQLContext.fromMongoDB(testConfig)
+      back.printSchema()
+      assert(back.schema.fields.filter(_.name == "date").head.dataType == TimestampType)
+      val timestamp = back.first().get(2).asInstanceOf[Timestamp]
+      val origTimestamp = new Timestamp(stringAndDate.head.get("date").asInstanceOf[java.util.Date].getTime)
+      timestamp should equal(origTimestamp)
     }
   }
 

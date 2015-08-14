@@ -18,10 +18,14 @@
 
 package com.stratio.provider.mongodb.schema
 
+import java.text.SimpleDateFormat
+import java.util.Locale
+
 import com.stratio.provider.mongodb.partitioner.MongodbPartitioner
 import com.stratio.provider.mongodb.rdd.MongodbRDD
 import com.stratio.provider.mongodb.{MongoEmbedDatabase, MongodbConfig, MongodbConfigBuilder, TestBsonData}
 import org.apache.spark.sql.test.TestSQLContext
+import org.apache.spark.sql.types.TimestampType
 import org.scalatest._
 
 class MongodbSchemaSpec extends FlatSpec
@@ -86,6 +90,19 @@ with TestBsonData {
 
       schema.fields should have size 5
 
+      schema.printTreeString()
+    }
+  }
+
+  it should "read java.util.Date fields as timestamptype" in {
+    val dfunc = (s: String) => new SimpleDateFormat("EEE MMM dd HH:mm:ss Z yyyy", Locale.ENGLISH).parse(s)
+    import com.mongodb.casbah.Imports.DBObject
+    val stringAndDate = List(DBObject("string" -> "this is a simple string.", "date" -> dfunc("Mon Aug 10 07:52:49 EDT 2015")))
+    withEmbedMongoFixture(stringAndDate) { mongodProc =>
+      val schema = MongodbSchema(mongodbRDD, 1.0).schema()
+
+      schema.fields should have size 3
+      schema.fields.filter(_.name == "date").head.dataType should equal(TimestampType)
       schema.printTreeString()
     }
   }
