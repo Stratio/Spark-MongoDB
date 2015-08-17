@@ -58,8 +58,7 @@ object MongodbRowConverter extends DeepRowConverter[DBObject]
     schema: StructType): Row = {
     val values: Seq[Any] = schema.fields.map {
       case StructField(name, dataType, _, _) =>
-        json.get(name).flatMap(v => Option(v)).map(
-          toSQL(_, dataType)).orNull
+        json.get(name).map(toSQL(_, dataType)).orNull
     }
     Row.fromSeq(values)
   }
