@@ -3,10 +3,6 @@ First steps
 
 We are going to introduce how to use our MongoDB provider for Apache Spark.
 
-Requirements
-============
-This library requires Apache Spark 1.4+, Scala 10.4+, casbah 2.8+
-
 Using the library
 =================
 
@@ -58,19 +54,19 @@ To read a DataFrame from a Mongo collection, you can use the library by loading 
 
 ::
 
- scala> import com.mongodb.casbah.{WriteConcern => MongodbWriteConcern}
- scala> import com.stratio.provider._
- scala> import com.stratio.provider.mongodb._
- scala> import com.stratio.provider.mongodb.schema._
- scala> import com.stratio.provider.mongodb.writer._
- scala> import org.apache.spark.sql.SQLContext
- scala> import DeepConfig._
- scala> import MongodbConfig._
- scala> val builder = MongodbConfigBuilder(Map(Host -> List("host:port"), Database -> "highschool", Collection -> "students", SamplingRatio -> 1.0, WriteConcern -> MongodbWriteConcern.Normal))
- scala> val readConfig = builder.build()
- scala> val mongoRDD = sqlContext.fromMongoDB(readConfig)
- scala> mongoRDD.registerTempTable("students")
- scala> sqlContext.sql("SELECT name, age FROM students")
+ import com.mongodb.casbah.{WriteConcern => MongodbWriteConcern}
+ import com.stratio.provider._
+ import com.stratio.provider.mongodb._
+ import com.stratio.provider.mongodb.schema._
+ import com.stratio.provider.mongodb.writer._
+ import org.apache.spark.sql.SQLContext
+ import DeepConfig._
+ import MongodbConfig._
+ val builder = MongodbConfigBuilder(Map(Host -> List("host:port"), Database -> "highschool", Collection -> "students", SamplingRatio -> 1.0, WriteConcern -> MongodbWriteConcern.Normal))
+ val readConfig = builder.build()
+ val mongoRDD = sqlContext.fromMongoDB(readConfig)
+ mongoRDD.registerTempTable("students")
+ sqlContext.sql("SELECT name, age FROM students")
 
 
 In the example we can see how to use the fromMongoDB() function to read from MongoDB and transform it to a DataFrame.
@@ -79,16 +75,16 @@ To save a DataFrame in MongoDB you should use the saveToMongodb() function as fo
 
 ::
 
- scala> import org.apache.spark.sql._
- scala> val sqlContext = new SQLContext(sc)
- scala> import sqlContext._
- scala> case class Student(name: String, age: Int)
- scala> val dataFrame: DataFrame = createDataFrame(sc.parallelize(List(Student("Torcuato", 27), Student("Rosalinda", 34))))
- scala> import com.mongodb.casbah.{WriteConcern => MongodbWriteConcern}
- scala> import com.stratio.provider.mongodb._
- scala> import MongodbConfig._
- scala> val saveConfig = MongodbConfigBuilder(Map(Host -> List("host:port"), Database -> "highschool", Collection -> "students", SamplingRatio -> 1.0, WriteConcern -> MongodbWriteConcern.Normal, SplitSize -> 8, SplitKey -> "_id", SplitSize -> 8, SplitKey -> "_id"))
- scala> dataFrame.saveToMongodb(saveConfig.build)
+ import org.apache.spark.sql._
+ val sqlContext = new SQLContext(sc)
+ import sqlContext._
+ case class Student(name: String, age: Int)
+ val dataFrame: DataFrame = createDataFrame(sc.parallelize(List(Student("Torcuato", 27), Student("Rosalinda", 34))))
+ import com.mongodb.casbah.{WriteConcern => MongodbWriteConcern}
+ import com.stratio.provider.mongodb._
+ import MongodbConfig._
+ val saveConfig = MongodbConfigBuilder(Map(Host -> List("host:port"), Database -> "highschool", Collection -> "students", SamplingRatio -> 1.0, WriteConcern -> MongodbWriteConcern.Normal, SplitSize -> 8, SplitKey -> "_id", SplitSize -> 8, SplitKey -> "_id"))
+ dataFrame.saveToMongodb(saveConfig.build)
 
 
 Python API
@@ -103,6 +99,27 @@ Mongo data can be queried from Python too:
  sqlContext.sql("SELECT * FROM students_table").collect()
 
 
+R API
+-----
+Mongo data can also be queried from SparkR (sparkR shell example):
+
+First, enter the SparkR shell from your SPARK_HOME.
+
+::
+
+ $ bin/sparkR --jars <path-to>/spark-mongodb-core-<version>.jar,<path-to>/casbah-commons_2.10-2.8.0.jar,<path-to>/casbah-core_2.10-2.8.0.jar, <path-to>/casbah-query_2.10-2.8.0.jar,<path-to>/mongo-java-driver-2.13.0.jar
+
+Then:
+
+::
+
+ credentials and samplingratio are optionals.
+ df <- read.df(sqlContext, source= "com.stratio.provider.mongodb", host = "host:port", database = "highschool", collection = "students", splitSize = 8, splitKey = "_id", credentials="user1,database,password;user2,database2,password2", samplingRatio=1.0)
+ registerTempTable(df, "students_table")
+ collect(sql(sqlContext, "SELECT * FROM students_table"))
+
+
+
 SSL support
 -----------
 
@@ -115,8 +132,8 @@ For both Scala examples you need to add this 'import', and add 'SSLOptions' to t
 
 ::
 
- scala> import com.stratio.provider.mongodb.MongodbSSLOptions._
- scala> val builder = MongodbConfigBuilder(Map(Host -> List("host:port"), Database -> "highschool", Collection -> "students", SamplingRatio -> 1.0, WriteConcern -> MongodbWriteConcern.Normal, SSLOptions -> MongodbSSLOptions("<path-to>/keyStoreFile.keystore","keyStorePassword","<path-to>/trustStoreFile.keystore","trustStorePassword")))
+ import com.stratio.provider.mongodb.MongodbSSLOptions._
+ val builder = MongodbConfigBuilder(Map(Host -> List("host:port"), Database -> "highschool", Collection -> "students", SamplingRatio -> 1.0, WriteConcern -> MongodbWriteConcern.Normal, SSLOptions -> MongodbSSLOptions("<path-to>/keyStoreFile.keystore","keyStorePassword","<path-to>/trustStoreFile.keystore","trustStorePassword")))
 
 
 Python API 
