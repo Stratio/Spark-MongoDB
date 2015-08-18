@@ -29,4 +29,4 @@ Latest compatible versions
 
 Requirements
 ============
-This library requires Apache Spark 1.4+, Scala 10.4+, casbah 2.8+
+This library requires Apache Spark 1.4+, Scala 2.10.4+, Casbah 2.8+

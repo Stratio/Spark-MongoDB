@@ -2,13 +2,18 @@
 Spark-Mongodb is a library that allows the user to read/write data with [Spark SQL](http://spark.apache.org/docs/latest/sql-programming-guide.html)
 from/into MongoDB collections.
 
+
+
+If you are using this Data Source, feel free to briefly share your experience by Pull Request this [file](https://github.com/Stratio/spark-mongodb/blob/master/doc/src/site/sphinx/PoweredBy.rst).
+
+
+
 ## How to use Spark-MongoDB##
 
-Requirements, installation of this project can be found in [about] (<https://github.com/Stratio/spark-mongodb/blob/master/doc/src/site/sphinx/about.rst>).
+Requirements of this project can be found in [about] (<https://github.com/Stratio/spark-mongodb/blob/master/doc/src/site/sphinx/about.rst>).
 
 There also exists a [First Steps] (<https://github.com/Stratio/spark-mongodb/blob/master/doc/src/site/sphinx/First_Steps.rst>) document where we show some simple examples.
 
-If you are using this Data Source, feel free to briefly share your experience by Pull Request this [file](https://github.com/Stratio/spark-mongodb/blob/master/doc/src/site/sphinx/PoweredBy.rst).
 
 
 # License #
