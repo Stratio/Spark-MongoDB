@@ -47,48 +47,73 @@ $ bin/spark-shell --jars <path-to>/spark-mongodb-core-<version>.jar,<path-to>/ca
 
 
 
-Connection options
-==================
-
-+-------------------------+--------------------------------------------------------------------------------+
-|      Option             |    Format  example                                                             |
-+=========================+================================================================================+
-| "host"                  | "host:port,host:port"                                                          |
-+-------------------------+--------------------------------------------------------------------------------+
-| "database"              | "databaseName"                                                                 |
-+-------------------------+--------------------------------------------------------------------------------+
-| "collection"            | "collectionName"                                                               |
-+-------------------------+--------------------------------------------------------------------------------+
-| "schema_samplingRatio"  |      1.0                                                                       |
-+-------------------------+--------------------------------------------------------------------------------+
-| "writeConcern"          | mongodb.WriteConcern.ACKNOWLEDGED                                              |
-+-------------------------+--------------------------------------------------------------------------------+
-| "splitSize"             |       10                                                                       |
-+-------------------------+--------------------------------------------------------------------------------+
-| "splitKey"              | "fieldName"                                                                    |
-+-------------------------+--------------------------------------------------------------------------------+
-| "allowSlaveReads"       |      false                                                                     |
-+-------------------------+--------------------------------------------------------------------------------+
-| "credentials"           |  "user,database,password;user,database,password"                               |
-+-------------------------+--------------------------------------------------------------------------------+
-| "_idField"              | "fieldName"                                                                    |
-+-------------------------+--------------------------------------------------------------------------------+
-| "searchFields"          |  "fieldName,fieldName"                                                         |
-+-------------------------+--------------------------------------------------------------------------------+
-| "ssloptions"            |  "/path/keystorefile,keystorepassword,/path/truststorefile,truststorepassword" |
-+-------------------------+--------------------------------------------------------------------------------+
-| "readpreference"        |  "nearest"                                                                     |
-+-------------------------+--------------------------------------------------------------------------------+
-| "language"              |  "en"                                                                          |
-+-------------------------+--------------------------------------------------------------------------------+
+It is the same in sparkR and pyspark shells.
 
 
 
+
+Configuration parameters
+========================
+
++-------------------------+--------------------------------------------------------------------------------+-------------------------+
+|      Option             |    Format  example                                                             |      requested          |
++=========================+================================================================================+=========================+
+| "host"                  | "host:port,host:port"                                                          | Yes                     |
++-------------------------+--------------------------------------------------------------------------------+-------------------------+
+| "database"              | "databaseName"                                                                 | Yes                     |
++-------------------------+--------------------------------------------------------------------------------+-------------------------+
+| "collection"            | "collectionName"                                                               | Yes                     |
++-------------------------+--------------------------------------------------------------------------------+-------------------------+
+| "schema_samplingRatio"  |      1.0                                                                       | No                      |
++-------------------------+--------------------------------------------------------------------------------+-------------------------+
+| "writeConcern"          | mongodb.WriteConcern.ACKNOWLEDGED                                              | No                      |
++-------------------------+--------------------------------------------------------------------------------+-------------------------+
+| "splitSize"             |       10                                                                       | No                      |
++-------------------------+--------------------------------------------------------------------------------+-------------------------+
+| "splitKey"              | "fieldName"                                                                    | No                      |
++-------------------------+--------------------------------------------------------------------------------+-------------------------+
+| "allowSlaveReads"       |      false                                                                     | No                      |
++-------------------------+--------------------------------------------------------------------------------+-------------------------+
+| "credentials"           |  "user,database,password;user,database,password"                               | No                      |
++-------------------------+--------------------------------------------------------------------------------+-------------------------+
+| "_idField"              | "fieldName"                                                                    | No                      |
++-------------------------+--------------------------------------------------------------------------------+-------------------------+
+| "searchFields"          |  "fieldName,fieldName"                                                         | No                      |
++-------------------------+--------------------------------------------------------------------------------+-------------------------+
+| "ssloptions"            |  "/path/keystorefile,keystorepassword,/path/truststorefile,truststorepassword" | No                      |
++-------------------------+--------------------------------------------------------------------------------+-------------------------+
+| "readpreference"        |  "nearest"                                                                     | No                      |
++-------------------------+--------------------------------------------------------------------------------+-------------------------+
+| "language"              |  "en"                                                                          | No                      |
++-------------------------+--------------------------------------------------------------------------------+-------------------------+
+
+
+
+Examples
+========
 
 Scala API
 ---------
 
 To read a DataFrame from a Mongo collection, you can use the library by loading the implicits from `com.stratio.provider.mongodb._`.
+
+To save a DataFrame in MongoDB you should use the saveToMongodb() function as follows:
+
+::
+
+ import org.apache.spark.sql._
+ val sqlContext = new SQLContext(sc)
+ import sqlContext._
+ case class Student(name: String, age: Int)
+ val dataFrame: DataFrame = createDataFrame(sc.parallelize(List(Student("Torcuato", 27), Student("Rosalinda", 34))))
+ import com.mongodb.casbah.{WriteConcern => MongodbWriteConcern}
+ import com.stratio.provider.mongodb._
+ import MongodbConfig._
+ val saveConfig = MongodbConfigBuilder(Map(Host -> List("host:port"), Database -> "highschool", Collection -> "students", SamplingRatio -> 1.0, WriteConcern -> MongodbWriteConcern.Normal, SplitSize -> 8, SplitKey -> "_id", SplitSize -> 8, SplitKey -> "_id"))
+ dataFrame.saveToMongodb(saveConfig.build)
+
+
+In the example we can see how to use the fromMongoDB() function to read from MongoDB and transform it to a DataFrame.
 
 ::
 
@@ -107,28 +132,28 @@ To read a DataFrame from a Mongo collection, you can use the library by loading 
  sqlContext.sql("SELECT name, age FROM students")
 
 
-In the example we can see how to use the fromMongoDB() function to read from MongoDB and transform it to a DataFrame.
 
-To save a DataFrame in MongoDB you should use the saveToMongodb() function as follows:
+If you want to use a SSL connection, you need to add this 'import', and add 'SSLOptions' to the MongodbConfigBuilder:
 
 ::
 
- import org.apache.spark.sql._
- val sqlContext = new SQLContext(sc)
- import sqlContext._
- case class Student(name: String, age: Int)
- val dataFrame: DataFrame = createDataFrame(sc.parallelize(List(Student("Torcuato", 27), Student("Rosalinda", 34))))
- import com.mongodb.casbah.{WriteConcern => MongodbWriteConcern}
- import com.stratio.provider.mongodb._
- import MongodbConfig._
- val saveConfig = MongodbConfigBuilder(Map(Host -> List("host:port"), Database -> "highschool", Collection -> "students", SamplingRatio -> 1.0, WriteConcern -> MongodbWriteConcern.Normal, SplitSize -> 8, SplitKey -> "_id", SplitSize -> 8, SplitKey -> "_id"))
- dataFrame.saveToMongodb(saveConfig.build)
+ import com.stratio.provider.mongodb.MongodbSSLOptions._
+ val builder = MongodbConfigBuilder(Map(Host -> List("host:port"), Database -> "highschool", Collection -> "students", SamplingRatio -> 1.0, WriteConcern -> MongodbWriteConcern.Normal, SSLOptions -> MongodbSSLOptions("<path-to>/keyStoreFile.keystore","keyStorePassword","<path-to>/trustStoreFile.keystore","trustStorePassword")))
+
 
 
 Python API
 ----------
 
 Mongo data can be queried from Python too:
+
+First, enter the pyspark shell from your SPARK_HOME.
+
+::
+
+ $ bin/pyspark --jars <path-to>/spark-mongodb-core-<version>.jar,<path-to>/casbah-commons_2.10-2.8.0.jar,<path-to>/casbah-core_2.10-2.8.0.jar, <path-to>/casbah-query_2.10-2.8.0.jar,<path-to>/mongo-java-driver-2.13.0.jar
+
+Then:
 
 ::
 
@@ -155,32 +180,6 @@ Then:
  df <- read.df(sqlContext, source= "com.stratio.provider.mongodb", host = "host:port", database = "highschool", collection = "students", splitSize = 8, splitKey = "_id", credentials="user1,database,password;user2,database2,password2", samplingRatio=1.0)
  registerTempTable(df, "students_table")
  collect(sql(sqlContext, "SELECT * FROM students_table"))
-
-
-
-SSL support
------------
-
-If you want to use a SSL connection, you need to add some options to the previous examples:
-
-Scala API 
----------
-
-For both Scala examples you need to add this 'import', and add 'SSLOptions' to the MongodbConfigBuilder:
-
-::
-
- import com.stratio.provider.mongodb.MongodbSSLOptions._
- val builder = MongodbConfigBuilder(Map(Host -> List("host:port"), Database -> "highschool", Collection -> "students", SamplingRatio -> 1.0, WriteConcern -> MongodbWriteConcern.Normal, SSLOptions -> MongodbSSLOptions("<path-to>/keyStoreFile.keystore","keyStorePassword","<path-to>/trustStoreFile.keystore","trustStorePassword")))
-
-
-Python API 
-----------
-In this case you only need to add SSL options when you create the temporary table in the specified format below:
-
-::
-
- sqlContext.sql("CREATE TEMPORARY TABLE students_table USING com.stratio.provider.mongodb OPTIONS (host 'host:port', database 'databaseName', collection 'collectionName', ssloptions '<path-to>/keyStoreFile.keystore,keyStorePassword,<path-to>/trustStoreFile.keystore,trustStorePassword')")
 
 
 License
