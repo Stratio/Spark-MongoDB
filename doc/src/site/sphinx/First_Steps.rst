@@ -51,7 +51,6 @@ It is the same in sparkR and pyspark shells.
 
 
 
-
 Configuration parameters
 ========================
 
@@ -102,14 +101,13 @@ To save a DataFrame in MongoDB you should use the saveToMongodb() function as fo
 ::
 
  import org.apache.spark.sql._
- val sqlContext = new SQLContext(sc)
  import sqlContext._
  case class Student(name: String, age: Int)
  val dataFrame: DataFrame = createDataFrame(sc.parallelize(List(Student("Torcuato", 27), Student("Rosalinda", 34))))
  import com.mongodb.casbah.{WriteConcern => MongodbWriteConcern}
  import com.stratio.provider.mongodb._
  import MongodbConfig._
- val saveConfig = MongodbConfigBuilder(Map(Host -> List("host:port"), Database -> "highschool", Collection -> "students", SamplingRatio -> 1.0, WriteConcern -> MongodbWriteConcern.Normal, SplitSize -> 8, SplitKey -> "_id", SplitSize -> 8, SplitKey -> "_id"))
+ val saveConfig = MongodbConfigBuilder(Map(Host -> List("localhost:27017"), Database -> "highschool", Collection -> "students", SamplingRatio -> 1.0, WriteConcern -> MongodbWriteConcern.Normal, SplitSize -> 8, SplitKey -> "_id", SplitSize -> 8, SplitKey -> "_id"))
  dataFrame.saveToMongodb(saveConfig.build)
 
 
@@ -125,7 +123,7 @@ In the example we can see how to use the fromMongoDB() function to read from Mon
  import org.apache.spark.sql.SQLContext
  import DeepConfig._
  import MongodbConfig._
- val builder = MongodbConfigBuilder(Map(Host -> List("host:port"), Database -> "highschool", Collection -> "students", SamplingRatio -> 1.0, WriteConcern -> MongodbWriteConcern.Normal))
+ val builder = MongodbConfigBuilder(Map(Host -> List("localhost:27017"), Database -> "highschool", Collection -> "students", SamplingRatio -> 1.0, WriteConcern -> MongodbWriteConcern.Normal))
  val readConfig = builder.build()
  val mongoRDD = sqlContext.fromMongoDB(readConfig)
  mongoRDD.registerTempTable("students")
@@ -138,9 +136,50 @@ If you want to use a SSL connection, you need to add this 'import', and add 'SSL
 ::
 
  import com.stratio.provider.mongodb.MongodbSSLOptions._
- val builder = MongodbConfigBuilder(Map(Host -> List("host:port"), Database -> "highschool", Collection -> "students", SamplingRatio -> 1.0, WriteConcern -> MongodbWriteConcern.Normal, SSLOptions -> MongodbSSLOptions("<path-to>/keyStoreFile.keystore","keyStorePassword","<path-to>/trustStoreFile.keystore","trustStorePassword")))
+ val builder = MongodbConfigBuilder(Map(Host -> List("localhost:27017"), Database -> "highschool", Collection -> "students", SamplingRatio -> 1.0, WriteConcern -> MongodbWriteConcern.Normal, SSLOptions -> MongodbSSLOptions("<path-to>/keyStoreFile.keystore","keyStorePassword","<path-to>/trustStoreFile.keystore","trustStorePassword")))
 
 
+Using  StructType:
+
+::
+
+
+ import org.apache.spark.sql.types._
+ val schemaMongo = StructType(StructField("name", StringType, true) :: StructField("age", IntegerType, true ) :: Nil)
+ sqlContext.createExternalTable("mongoTable", "com.stratio.provider.mongodb", schemaMongo, Map("host" -> "localhost:27017", "database" -> "highschool", "collection" -> "students"))
+ sqlContext.sql("SELECT * FROM mongoTable WHERE name = 'Torcuato'").show()
+ sqlContext.sql("DROP TABLE mongoTable")
+
+
+Using DataFrameWriter:
+
+::
+
+ import org.apache.spark.sql.SQLContext._
+ import org.apache.spark.sql._
+ val options = Map("host" -> "localhost:27017", "database" -> "highschool", "collection" -> "students")
+ case class Student(name: String, age: Int)
+ val dfw: DataFrame = sqlContext.createDataFrame(sc.parallelize(List(Student("Michael", 46))))
+ dfw.write.format("com.stratio.provider.mongodb").mode(SaveMode.Append).options(options).save()
+ val df = sqlContext.read.format("com.stratio.provider.mongodb").options(options).load
+ df.show
+
+
+Using HiveContext (sqlContext in spark-shell provide Hive support):
+
+::
+
+ sqlContext.sql("CREATE TABLE IF NOT EXISTS mongoTable(name STRING, age INTEGER) USING com.stratio.provider.mongodb OPTIONS (host 'localhost:27017', database 'highschool', collection 'students')")
+ sqlContext.sql("SELECT * FROM mongoTable WHERE name = 'Torcuato'").show()
+ sqlContext.sql("DROP TABLE mongoTable")
+
+Using spark-sql shell:
+
+::
+
+ CREATE TEMPORARY TABLE mongoTable USING com.stratio.provider.mongodb OPTIONS (host 'host:port', database 'highschool', collection 'students');
+ SELECT * FROM mongoTable WHERE name = 'Torcuato';
+ DROP TABLE mongoTable;
 
 Python API
 ----------
