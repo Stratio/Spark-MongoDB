@@ -10,3 +10,23 @@ fast and general-purpose cluster computing system that can run applications up t
 
 Integrating MongoDB and Spark gives us a system that combines the best of both
 worlds opening to MongoDB the possibility of solving a wide range of new use cases.
+
+
+Latest compatible versions
+==========================
++-----------------+----------------+----------+
+| Spark-MongoDB   | Apache Spark   | MongoDB  |
++=================+================+==========+
+|     0.8.7       |      1.4.0     |   3.0.+  |
++-----------------+----------------+----------+
+|  0.8.2 - 0.8.6  |      1.4.0     |   3.0.+  |
++-----------------+----------------+----------+
+|     0.8.1       |      1.3.0     |   3.0.+  |
++-----------------+----------------+----------+
+|     0.8.0       |      1.2.1     |   3.0.+  |
++-----------------+----------------+----------+
+
+
+Requirements
+============
+This library requires Apache Spark 1.4+, Scala 2.10.4+, Casbah 2.8+
