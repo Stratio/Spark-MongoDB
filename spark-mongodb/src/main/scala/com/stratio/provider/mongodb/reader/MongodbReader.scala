@@ -20,7 +20,7 @@ package com.stratio.provider.mongodb.reader
 
 import com.mongodb.{MongoCredential, QueryBuilder}
 import com.mongodb.casbah.Imports._
-import com.stratio.provider.{mongodb, DeepConfig}
+import com.stratio.provider.DeepConfig
 import com.stratio.provider.mongodb.{MongodbCredentials, MongodbSSLOptions, MongodbClientFactory, MongodbConfig}
 import com.stratio.provider.mongodb.partitioner.MongodbPartition
 import org.apache.spark.Partition
@@ -78,19 +78,7 @@ class MongodbReader(
         config[List[MongodbCredentials]](MongodbConfig.Credentials).map{
           case MongodbCredentials(user,database,password) =>
             MongoCredential.createCredential(user,database,password)},
-        config.get[MongodbSSLOptions](MongodbConfig.SSLOptions),
-        config[String](MongodbConfig.readPreference),
-        Map(
-          MongodbConfig.ReplicaSet -> config[String](MongodbConfig.ReplicaSet),
-          MongodbConfig.ConnectTimeoutMillis -> config[String](MongodbConfig.ConnectTimeoutMillis),
-          MongodbConfig.SocketTimeoutMillis -> config[String](MongodbConfig.SocketTimeoutMillis),
-          MongodbConfig.MinPoolSize -> config[String](MongodbConfig.MinPoolSize),
-          MongodbConfig.MaxPoolSize -> config[String](MongodbConfig.MaxPoolSize),
-          MongodbConfig.MaxIdleTimeMillis -> config[String](MongodbConfig.MaxIdleTimeMillis),
-          MongodbConfig.WaitQueueMultiple -> config[String](MongodbConfig.WaitQueueMultiple),
-          MongodbConfig.AutoConnectRetry -> config[String](MongodbConfig.AutoConnectRetry)
-        )
-      ))
+        config.get[MongodbSSLOptions](MongodbConfig.SSLOptions), config[String](MongodbConfig.readPreference)))
 
       dbCursor = (for {
         client <- mongoClient

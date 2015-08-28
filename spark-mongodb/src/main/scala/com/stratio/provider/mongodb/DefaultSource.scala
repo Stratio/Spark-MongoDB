@@ -101,11 +101,7 @@ class DefaultSource extends RelationProvider with SchemaRelationProvider with Cr
     val properties :Map[String, Any] =
       Map(Host -> host, Database -> database, Collection -> collection , SamplingRatio -> samplingRatio, readPreference -> readpreference)
 
-    val optionalProperties: List[String] = List(Credentials,SSLOptions, IdField, SearchFields, Language,
-      ReplicaSet, ConnectTimeoutMillis, SocketTimeoutMillis, MinPoolSize, MaxPoolSize, MaxIdleTimeMillis,
-      WaitQueueMultiple,AutoConnectRetry
-    )
-
+    val optionalProperties: List[String] = List(Credentials,SSLOptions, IdField, SearchFields, Language)
     val finalMap = (properties /: optionalProperties){    //TODO improve code
       case (properties,Credentials) =>
         /** We will assume credentials are provided like 'user,database,password;user,database,password;...' */
@@ -126,6 +122,14 @@ class DefaultSource extends RelationProvider with SchemaRelationProvider with Cr
           properties.+(SSLOptions -> ssloptions)
         }
         else properties
+      case (properties, IdField) => {
+        val idFieldInput = parameters.get(IdField)
+        if(idFieldInput.isDefined) properties.+(IdField -> idFieldInput.get) else properties
+      }
+      case (properties, Language) => {
+        val languageInput = parameters.get(Language)
+        if(languageInput.isDefined) properties.+(Language -> languageInput.get) else properties
+      }
       case (properties, SearchFields) => {
         /** We will assume fields are provided like 'user,database,password...' */
         val searchInputs = parameters.get(SearchFields)
@@ -133,9 +137,6 @@ class DefaultSource extends RelationProvider with SchemaRelationProvider with Cr
           val searchFields = searchInputs.get.split(",")
           properties.+(SearchFields -> searchFields)
         } else properties
-      } case (properties, prop:String ) => {
-        val res:Option[String] = parameters.get(prop)
-        if(res.isDefined) properties.+( prop -> res.get) else properties
       }
     }
     finalMap

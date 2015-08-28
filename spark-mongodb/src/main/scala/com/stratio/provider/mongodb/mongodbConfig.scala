@@ -62,17 +62,6 @@ object MongodbConfig {
   val readPreference = "readpreference"
   val Language = "language"
 
-  //URL String Options
-  val ReplicaSet = "replicaSet"
-  val ConnectTimeoutMillis = "connectTimeoutMS"
-  val SocketTimeoutMillis = "socketTimeoutMS"
-  val MinPoolSize = "minPoolSize"
-  val MaxPoolSize = "maxPoolSize"
-  val MaxIdleTimeMillis = "maxIdleTimeMS"
-  val WaitQueueMultiple = "waitQueueMultiple"
-  val AutoConnectRetry = "autoConnectRetry"
-
-
   val all = List(
     Host,
     Database,
