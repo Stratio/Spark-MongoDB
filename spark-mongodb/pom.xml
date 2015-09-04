@@ -348,6 +348,10 @@
         </profile>
         <profile>
             <id>package</id>
+            <properties>
+                <scala.version>2.10.4</scala.version>
+                <scala.binary.version>2.10</scala.binary.version>
+            </properties>
             <build>
                 <plugins>
                     <plugin>

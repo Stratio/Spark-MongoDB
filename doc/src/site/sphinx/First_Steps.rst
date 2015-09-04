@@ -23,12 +23,22 @@ There also exists the possibility of downloading the project by doing:
  git clone https://github.com/Stratio/spark-mongodb.git
  mvn clean install
 
-In order to add the spark-mongodb jar file to Spark, you can use the --jars command line option.
+In order to add the spark-mongodb jar file to Spark, you can use the --packages or --jars command line option.
 For example, to include it when starting the spark shell:
+
+
+Spark packages option:
 
 ::
 
-$ bin/spark-shell --jars <path-to>/spark-mongodb-core-<version>.jar,<path-to>/casbah-commons_2.10-2.8.0.jar,<path-to>/casbah-core_2.10-2.8.0.jar,<path-to>/casbah-query_2.10-2.8.0.jar,<path-to>/mongo-java-driver-2.13.0.jar
+ $ bin/spark-shell --packages com.stratio:spark-mongodb-core:<VERSION>
+
+
+Jars option:
+
+::
+
+ $ bin/spark-shell --jars <path-to>/spark-mongodb-core-<version>.jar,<path-to>/casbah-commons_2.10-2.8.0.jar,<path-to>/casbah-core_2.10-2.8.0.jar,<path-to>/casbah-query_2.10-2.8.0.jar,<path-to>/mongo-java-driver-2.13.0.jar
 
 ::
 
@@ -190,7 +200,7 @@ First, enter the pyspark shell from your SPARK_HOME.
 
 ::
 
- $ bin/pyspark --jars <path-to>/spark-mongodb-core-<version>.jar,<path-to>/casbah-commons_2.10-2.8.0.jar,<path-to>/casbah-core_2.10-2.8.0.jar, <path-to>/casbah-query_2.10-2.8.0.jar,<path-to>/mongo-java-driver-2.13.0.jar
+ $ bin/pyspark --packages com.stratio:spark-mongodb-core:<VERSION>
 
 Then:
 
@@ -209,7 +219,7 @@ First, enter the SparkR shell from your SPARK_HOME.
 
 ::
 
- $ bin/sparkR --jars <path-to>/spark-mongodb-core-<version>.jar,<path-to>/casbah-commons_2.10-2.8.0.jar,<path-to>/casbah-core_2.10-2.8.0.jar, <path-to>/casbah-query_2.10-2.8.0.jar,<path-to>/mongo-java-driver-2.13.0.jar
+ $ bin/sparkR --packages com.stratio:spark-mongodb-core:<VERSION>
 
 Then:
 
