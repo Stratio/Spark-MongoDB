@@ -61,6 +61,7 @@ object MongodbConfig {
   val SSLOptions = "ssloptions"
   val readPreference = "readpreference"
   val Language = "language"
+  val Timeout = "timeout"
 
   val all = List(
     Host,
@@ -70,7 +71,9 @@ object MongodbConfig {
     WriteConcern,
     SplitKey,
     SplitSize,
-    readPreference)
+    readPreference,
+    Timeout
+    )
 
   //  Default values
 
