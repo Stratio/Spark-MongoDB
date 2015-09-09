@@ -18,7 +18,7 @@
 
 package com.stratio.provider
 
-import com.stratio.provider.DeepConfig.Property
+import com.stratio.provider.Config.Property
 
 import scala.reflect.ClassTag
 
@@ -29,7 +29,7 @@ import scala.reflect.ClassTag
  * @param properties Map of any-type properties.
  * @tparam Builder Current Builder implementation type.
  */
-abstract class DeepConfigBuilder[Builder<:DeepConfigBuilder[Builder] ](
+abstract class ConfigBuilder[Builder<:ConfigBuilder[Builder] ](
   val properties: Map[Property,Any] = Map()) extends Serializable { builder =>
 
   /**
@@ -63,7 +63,7 @@ abstract class DeepConfigBuilder[Builder<:DeepConfigBuilder[Builder] ](
    *
    * @return The Deep configuration object.
    */
-  def build(): DeepConfig = new DeepConfig {
+  def build(): Config = new Config {
 
     val properties = builder.properties
 
@@ -81,12 +81,12 @@ abstract class DeepConfigBuilder[Builder<:DeepConfigBuilder[Builder] ](
 /**
  * Deep standard configuration object
  */
-trait DeepConfig extends Serializable{
+trait Config extends Serializable {
 
   /**
    * Contained properties in configuration object
    */
-  val properties: Map[Property,Any]
+  val properties: Map[Property, Any]
 
   /**
    * Gets specified property from current configuration object
@@ -94,7 +94,7 @@ trait DeepConfig extends Serializable{
    * @tparam T Property expected value type.
    * @return An optional value of expected type
    */
-  def get[T:ClassTag](property: Property): Option[T] =
+  def get[T: ClassTag](property: Property): Option[T] =
     properties.get(property).map(_.asInstanceOf[T])
 
   /**
@@ -104,12 +104,12 @@ trait DeepConfig extends Serializable{
    * @tparam T Property expected value type
    * @return Expected type value
    */
-  def apply[T:ClassTag](property: Property): T =
+  def apply[T: ClassTag](property: Property): T = {
     get[T](property).get
-
+  }
 }
 
-object DeepConfig {
+object Config {
 
   type Property = String
 

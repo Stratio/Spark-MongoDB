@@ -18,24 +18,17 @@
 
 package com.stratio.provider.schema
 
-import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.Row
 import org.apache.spark.sql.types.StructType
 
 /**
- * Knows how to map from some Data Source native RDD to an {{{RDD[Row]}}}
- * @tparam T Original RDD type
+ * Knows the way to provide some Data Source schema
  */
-trait DeepRowConverter[T] {
+trait SchemaProvider {
 
   /**
-   * Given a known schema,
-   * it maps an RDD of some specified type to an {{{RDD[Row}}}
-   * @param schema RDD native schema
-   * @param rdd Current native RDD
-   * @return A brand new RDD of Spark SQL Row type.
+   * Provides the schema for current implementation of Data Source
+   * @return schema
    */
-  def asRow(schema: StructType, rdd: RDD[T]): RDD[Row]
+  def schema(): StructType
 
 }
-

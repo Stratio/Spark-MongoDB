@@ -19,7 +19,7 @@
 package com.stratio.provider.mongodb.writer
 
 import com.mongodb.casbah.Imports._
-import com.stratio.provider.DeepConfig
+import com.stratio.provider.Config
 import com.stratio.provider.mongodb.MongodbConfig
 
 /**
@@ -30,7 +30,7 @@ import com.stratio.provider.mongodb.MongodbConfig
  * @param batchSize Group size to be inserted via bulk operation
  */
 class MongodbBatchWriter(
-                          config: DeepConfig,
+                          config: Config,
                           batchSize: Int = 100) extends MongodbWriter(config) {
 
   final val IdKey = "_id"

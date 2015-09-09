@@ -19,7 +19,7 @@
 package com.stratio.provider.mongodb.partitioner
 
 import com.mongodb.casbah.Imports._
-import com.stratio.provider.partitioner.DeepPartitionRange
+import com.stratio.provider.partitioner.PartitionRange
 import org.apache.spark.Partition
 
 /**
@@ -30,4 +30,4 @@ import org.apache.spark.Partition
 case class MongodbPartition(
   index: Int,
   hosts: Seq[String],
-  partitionRange: DeepPartitionRange[DBObject]) extends Partition
+  partitionRange: PartitionRange[DBObject]) extends Partition

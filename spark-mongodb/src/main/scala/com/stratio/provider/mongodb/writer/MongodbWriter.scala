@@ -18,11 +18,11 @@
 
 package com.stratio.provider.mongodb.writer
 
-import com.mongodb.casbah.Imports
-import com.mongodb.{ServerAddress, MongoCredential}
 import com.mongodb.casbah.Imports._
-import com.stratio.provider.DeepConfig
-import com.stratio.provider.mongodb.{MongodbSSLOptions, MongodbCredentials, MongodbClientFactory, MongodbConfig}
+import com.mongodb.{MongoCredential, ServerAddress}
+import com.stratio.provider.Config
+import com.stratio.provider.mongodb.MongodbClientFactory.Client
+import com.stratio.provider.mongodb.{MongodbClientFactory, MongodbConfig, MongodbCredentials, MongodbSSLOptions}
 
 /**
  * Abstract Mongodb writer.
@@ -31,19 +31,48 @@ import com.stratio.provider.mongodb.{MongodbSSLOptions, MongodbCredentials, Mong
  *
  * @param config Configuration parameters (host,database,collection,...)
  */
-abstract class MongodbWriter(config: DeepConfig) extends Serializable {
+abstract class MongodbWriter(config: Config) extends Serializable {
 
   /**
    * A MongoDB client is created for each writer.
    */
-  protected val mongoClient: MongodbClientFactory.Client =
-    MongodbClientFactory.createClient(
-      config[List[String]](MongodbConfig.Host)
-        .map(add => new ServerAddress(add)),
-      config[List[MongodbCredentials]](MongodbConfig.Credentials).map{
-        case MongodbCredentials(user,database,password) =>
-          MongoCredential.createCredential(user,database,password)},
-      config.get[MongodbSSLOptions](MongodbConfig.SSLOptions))
+//  protected val mongoClient: MongodbClientFactory.Client =
+//    MongodbClientFactory.createClient(
+//      config[List[String]](MongodbConfig.Host)
+//        .map(add => new ServerAddress(add)),
+//      config[List[MongodbCredentials]](MongodbConfig.Credentials).map{
+//        case MongodbCredentials(user,database,password) =>
+//          MongoCredential.createCredential(user,database,password)},
+//      config.get[MongodbSSLOptions](MongodbConfig.SSLOptions), config[String](MongodbConfig.Timeout))
+
+  @transient private val hosts: List[ServerAddress] =
+    config[List[String]](MongodbConfig.Host)
+      .map(add => new ServerAddress(add))
+
+  @transient private val credentials: List[MongoCredential] =
+    config[List[MongodbCredentials]](MongodbConfig.Credentials).map{
+      case MongodbCredentials(user,database,password) =>
+        MongoCredential.createCredential(user,database,password)
+    }
+
+  @transient private val ssloptions: Option[MongodbSSLOptions] =
+    config.get[MongodbSSLOptions](MongodbConfig.SSLOptions)
+
+  @transient private val readpreference: String = config[String](MongodbConfig.readPreference)
+
+  private val timeout: Option[String] = config.get[String](MongodbConfig.Timeout)
+
+  private val databaseName: String = config(MongodbConfig.Database)
+
+  private val collectionName: String = config(MongodbConfig.Collection)
+
+  private val collectionFullName: String = s"$databaseName.$collectionName"
+
+
+  protected val mongoClient: Client = MongodbClientFactory.createClient(hosts,credentials, ssloptions, readpreference, timeout)
+
+
+
 
   /**
    * A MongoDB collection created from the specified database and collection.

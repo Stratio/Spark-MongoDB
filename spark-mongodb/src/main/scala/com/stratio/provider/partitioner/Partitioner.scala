@@ -7,7 +7,7 @@ import org.apache.spark.Partition
  * some Data Source.
  * @tparam T
  */
-trait DeepPartitioner[T <: Partition] extends Serializable {
+trait Partitioner[T <: Partition] extends Serializable {
 
   /**
    * Retrieves some Data Source partitions
