@@ -39,13 +39,8 @@ import org.apache.spark.sql.types._
  *                       a sample ratio (as JSON Data Source does).
  * @param sqlContext An existing Spark SQL context.
  */
-<<<<<<< HEAD
-class MongodbRelation(
-  config: DeepConfig,
-=======
 case class MongodbRelation(
   config: Config,
->>>>>>> 3b8cc0d923881f4bc9ede3dee36fd532d156efdf
   schemaProvided: Option[StructType] = None)(
   @transient val sqlContext: SQLContext) extends BaseRelation
 with PrunedFilteredScan with InsertableRelation {
