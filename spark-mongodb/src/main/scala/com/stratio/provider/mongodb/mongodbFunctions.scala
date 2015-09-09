@@ -40,7 +40,7 @@ class MongodbContext(sqlContext: SQLContext) {
    */
   def fromMongoDB(config: DeepConfig,schema:Option[StructType]=None): DataFrame =
     sqlContext.baseRelationToDataFrame(
-      MongodbRelation(config, schema)(sqlContext))
+      new MongodbRelation(config, schema)(sqlContext))
 
 }
 

@@ -39,7 +39,7 @@ import org.apache.spark.sql.types._
  *                       a sample ratio (as JSON Data Source does).
  * @param sqlContext An existing Spark SQL context.
  */
-case class MongodbRelation(
+class MongodbRelation(
   config: DeepConfig,
   schemaProvided: Option[StructType] = None)(
   @transient val sqlContext: SQLContext) extends BaseRelation

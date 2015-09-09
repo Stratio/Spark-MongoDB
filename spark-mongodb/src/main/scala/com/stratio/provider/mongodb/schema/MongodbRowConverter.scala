@@ -48,6 +48,18 @@ object MongodbRowConverter extends DeepRowConverter[DBObject]
   }
 
   /**
+   *
+   * @param schema native schema
+   * @param array Current mongodb result
+   * @return An array of Spark SQL Row type.
+   */
+  def asRow(schema: StructType, array: Array[DBObject]): Array[Row] = {
+    array.map { record =>
+      recordAsRow(dbObjectToMap(record), schema)
+    }
+  }
+
+  /**
    * Given a schema, it converts a JSON object (as map) into a Row
    * @param json DBObject map
    * @param schema Schema
