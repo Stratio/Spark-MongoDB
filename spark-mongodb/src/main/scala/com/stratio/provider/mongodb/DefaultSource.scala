@@ -18,17 +18,12 @@
 
 package com.stratio.provider.mongodb
 
-import com.mongodb.MongoCredential
-import com.mongodb.casbah.Imports._
-import com.stratio.provider.DeepConfig._
+import com.stratio.provider.Config._
+import com.stratio.provider.mongodb.MongodbConfig._
 import org.apache.spark.sql.SaveMode._
-import org.apache.spark.sql.sources.BaseRelation
-import org.apache.spark.sql.sources.RelationProvider
-import org.apache.spark.sql.sources.SchemaRelationProvider
-import org.apache.spark.sql.sources.CreatableRelationProvider
+import org.apache.spark.sql.sources.{BaseRelation, CreatableRelationProvider, RelationProvider, SchemaRelationProvider}
 import org.apache.spark.sql.types.StructType
-import org.apache.spark.sql.{DataFrame, SaveMode, SQLContext}
-import MongodbConfig._
+import org.apache.spark.sql.{DataFrame, SQLContext, SaveMode}
 
 /**
  * Allows creation of MongoDB based tables using
@@ -101,7 +96,10 @@ class DefaultSource extends RelationProvider with SchemaRelationProvider with Cr
     val properties :Map[String, Any] =
       Map(Host -> host, Database -> database, Collection -> collection , SamplingRatio -> samplingRatio, readPreference -> readpreference)
 
-    val optionalProperties: List[String] = List(Credentials,SSLOptions, IdField, SearchFields, Language)
+    val optionalProperties: List[String] = List(Credentials,SSLOptions, IdField, SearchFields, Language, Timeout)
+
+
+
     val finalMap = (properties /: optionalProperties){    //TODO improve code
       case (properties,Credentials) =>
         /** We will assume credentials are provided like 'user,database,password;user,database,password;...' */
@@ -138,7 +136,17 @@ class DefaultSource extends RelationProvider with SchemaRelationProvider with Cr
           properties.+(SearchFields -> searchFields)
         } else properties
       }
+      case (properties, Timeout) => {
+        /** Timeout in seconds */
+        val timeout = parameters.get(Timeout)
+        if(timeout.isDefined){
+          properties.+(Timeout -> timeout)
+        } else properties
+      }
+
     }
+
+
     finalMap
   }
 

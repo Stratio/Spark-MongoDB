@@ -20,10 +20,10 @@ package com.stratio.provider.mongodb.partitioner
 
 import com.mongodb.{MongoCredential, ServerAddress}
 import com.mongodb.casbah.Imports._
-import com.stratio.provider.DeepConfig
+import com.stratio.provider.Config
 import com.stratio.provider.mongodb.{MongodbSSLOptions, MongodbClientFactory, MongodbCredentials, MongodbConfig}
 import com.stratio.provider.mongodb.partitioner.MongodbPartitioner._
-import com.stratio.provider.partitioner.{DeepPartitionRange, DeepPartitioner}
+import com.stratio.provider.partitioner.{PartitionRange, Partitioner}
 import com.stratio.provider.util.using
 
 import scala.util.Try
@@ -32,7 +32,7 @@ import scala.util.Try
  * @param config Partition configuration
  */
 class MongodbPartitioner(
-  config: DeepConfig) extends DeepPartitioner[MongodbPartition] {
+  config: Config) extends Partitioner[MongodbPartition] {
 
   @transient private val hosts: List[ServerAddress] =
     config[List[String]](MongodbConfig.Host)
@@ -48,6 +48,8 @@ class MongodbPartitioner(
     config.get[MongodbSSLOptions](MongodbConfig.SSLOptions)
 
   @transient private val readpreference: String = config[String](MongodbConfig.readPreference)
+
+  private val timeout: Option[String] = config.get[String](MongodbConfig.Timeout)
 
   private val databaseName: String = config(MongodbConfig.Database)
 
@@ -65,17 +67,17 @@ class MongodbPartitioner(
    * @return Whether this is a sharded collection or not
    */
   protected def isShardedCollection: Boolean =
-    using(MongodbClientFactory.createClient(hosts,credentials, ssloptions, readpreference)) { mongoClient =>
+     using(MongodbClientFactory.createClient(hosts,credentials, ssloptions, readpreference, timeout)) { mongoClient =>
 
       val collection = mongoClient(databaseName)(collectionName)
       collection.stats.ok && collection.stats.getBoolean("sharded", false)
-    }
+  }
 
   /**
    * @return MongoDB partitions as sharded chunks.
    */
   protected def computeShardedChunkPartitions(): Array[MongodbPartition] =
-    using(MongodbClientFactory.createClient(hosts,credentials, ssloptions, readpreference)) { mongoClient =>
+    using(MongodbClientFactory.createClient(hosts,credentials, ssloptions, readpreference, timeout)) { mongoClient =>
 
       Try {
         val chunksCollection = mongoClient(ConfigDatabase)(ChunksCollection)
@@ -95,7 +97,7 @@ class MongodbPartitioner(
 
             MongodbPartition(i,
               hosts,
-              DeepPartitionRange(lowerBound, upperBound))
+              PartitionRange(lowerBound, upperBound))
         }.toArray
 
         partitions
@@ -105,7 +107,7 @@ class MongodbPartitioner(
           val serverAddressList: Seq[String] = mongoClient.allAddress.map {
             server => server.getHost + ":" + server.getPort
           }.toSeq
-          Array(MongodbPartition(0, serverAddressList, DeepPartitionRange(None, None)))
+          Array(MongodbPartition(0, serverAddressList, PartitionRange(None, None)))
       }.get
     }
 
@@ -113,7 +115,7 @@ class MongodbPartitioner(
    * @return Array of not-sharded MongoDB partitions.
    */
   protected def computeNotShardedPartitions(): Array[MongodbPartition] =
-    using(MongodbClientFactory.createClient(hosts,credentials,ssloptions, readpreference)) { mongoClient =>
+    using(MongodbClientFactory.createClient(hosts,credentials,ssloptions, readpreference, timeout)) { mongoClient =>
 
       val ranges = splitRanges()
 
@@ -125,7 +127,7 @@ class MongodbPartitioner(
         case ((previous: Option[DBObject], current: Option[DBObject]), i) =>
           MongodbPartition(i,
             serverAddressList,
-            DeepPartitionRange(previous, current))
+            PartitionRange(previous, current))
       }.toArray
 
       partitions
@@ -143,7 +145,7 @@ class MongodbPartitioner(
       "maxChunkSize" -> config(MongodbConfig.SplitSize)
     )
 
-    using(MongodbClientFactory.createClient(hosts,credentials,ssloptions, readpreference)) { mongoClient =>
+    using(MongodbClientFactory.createClient(hosts,credentials,ssloptions, readpreference, timeout)) { mongoClient =>
 
       Try {
         val data = mongoClient("admin").command(cmd)
@@ -175,7 +177,7 @@ class MongodbPartitioner(
    * @return Map of shards.
    */
   protected def describeShardsMap(): Map[String, Seq[String]] =
-    using(MongodbClientFactory.createClient(hosts,credentials,ssloptions, readpreference)) { mongoClient =>
+    using(MongodbClientFactory.createClient(hosts,credentials,ssloptions, readpreference, timeout)) { mongoClient =>
 
       val shardsCollection = mongoClient(ConfigDatabase)(ShardsCollection)
 

@@ -28,7 +28,7 @@ import com.mongodb.util.JSON
 import com.mongodb.{BasicDBObject, DBObject}
 import com.stratio.provider.mongodb._
 import com.stratio.provider.mongodb.partitioner.MongodbPartition
-import com.stratio.provider.partitioner.DeepPartitionRange
+import com.stratio.provider.partitioner.PartitionRange
 import org.apache.spark.sql.sources.{EqualTo, Filter}
 import org.apache.spark.sql.test.TestSQLContext
 import org.apache.spark.sql.types._
@@ -58,7 +58,7 @@ with TestBsonData {
     mongodbReader.init(
       MongodbPartition(0,
         testConfig[Seq[String]](MongodbConfig.Host),
-        DeepPartitionRange[DBObject](None, None)))
+        PartitionRange[DBObject](None, None)))
     
     mongodbReader.close()
 
@@ -74,7 +74,7 @@ with TestBsonData {
       mongodbReader.init(
         MongodbPartition(0,
           testConfig[Seq[String]](MongodbConfig.Host),
-          DeepPartitionRange[DBObject](None, None)))
+          PartitionRange[DBObject](None, None)))
 
       (1 until 20).map(_ => mongodbReader.hasNext).distinct.toList==List(true)
     }
@@ -87,7 +87,7 @@ with TestBsonData {
       mongodbReader.init(
         MongodbPartition(0,
           testConfig[Seq[String]](MongodbConfig.Host),
-          DeepPartitionRange[DBObject](None, None)))
+          PartitionRange[DBObject](None, None)))
       val posBefore = mongodbReader.hasNext
       mongodbReader.next()
       val posAfter = mongodbReader.hasNext
@@ -123,7 +123,7 @@ with TestBsonData {
       mongodbReader.init(
         MongodbPartition(0,
           testConfig[Seq[String]](MongodbConfig.Host),
-          DeepPartitionRange[DBObject](None, None)))
+          PartitionRange[DBObject](None, None)))
 
       //Data retrieving
       var l = List[DBObject]()
@@ -159,7 +159,7 @@ with TestBsonData {
       mongodbReader.init(
         MongodbPartition(0,
           testConfig[Seq[String]](MongodbConfig.Host),
-          DeepPartitionRange[DBObject](None, None)))
+          PartitionRange[DBObject](None, None)))
 
       val desiredData =
         JSON.parse(

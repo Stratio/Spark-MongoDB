@@ -19,7 +19,7 @@
 package com.stratio.provider.mongodb.schema
 
 import com.mongodb.casbah.Imports._
-import com.stratio.provider.schema.DeepRowConverter
+import com.stratio.provider.schema.RowConverter
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.catalyst.expressions.GenericRow
@@ -31,7 +31,7 @@ import scala.collection.mutable.ArrayBuffer
  * MongodbRowConverter support RDD transformations
  * from DBObject to Row and vice versa
  */
-object MongodbRowConverter extends DeepRowConverter[DBObject]
+object MongodbRowConverter extends RowConverter[DBObject]
   with JsonSupport
   with Serializable {
 

@@ -19,8 +19,8 @@
 package com.stratio.provider.mongodb
 
 import com.mongodb
-import com.stratio.provider.DeepConfig._
-import com.stratio.provider.DeepConfigBuilder
+import com.stratio.provider.Config._
+import com.stratio.provider.ConfigBuilder
 import com.stratio.provider.mongodb.MongodbConfig._
 
 /**
@@ -35,7 +35,7 @@ case class MongodbConfigBuilder(
                                  props: Map[Property, Any] = Defaults
                                  ) extends {
   override val properties = Defaults ++ props
-} with DeepConfigBuilder[MongodbConfigBuilder](properties) {
+} with ConfigBuilder[MongodbConfigBuilder](properties) {
 
   val requiredProperties: List[Property] = MongodbConfig.all
 
@@ -61,7 +61,11 @@ object MongodbConfig {
   val SSLOptions = "ssloptions"
   val readPreference = "readpreference"
   val Language = "language"
+  val Timeout = "timeout"
 
+  /**
+   * Mandatory
+   */
   val all = List(
     Host,
     Database,
@@ -70,7 +74,9 @@ object MongodbConfig {
     WriteConcern,
     SplitKey,
     SplitSize,
-    readPreference)
+    readPreference
+    )
+
 
   //  Default values
 
@@ -82,6 +88,7 @@ object MongodbConfig {
   val DefaultCredentials = List[MongodbCredentials]()
   val DefaultReadPreference = "nearest"
 
+
   val Defaults = Map(
     SamplingRatio -> DefaultSamplingRatio,
     WriteConcern -> DefaultWriteConcern,
@@ -89,5 +96,6 @@ object MongodbConfig {
     SplitSize -> DefaultSplitSize,
     AllowSlaveReads -> DefaultAllowSlaveReads,
     Credentials -> DefaultCredentials,
-    readPreference-> DefaultReadPreference)
+    readPreference-> DefaultReadPreference
+    )
 }

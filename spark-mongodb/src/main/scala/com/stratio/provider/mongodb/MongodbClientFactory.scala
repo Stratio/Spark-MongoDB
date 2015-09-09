@@ -65,6 +65,31 @@ object MongodbClientFactory {
 
   }
 
+
+  def createClient(
+                    hostPort : List[ServerAddress],
+                    credentials : List[MongoCredential],
+                    optionSSLOptions: Option[MongodbSSLOptions],
+                    readPreference: String,
+                    timeout: Option[String]) : Client = {
+
+
+
+    if (sslBuilder(optionSSLOptions)) {
+      val options = new MongoClientOptions.Builder()
+        .readPreference(parseReadPreference(readPreference))
+        .socketFactory(SSLSocketFactory.getDefault()).connectTimeout(timeout.getOrElse("10").toInt).build()
+
+      MongoClient(hostPort, credentials, options)
+    }
+    else {
+      val options = new MongoClientOptions.Builder().readPreference(parseReadPreference(readPreference)).connectTimeout(timeout.getOrElse("10").toInt).build()
+
+      MongoClient(hostPort, credentials, options)
+    }
+
+  }
+
   private def sslBuilder(optionSSLOptions: Option[MongodbSSLOptions]): Boolean = {
 
     optionSSLOptions match{

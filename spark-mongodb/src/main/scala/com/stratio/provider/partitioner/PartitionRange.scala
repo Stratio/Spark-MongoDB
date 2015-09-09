@@ -16,19 +16,12 @@
  *  under the License.
  */
 
-package com.stratio.provider.schema
-
-import org.apache.spark.sql.types.StructType
+package com.stratio.provider.partitioner
 
 /**
- * Knows the way to provide some Data Source schema
+ * Determines a range of keys that compounds some partition
+ * @param minKey Starting partition key
+ * @param maxKey Final partition key
+ * @tparam T Partition key type.
  */
-trait DeepSchemaProvider {
-
-  /**
-   * Provides the schema for current implementation of Data Source
-   * @return schema
-   */
-  def schema(): StructType
-
-}
+case class PartitionRange[T](minKey: Option[T], maxKey: Option[T])

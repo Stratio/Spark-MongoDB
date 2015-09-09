@@ -18,14 +18,14 @@
 
 package com.stratio.provider
 
-import com.stratio.provider.DeepConfig.Property
+import com.stratio.provider.Config.Property
 import org.scalatest.{FlatSpec, Matchers}
 
-class DeepConfigSpec extends FlatSpec
+class ConfigSpec extends FlatSpec
 with Matchers
 with ConfigHelpers {
 
-  behavior of "DeepConfigBuilder"
+  behavior of "ConfigBuilder"
 
   it should "config a builder with any kind of property types" in {
 
@@ -71,7 +71,7 @@ with ConfigHelpers {
 trait ConfigHelpers {
 
   case class Builder(
-    override val properties: Map[Property,Any]=Map()) extends DeepConfigBuilder[Builder]{
+    override val properties: Map[Property,Any]=Map()) extends ConfigBuilder[Builder]{
     val requiredProperties: List[Property] = List("prop1","prop2")
     def apply(props: Map[Property, Any]): Builder =
       new Builder(props)
