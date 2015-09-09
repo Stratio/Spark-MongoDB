@@ -18,7 +18,7 @@
 
 package com.stratio.provider.mongodb
 
-import com.stratio.provider.DeepConfig
+import com.stratio.provider.Config
 import com.stratio.provider.mongodb.partitioner.MongodbPartitioner
 import com.stratio.provider.mongodb.rdd.MongodbRDD
 import com.stratio.provider.mongodb.schema.{MongodbRowConverter, MongodbSchema}
@@ -40,7 +40,7 @@ import org.apache.spark.sql.types._
  * @param sqlContext An existing Spark SQL context.
  */
 case class MongodbRelation(
-  config: DeepConfig,
+  config: Config,
   schemaProvided: Option[StructType] = None)(
   @transient val sqlContext: SQLContext) extends BaseRelation
 with PrunedFilteredScan with InsertableRelation {

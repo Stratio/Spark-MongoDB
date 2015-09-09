@@ -19,7 +19,7 @@
 package com.stratio.provider.mongodb.writer
 
 import com.mongodb.casbah.Imports._
-import com.stratio.provider.DeepConfig
+import com.stratio.provider.Config
 import com.stratio.provider.mongodb.MongodbConfig
 
 /**
@@ -28,7 +28,7 @@ import com.stratio.provider.mongodb.MongodbConfig
  * @param config Configuration parameters (host,database,collection,...)
  */
 class MongodbSimpleWriter(
-  config: DeepConfig) extends MongodbWriter(config) {
+  config: Config) extends MongodbWriter(config) {
 
   def save(it: Iterator[DBObject]): Unit =
     it.foreach(dbo =>

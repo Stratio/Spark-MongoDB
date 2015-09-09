@@ -20,7 +20,7 @@ package com.stratio.provider.mongodb.reader
 
 import com.mongodb.{MongoCredential, QueryBuilder}
 import com.mongodb.casbah.Imports._
-import com.stratio.provider.DeepConfig
+import com.stratio.provider.Config
 import com.stratio.provider.mongodb.{MongodbCredentials, MongodbSSLOptions, MongodbClientFactory, MongodbConfig}
 import com.stratio.provider.mongodb.partitioner.MongodbPartition
 import org.apache.spark.Partition
@@ -35,7 +35,7 @@ import scala.util.Try
  * @param filters Added query filters
  */
 class MongodbReader(
-  config: DeepConfig,
+  config: Config,
   requiredColumns: Array[String],
   filters: Array[Filter]) {
 
@@ -78,7 +78,7 @@ class MongodbReader(
         config[List[MongodbCredentials]](MongodbConfig.Credentials).map{
           case MongodbCredentials(user,database,password) =>
             MongoCredential.createCredential(user,database,password)},
-        config.get[MongodbSSLOptions](MongodbConfig.SSLOptions), config[String](MongodbConfig.readPreference)))
+        config.get[MongodbSSLOptions](MongodbConfig.SSLOptions), config[String](MongodbConfig.readPreference), config.get[String](MongodbConfig.Timeout)))
 
       dbCursor = (for {
         client <- mongoClient

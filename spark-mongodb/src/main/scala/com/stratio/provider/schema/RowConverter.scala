@@ -16,12 +16,26 @@
  *  under the License.
  */
 
-package com.stratio.provider.partitioner
+package com.stratio.provider.schema
+
+import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.Row
+import org.apache.spark.sql.types.StructType
 
 /**
- * Determines a range of keys that compounds some partition
- * @param minKey Starting partition key
- * @param maxKey Final partition key
- * @tparam T Partition key type.
+ * Knows how to map from some Data Source native RDD to an {{{RDD[Row]}}}
+ * @tparam T Original RDD type
  */
-case class DeepPartitionRange[T](minKey: Option[T], maxKey: Option[T])
+trait RowConverter[T] {
+
+  /**
+   * Given a known schema,
+   * it maps an RDD of some specified type to an {{{RDD[Row}}}
+   * @param schema RDD native schema
+   * @param rdd Current native RDD
+   * @return A brand new RDD of Spark SQL Row type.
+   */
+  def asRow(schema: StructType, rdd: RDD[T]): RDD[Row]
+
+}
+

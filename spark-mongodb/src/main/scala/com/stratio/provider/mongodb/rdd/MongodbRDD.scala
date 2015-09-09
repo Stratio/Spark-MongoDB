@@ -19,7 +19,7 @@
 package com.stratio.provider.mongodb.rdd
 
 import com.mongodb.casbah.Imports._
-import com.stratio.provider.DeepConfig
+import com.stratio.provider.Config
 import com.stratio.provider.mongodb.partitioner.{MongodbPartition, MongodbPartitioner}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SQLContext
@@ -34,7 +34,7 @@ import org.apache.spark.{Partition, TaskContext}
  */
 class MongodbRDD(
   sc: SQLContext,
-  config: DeepConfig,
+  config: Config,
   partitioner: MongodbPartitioner,
   requiredColumns: Array[String] = Array(),
   filters: Array[Filter] = Array())

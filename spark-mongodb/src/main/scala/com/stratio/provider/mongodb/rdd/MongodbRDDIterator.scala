@@ -19,7 +19,7 @@
 package com.stratio.provider.mongodb.rdd
 
 import com.mongodb.casbah.Imports._
-import com.stratio.provider.DeepConfig
+import com.stratio.provider.Config
 import com.stratio.provider.mongodb.reader.MongodbReader
 import org.apache.spark._
 import org.apache.spark.sql.sources.Filter
@@ -36,7 +36,7 @@ import org.apache.spark.sql.sources.Filter
 class MongodbRDDIterator(
   taskContext: TaskContext,
   partition: Partition,
-  config: DeepConfig,
+  config: Config,
   requiredColumns: Array[String],
   filters: Array[Filter])
   extends Iterator[DBObject] {

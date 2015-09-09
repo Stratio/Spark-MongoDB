@@ -19,7 +19,7 @@
 package com.stratio.provider.mongodb
 
 
-import com.stratio.provider.DeepConfig
+import com.stratio.provider.Config
 import com.stratio.provider.mongodb.schema.MongodbRowConverter
 import com.stratio.provider.mongodb.writer.{MongodbBatchWriter, MongodbSimpleWriter}
 import org.apache.spark.sql.types.StructType
@@ -38,7 +38,7 @@ class MongodbContext(sqlContext: SQLContext) {
    * @param config MongoDB configuration object
    * @return A dataFrame
    */
-  def fromMongoDB(config: DeepConfig,schema:Option[StructType]=None): DataFrame =
+  def fromMongoDB(config: Config,schema:Option[StructType]=None): DataFrame =
     sqlContext.baseRelationToDataFrame(
       MongodbRelation(config, schema)(sqlContext))
 
@@ -53,8 +53,9 @@ class MongodbDataFrame(dataFrame: DataFrame) extends Serializable {
    * It allows storing data in Mongodb from some existing SchemaRDD
    * @param config MongoDB configuration object
    * @param batch It indicates whether it has to be saved in batch mode or not.
+   * @deprecated
    */
-  def saveToMongodb(config: DeepConfig, batch: Boolean = true): Unit = {
+  def saveToMongodb(config: Config, batch: Boolean = true): Unit = {
     val schema = dataFrame.schema
     dataFrame.foreachPartition(it => {
       val writer =

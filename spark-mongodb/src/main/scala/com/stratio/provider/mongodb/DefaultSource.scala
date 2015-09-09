@@ -18,7 +18,7 @@
 
 package com.stratio.provider.mongodb
 
-import com.stratio.provider.DeepConfig._
+import com.stratio.provider.Config._
 import com.stratio.provider.mongodb.MongodbConfig._
 import org.apache.spark.sql.SaveMode._
 import org.apache.spark.sql.sources.{BaseRelation, CreatableRelationProvider, RelationProvider, SchemaRelationProvider}

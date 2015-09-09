@@ -95,6 +95,8 @@ Configuration parameters
 +-------------------------+--------------------------------------------------------------------------------+-------------------------+
 | language                |  "en"                                                                          | No                      |
 +-------------------------+--------------------------------------------------------------------------------+-------------------------+
+| Timeout                 |   "100"                                                                        | No                      |
++-------------------------+--------------------------------------------------------------------------------+-------------------------+
 
 
 
@@ -117,7 +119,7 @@ To save a DataFrame in MongoDB you should use the saveToMongodb() function as fo
  import com.mongodb.casbah.{WriteConcern => MongodbWriteConcern}
  import com.stratio.provider.mongodb._
  import MongodbConfig._
- val saveConfig = MongodbConfigBuilder(Map(Host -> List("localhost:27017"), Database -> "highschool", Collection -> "students", SamplingRatio -> 1.0, WriteConcern -> MongodbWriteConcern.Normal, SplitSize -> 8, SplitKey -> "_id", SplitSize -> 8, SplitKey -> "_id"))
+ val saveConfig = MongodbConfigBuilder(Map(Host -> List("localhost:27017"), Database -> "highschool", Collection -> "students", SamplingRatio -> 1.0, WriteConcern -> MongodbWriteConcern.Normal, SplitKey -> "_id", SplitSize -> 8, SplitKey -> "_id"))
  dataFrame.saveToMongodb(saveConfig.build)
 
 
@@ -131,7 +133,7 @@ In the example we can see how to use the fromMongoDB() function to read from Mon
  import com.stratio.provider.mongodb.schema._
  import com.stratio.provider.mongodb.writer._
  import org.apache.spark.sql.SQLContext
- import DeepConfig._
+ import Config._
  import MongodbConfig._
  val builder = MongodbConfigBuilder(Map(Host -> List("localhost:27017"), Database -> "highschool", Collection -> "students", SamplingRatio -> 1.0, WriteConcern -> MongodbWriteConcern.Normal))
  val readConfig = builder.build()
