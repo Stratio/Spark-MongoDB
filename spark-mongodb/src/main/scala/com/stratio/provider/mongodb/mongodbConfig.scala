@@ -74,7 +74,8 @@ object MongodbConfig {
     WriteConcern,
     SplitKey,
     SplitSize,
-    readPreference
+    readPreference,
+    Timeout
     )
 
 
@@ -87,7 +88,7 @@ object MongodbConfig {
   val DefaultAllowSlaveReads = false
   val DefaultCredentials = List[MongodbCredentials]()
   val DefaultReadPreference = "nearest"
-
+  val DefaultTimeout = "1000"
 
   val Defaults = Map(
     SamplingRatio -> DefaultSamplingRatio,
@@ -96,6 +97,7 @@ object MongodbConfig {
     SplitSize -> DefaultSplitSize,
     AllowSlaveReads -> DefaultAllowSlaveReads,
     Credentials -> DefaultCredentials,
-    readPreference-> DefaultReadPreference
+    readPreference-> DefaultReadPreference,
+    Timeout->DefaultTimeout
     )
 }

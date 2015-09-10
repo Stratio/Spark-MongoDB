@@ -1,7 +1,7 @@
 package com.stratio.provider.mongodb
 
 import javax.net.ssl.SSLSocketFactory
-
+import com.stratio.provider.mongodb.MongodbConfig._
 import com.mongodb.ServerAddress
 import com.mongodb.casbah.Imports._
 import com.mongodb.casbah.{MongoClient, MongoClientOptions}
@@ -78,7 +78,7 @@ object MongodbClientFactory {
     if (sslBuilder(optionSSLOptions)) {
       val options = new MongoClientOptions.Builder()
         .readPreference(parseReadPreference(readPreference))
-        .socketFactory(SSLSocketFactory.getDefault()).connectTimeout(timeout.getOrElse("10").toInt).build()
+        .socketFactory(SSLSocketFactory.getDefault()).connectTimeout(timeout.getOrElse(DefaultTimeout).toInt).build()
 
       MongoClient(hostPort, credentials, options)
     }
