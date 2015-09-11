@@ -25,7 +25,7 @@ import com.stratio.provider.mongodb.{MongodbCredentials, MongodbSSLOptions, Mong
 import com.stratio.provider.mongodb.partitioner.MongodbPartition
 import org.apache.spark.Partition
 import org.apache.spark.sql.sources._
-import org.apache.spark.sql.types.UTF8String
+import org.apache.spark.sql.types.StringType
 import scala.util.Try
 
 /**
@@ -125,7 +125,7 @@ class MongodbReader(
   }
 
   private def convertToStandardType(value: Any): Any = {
-    if (value.isInstanceOf[UTF8String])
+    if (value.isInstanceOf[StringType])
       value.toString
     else
       value

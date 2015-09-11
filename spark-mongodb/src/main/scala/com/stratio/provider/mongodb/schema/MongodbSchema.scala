@@ -85,7 +85,7 @@ case class MongodbSchema(
    * @return Compatible type for both t1 and t2
    */
   private def compatibleType(t1: DataType, t2: DataType): DataType = {
-    HiveTypeCoercion.findTightestCommonType(t1, t2) match {
+    HiveTypeCoercion.findTightestCommonTypeOfTwo(t1, t2) match {
       case Some(commonType) => commonType
 
       case None =>

@@ -30,7 +30,6 @@ import com.stratio.provider.mongodb._
 import com.stratio.provider.mongodb.partitioner.MongodbPartition
 import com.stratio.provider.partitioner.PartitionRange
 import org.apache.spark.sql.sources.{EqualTo, Filter}
-import org.apache.spark.sql.test.TestSQLContext
 import org.apache.spark.sql.types._
 import org.scalatest.{FlatSpec, Matchers}
 
