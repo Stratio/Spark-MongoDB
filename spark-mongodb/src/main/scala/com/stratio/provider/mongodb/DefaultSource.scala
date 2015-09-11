@@ -98,54 +98,39 @@ class DefaultSource extends RelationProvider with SchemaRelationProvider with Cr
 
     val optionalProperties: List[String] = List(Credentials,SSLOptions, IdField, SearchFields, Language, Timeout)
 
-
-
-    val finalMap = (properties /: optionalProperties){    //TODO improve code
+    val finalMap = (properties /: optionalProperties){
       case (properties,Credentials) =>
         /** We will assume credentials are provided like 'user,database,password;user,database,password;...' */
-        val credentialInput = parameters.getOrElse(Credentials, " ")
-        if(credentialInput.compareTo(" ")!=0){
-          val credentials= credentialInput
-            .split(";")
+        parameters.get(Credentials).map{ credentialInput =>
+          val credentials = credentialInput.split(";")
             .map(credential => credential.split(",")).toList
             .map(credentials => MongodbCredentials(credentials(0), credentials(1), credentials(2).toCharArray))
           properties.+(Credentials -> credentials)
-        } else properties
+        }.getOrElse(properties)
+
       case (properties,SSLOptions) =>
         /** We will assume ssloptions are provided like '/path/keystorefile,keystorepassword,/path/truststorefile,truststorepassword' */
-        val ssloptionInput = parameters.getOrElse(SSLOptions, " ")
-        if(ssloptionInput.compareTo(" ")!=0) {
-          val ssloption = ssloptionInput.split(",")
+        parameters.get(SSLOptions).map{ ssloptionsInput =>
+          val ssloption = ssloptionsInput.split(",")
           val ssloptions = MongodbSSLOptions(Some(ssloption(0)), Some(ssloption(1)), ssloption(2), Some(ssloption(3)))
           properties.+(SSLOptions -> ssloptions)
-        }
-        else properties
-      case (properties, IdField) => {
-        val idFieldInput = parameters.get(IdField)
-        if(idFieldInput.isDefined) properties.+(IdField -> idFieldInput.get) else properties
-      }
-      case (properties, Language) => {
-        val languageInput = parameters.get(Language)
-        if(languageInput.isDefined) properties.+(Language -> languageInput.get) else properties
-      }
+        }.getOrElse(properties)
+
+      case (properties, IdField) => parameters.get(IdField).map{idFieldInput => properties.+(IdField -> idFieldInput)}.getOrElse(properties)
+
+      case (properties, Language) => parameters.get(Language).map{ languageInput => properties.+(Language -> languageInput)}.getOrElse(properties)
+
       case (properties, SearchFields) => {
         /** We will assume fields are provided like 'user,database,password...' */
-        val searchInputs = parameters.get(SearchFields)
-        if(searchInputs.isDefined){
-          val searchFields = searchInputs.get.split(",")
+        parameters.get(SearchFields).map{ searchInputs =>
+          val searchFields = searchInputs.split(",")
           properties.+(SearchFields -> searchFields)
-        } else properties
+        }.getOrElse(properties)
       }
-      case (properties, Timeout) => {
-        /** Timeout in seconds */
-        val timeout = parameters.get(Timeout)
-        if(timeout.isDefined){
-          properties.+(Timeout -> timeout)
-        } else properties
-      }
+      /** Timeout in miliseconds */
+      case (properties, Timeout) => parameters.get(Timeout).map{ timeoutInput => properties.+(Timeout -> timeoutInput)}.getOrElse(properties)
 
     }
-
 
     finalMap
   }
