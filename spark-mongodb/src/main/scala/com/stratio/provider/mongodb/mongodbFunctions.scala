@@ -53,7 +53,6 @@ class MongodbDataFrame(dataFrame: DataFrame) extends Serializable {
    * It allows storing data in Mongodb from some existing SchemaRDD
    * @param config MongoDB configuration object
    * @param batch It indicates whether it has to be saved in batch mode or not.
-   * @deprecated
    */
   def saveToMongodb(config: Config, batch: Boolean = true): Unit = {
     val schema = dataFrame.schema
