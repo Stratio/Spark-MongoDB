@@ -3,6 +3,7 @@ package com.stratio.provider.mongodb
 import com.mongodb.casbah.MongoClient
 import com.mongodb.{MongoCredential, ServerAddress}
 import org.scalatest.{Matchers, FlatSpec}
+import java.io.File
 
 class MongodbClientFactorySpec extends FlatSpec with Matchers{
 
@@ -17,10 +18,11 @@ class MongodbClientFactorySpec extends FlatSpec with Matchers{
     List(MongoCredential.createCredential("user","database","password".toCharArray))
   )
 
+  private val keystorePath = new File("test/mongodb.keystore").getAbsolutePath
   val sslClient = MongodbClientFactory.createClient(
     List(new ServerAddress("127.0.0.1:27017")),
     List(MongoCredential.createCredential("user","database","password".toCharArray)),
-    Some(MongodbSSLOptions(Some("/etc/ssl/mongodb.keystore"), Some("password"), "/etc/ssl/mongodb.keystore", Some("password")))
+    Some(MongodbSSLOptions(Some(keystorePath), Some("password"), "/etc/ssl/mongodb.keystore", Some("password")))
   )
 
   it should "Valid output type" in {
