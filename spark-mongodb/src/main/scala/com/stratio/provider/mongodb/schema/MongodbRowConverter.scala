@@ -120,11 +120,16 @@ object MongodbRowConverter extends RowConverter[DBObject]
    * @return The converted value into a Row field.
    */
   def toSQL(value: Any, dataType: DataType): Any = {
+    import scala.collection.JavaConversions._
     Option(value).map{value =>
-      dataType match {
-        case ArrayType(elementType, _) =>
-          value.asInstanceOf[BasicDBList].map(toSQL(_, elementType))
-        case struct: StructType =>
+      (value,dataType) match {
+        case (dbList: BasicDBList,ArrayType(elementType, _)) =>
+          dbList.map(toSQL(_, elementType))
+        case (list: List[AnyRef],ArrayType(elementType, _)) =>
+          val dbList = new BasicDBList
+          dbList.addAll(list)
+          toSQL(dbList,dataType)
+        case (_,struct: StructType) =>
           recordAsRow(dbObjectToMap(value.asInstanceOf[DBObject]), struct)
         case _ =>
           //Assure value is mapped to schema constrained type.
