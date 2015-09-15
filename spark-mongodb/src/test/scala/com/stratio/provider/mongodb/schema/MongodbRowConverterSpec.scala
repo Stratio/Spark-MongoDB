@@ -50,6 +50,9 @@ with TestBsonData {
 
   //  Sample values
 
+//  new ArrayBuffer[Any]().+=(new GenericRow(List(1,2).toArray))
+
+
   val valueWithType: List[(Any, StructField)] = List(
     1 -> new StructField(
       "att1",IntegerType,false),
@@ -65,19 +68,53 @@ with TestBsonData {
       "att6",new StructType(Array(
         new StructField("att61",IntegerType ,false),
         new StructField("att62",IntegerType,true)
-      )),false))
+      )),false),
+    new GenericRow(List(1, new GenericRow(List(1, "b").toArray)).toArray) ->
+      new StructField(
+        "att7", new StructType(Array(
+          new StructField("att71",IntegerType,false),
+          new StructField("att72",new StructType(Array(
+            new StructField("att721", IntegerType, false),
+            new StructField("att722", StringType, false)
+          )),false)
+        )
+      )
+      , false),
+    new GenericRow(List(1, new ArrayBuffer[Any]().+=(new GenericRow(List(2,"b").toArray))).toArray) ->
+      new StructField("att8", new StructType(
+      Array(StructField("att81", IntegerType, false), StructField("att82",
+        new ArrayType(StructType(Array(StructField("att821", IntegerType, false),StructField("att822", StringType, false))), false)
+        ,false))
+      ), false)
+
+  )
+
+
+
+
+
+
 
   val rowSchema = new StructType(valueWithType.map(_._2).toArray)
 
   val row = new GenericRow(valueWithType.map(_._1).toArray)
-
+//  ,
+//  "att7": {"att71" : 1, "att72":2}
   val dbObject = JSON.parse(
     """{ "att5" : [ 1 , 2 , 3] ,
           "att4" :  null  ,
           "att3" : "hi" ,
           "att6" : { "att61" : 1 , "att62" :  null } ,
           "att2" : 2.0 ,
-          "att1" : 1}""").asInstanceOf[DBObject]
+          "att1" : 1,
+          "att7" : {"att71": 1, "att72":{"att721":1, "att722":"b"}},
+          "att8" : {"att81": 1, "att82":[{"att821":2, "att822":"b"}]}
+          }
+          """).asInstanceOf[DBObject]
+
+
+
+
 
   behavior of "The MongodbRowConverter"
 
