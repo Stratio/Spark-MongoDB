@@ -40,14 +40,12 @@ import org.apache.spark.sql.types._
  * @param sqlContext An existing Spark SQL context.
  */
 class MongodbRelation(
-  config: Config,
+  private val config: Config,
   schemaProvided: Option[StructType] = None)(
   @transient val sqlContext: SQLContext) extends BaseRelation
 with PrunedFilteredScan with InsertableRelation {
 
   import MongodbRelation._
-
-  private val comparedConfig : Config = config
 
   private val rddPartitioner: MongodbPartitioner =
     new MongodbPartitioner(config)
@@ -85,7 +83,7 @@ with PrunedFilteredScan with InsertableRelation {
    * @return Boolean
    */
   override def equals(obj: Any): Boolean = obj match {
-    case that: MongodbRelation=> config.equals(that.comparedConfig) &&  this.schema.equals(that.schema)
+    case that: MongodbRelation=> config.equals(that.config) &&  this.schema.equals(that.schema)
     case _ => false
   }
 
