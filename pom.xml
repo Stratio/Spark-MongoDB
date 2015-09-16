@@ -65,6 +65,26 @@
                 <role>contributor</role>
             </roles>
         </developer>
+        <developer>
+            <id>pmadrigal</id>
+            <name>Pedro Madrigal</name>
+            <email>pmadrigal@stratio.com</email>
+            <roles>
+                <role>architect</role>
+                <role>developer</role>
+                <role>contributor</role>
+            </roles>
+        </developer>
+	<developer>
+            <id>ccaballero</id>
+            <name>Cristian Caballero</name>
+            <email>ccaballero@stratio.com</email>
+            <roles>
+                <role>architect</role>
+                <role>developer</role>
+                <role>contributor</role>
+            </roles>
+        </developer>
 
     </developers>
     <licenses>
