@@ -77,15 +77,6 @@ with PrunedFilteredScan with InsertableRelation {
 
   }
 
-  /**
-   * Compare if two MongodbRelation are the same.
-   * @param obj Object to compare
-   * @return Boolean
-   */
-  override def equals(obj: Any): Boolean = obj match {
-    case that: MongodbRelation=> config.equals(that.config) &&  this.schema.equals(that.schema)
-    case _ => false
-  }
 
 
   def isEmptyCollection: Boolean = new MongodbSimpleWriter(config).isEmpty
@@ -103,6 +94,23 @@ with PrunedFilteredScan with InsertableRelation {
     data.saveToMongodb(config)
   }
 
+
+  /**
+   * Compare if two MongodbRelation are the same.
+   * @param other Object to compare
+   * @return Boolean
+   */
+
+  override def equals(other: Any): Boolean = other match {
+    case that: MongodbRelation =>
+      schema == that.schema && config == that.config
+    case _ => false
+  }
+
+  override def hashCode(): Int = {
+    val state = Seq(schema, config)
+    state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
+  }
 }
 
 object MongodbRelation {

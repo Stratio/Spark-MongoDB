@@ -74,7 +74,20 @@ abstract class ConfigBuilder[Builder<:ConfigBuilder[Builder] ](
           properties.keys.toList.intersect(requiredProperties))
       }")
 
+    override def equals(other: Any): Boolean = other match {
+      case that: Config =>
+        properties == that.properties
+      case _ => false
+    }
+
+    override def hashCode(): Int = {
+      val state = Seq(properties)
+      state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
+    }
+
   }
+
+
 
 }
 
@@ -115,10 +128,6 @@ trait Config extends Serializable {
    * @return Boolean
    */
 
-  override def equals(obj: Any) :Boolean= obj match {
-    case that: Config=> this.properties.equals(that.properties)
-    case _ => false
-  }
 
 }
 
