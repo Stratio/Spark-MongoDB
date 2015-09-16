@@ -47,6 +47,8 @@ with PrunedFilteredScan with InsertableRelation {
 
   import MongodbRelation._
 
+  private val comparedConfig : Config = config
+
   private val rddPartitioner: MongodbPartitioner =
     new MongodbPartitioner(config)
 
@@ -76,6 +78,17 @@ with PrunedFilteredScan with InsertableRelation {
     MongodbRowConverter.asRow(pruneSchema(schema, requiredColumns), rdd)
 
   }
+
+  /**
+   * Compare if two MongodbRelation are the same.
+   * @param obj Object to compare
+   * @return Boolean
+   */
+  override def equals(obj: Any): Boolean = obj match {
+    case that: MongodbRelation=> config.equals(that.comparedConfig) &&  this.schema.equals(that.schema)
+    case _ => false
+  }
+
 
   def isEmptyCollection: Boolean = new MongodbSimpleWriter(config).isEmpty
 

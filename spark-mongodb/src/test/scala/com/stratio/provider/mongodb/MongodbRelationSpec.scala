@@ -19,6 +19,7 @@
 package com.stratio.provider.mongodb
 
 import com.mongodb.WriteConcern
+import org.apache.spark.sql.test.TestSQLContext
 import org.apache.spark.sql.types._
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -79,4 +80,9 @@ with Matchers {
 
   }
 
+  val mongodbrelation = new MongodbRelation(testConfig, Some(schema))(TestSQLContext)
+
+  it should "provide info about its occupation" in {
+    mongodbrelation.equals(mongodbrelation) shouldEqual true
+  }
 }

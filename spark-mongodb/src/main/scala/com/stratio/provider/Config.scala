@@ -107,6 +107,19 @@ trait Config extends Serializable {
   def apply[T: ClassTag](property: Property): T = {
     get[T](property).get
   }
+
+
+  /**
+   * Compare if two Configs have the same properties.
+   * @param obj Object to compare
+   * @return Boolean
+   */
+
+  override def equals(obj: Any) :Boolean= obj match {
+    case that: Config=> this.properties.equals(that.properties)
+    case _ => false
+  }
+
 }
 
 object Config {
