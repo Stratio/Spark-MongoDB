@@ -23,8 +23,7 @@ import java.util.Locale
 
 import com.stratio.provider.mongodb.partitioner.MongodbPartitioner
 import com.stratio.provider.mongodb.rdd.MongodbRDD
-import com.stratio.provider.mongodb.{MongoEmbedDatabase, MongodbConfig, MongodbConfigBuilder, TestBsonData}
-import org.apache.spark.sql.test.TestSQLContext
+import com.stratio.provider.mongodb.{MongoEmbedDatabase, MongodbConfig, MongodbConfigBuilder, TestBsonData, TestSQLContext}
 import org.apache.spark.sql.types.TimestampType
 import org.scalatest._
 
