@@ -19,7 +19,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.stratio</groupId>
-    <artifactId>spark-mongodb-core</artifactId>
+    <artifactId>spark-mongodb-core_${scala.binary.version}</artifactId>
     <name>spark-mongodb core</name>
     <description>A Spark SQl library for MongoDB</description>
     <url>http://github.com/Stratio/spark-mongodb</url>
@@ -423,8 +423,8 @@
                                     <toFile>/opt/sds/spark/lib/mongodb/mongo-java-driver-2.13.0.jar</toFile>
                                 </copyFile>
                                 <copyFile>
-                                    <path>target/spark-mongodb-core-${project.version}.jar</path>
-                                    <toFile>/opt/sds/spark/lib/mongodb/spark-mongodb-core-${project.version}.jar</toFile>
+                                    <path>target/spark-mongodb-core_${scala.binary.version}-${project.version}.jar</path>
+                                    <toFile>/opt/sds/spark/lib/mongodb/spark-mongodb-core_${scala.binary.version}-${project.version}.jar</toFile>
                                 </copyFile>
                             </assembly>
                             <defaults>
