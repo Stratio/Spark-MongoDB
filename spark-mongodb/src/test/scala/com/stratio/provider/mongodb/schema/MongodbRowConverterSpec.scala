@@ -23,9 +23,8 @@ import com.mongodb.util.JSON
 import com.stratio.provider.mongodb.partitioner.MongodbPartitioner
 import com.stratio.provider.mongodb.rdd.MongodbRDD
 import com.stratio.provider.mongodb.schema.MongodbRowConverter._
-import com.stratio.provider.mongodb.{MongoEmbedDatabase, MongodbConfig, MongodbConfigBuilder, TestBsonData}
+import com.stratio.provider.mongodb.{MongoEmbedDatabase, MongodbConfig, MongodbConfigBuilder, TestBsonData, TestSQLContext}
 import org.apache.spark.sql.catalyst.expressions.GenericRow
-import org.apache.spark.sql.test.TestSQLContext
 import org.apache.spark.sql.types._
 import org.scalatest.{FlatSpec, Matchers}
 
