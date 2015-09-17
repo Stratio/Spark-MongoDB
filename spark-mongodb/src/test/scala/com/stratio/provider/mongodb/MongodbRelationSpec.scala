@@ -19,7 +19,6 @@
 package com.stratio.provider.mongodb
 
 import com.mongodb.WriteConcern
-import org.apache.spark.sql.test.TestSQLContext
 import org.apache.spark.sql.types._
 import org.scalatest.{FlatSpec, Matchers}
 
