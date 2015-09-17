@@ -19,6 +19,7 @@
 package com.stratio.provider.mongodb
 
 import com.mongodb.WriteConcern
+import org.apache.spark.sql.test.TestSQLContext
 import org.apache.spark.sql.types._
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -27,16 +28,35 @@ with Matchers {
 
   private val host: String = "localhost"
   private val port: Int = 12345
+  private val port2: Int = 67890
   private val database: String = "testDb"
+  private val database2: String = "testDb2"
   private val collection: String = "testCol"
+  private val collection2: String = "testCol2"
   private val writeConcern : WriteConcern = WriteConcern.NORMAL
 
   val testConfig = MongodbConfigBuilder()
     .set(MongodbConfig.Host, List(host + ":" + port))
     .set(MongodbConfig.Database, database)
     .set(MongodbConfig.Collection, collection)
+    /*.set(MongodbConfig.SamplingRatio, 1.0)
+    .set(MongodbConfig.WriteConcern, writeConcern)
+    */.build()
+
+  val testConfig2 = MongodbConfigBuilder()
+    //.set(MongodbConfig.WriteConcern, writeConcern)
+    .set(MongodbConfig.Host, List(host + ":" + port))
+    .set(MongodbConfig.Collection, collection)
+    .set(MongodbConfig.Database, database)
+    /*.set(MongodbConfig.SamplingRatio, 1.0)
+    */.build()
+
+  val testConfig3 = MongodbConfigBuilder()
+    .set(MongodbConfig.Collection, collection2)
+    .set(MongodbConfig.Database, database2)
     .set(MongodbConfig.SamplingRatio, 1.0)
     .set(MongodbConfig.WriteConcern, writeConcern)
+    .set(MongodbConfig.Host, List(host + ":" + port2))
     .build()
 
   val schema = new StructType(Array(new StructField(
@@ -79,4 +99,13 @@ with Matchers {
 
   }
 
+  val mongodbrelation = new MongodbRelation(testConfig, Some(schema))(TestSQLContext)
+  val mongodbrelation2 = new MongodbRelation(testConfig2, Some(schema))(TestSQLContext)
+  val mongodbrelation3 = new MongodbRelation(testConfig3, Some(schema))(TestSQLContext)
+
+  it should "provide info about equality in MongodbRelation" in {
+    mongodbrelation.equals(mongodbrelation) shouldEqual true
+    mongodbrelation.equals(mongodbrelation2) shouldEqual true
+    mongodbrelation.equals(mongodbrelation3) shouldEqual false
+  }
 }

@@ -74,7 +74,20 @@ abstract class ConfigBuilder[Builder<:ConfigBuilder[Builder] ](
           properties.keys.toList.intersect(requiredProperties))
       }")
 
+    override def equals(other: Any): Boolean = other match {
+      case that: Config =>
+        properties == that.properties
+      case _ => false
+    }
+
+    override def hashCode(): Int = {
+      val state = Seq(properties)
+      state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
+    }
+
   }
+
+
 
 }
 
@@ -107,6 +120,15 @@ trait Config extends Serializable {
   def apply[T: ClassTag](property: Property): T = {
     get[T](property).get
   }
+
+
+  /**
+   * Compare if two Configs have the same properties.
+   * @param obj Object to compare
+   * @return Boolean
+   */
+
+
 }
 
 object Config {

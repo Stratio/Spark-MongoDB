@@ -40,7 +40,7 @@ import org.apache.spark.sql.types._
  * @param sqlContext An existing Spark SQL context.
  */
 class MongodbRelation(
-  config: Config,
+  private val config: Config,
   schemaProvided: Option[StructType] = None)(
   @transient val sqlContext: SQLContext) extends BaseRelation
 with PrunedFilteredScan with InsertableRelation {
@@ -77,6 +77,8 @@ with PrunedFilteredScan with InsertableRelation {
 
   }
 
+
+
   def isEmptyCollection: Boolean = new MongodbSimpleWriter(config).isEmpty
 
   /**
@@ -92,6 +94,23 @@ with PrunedFilteredScan with InsertableRelation {
     data.saveToMongodb(config)
   }
 
+
+  /**
+   * Compare if two MongodbRelation are the same.
+   * @param other Object to compare
+   * @return Boolean
+   */
+
+  override def equals(other: Any): Boolean = other match {
+    case that: MongodbRelation =>
+      schema == that.schema && config == that.config
+    case _ => false
+  }
+
+  override def hashCode(): Int = {
+    val state = Seq(schema, config)
+    state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
+  }
 }
 
 object MongodbRelation {
