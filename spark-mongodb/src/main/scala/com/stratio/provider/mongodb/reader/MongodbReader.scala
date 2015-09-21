@@ -126,17 +126,17 @@ class MongodbReader(
         case IsNull(attribute) =>
           queryBuilder.put(attribute).is(null)
         case IsNotNull(attribute) =>
-          queryBuilder.put(attribute).ne(null)
+          queryBuilder.put(attribute).notEquals(null)
         case And(leftFilter, rightFilter) =>
           queryBuilder.and(filtersToDBObject(Array(leftFilter)), filtersToDBObject(Array(rightFilter)))
         case Or(leftFilter, rightFilter) =>
           queryBuilder.or(filtersToDBObject(Array(leftFilter)), filtersToDBObject(Array(rightFilter)))
         case StringStartsWith(attribute, value) =>
-          queryBuilder.regex(Pattern.compile(s"^$value.*$$"))
+          queryBuilder.put(attribute).regex(Pattern.compile("^" + value + ".*$"))
         case StringEndsWith(attribute, value) =>
-          queryBuilder.regex(Pattern.compile(s"^.*$value$$"))
+          queryBuilder.put(attribute).regex(Pattern.compile("^.*" + value + "$"))
         case StringContains(attribute, value) =>
-          queryBuilder.regex(Pattern.compile(s".*$value.*"))
+          queryBuilder.put(attribute).regex(Pattern.compile(".*" + value + ".*"))
         // TODO Not filter
       }
 
