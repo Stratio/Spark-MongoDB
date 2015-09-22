@@ -18,6 +18,8 @@
 
 package com.stratio.provider.mongodb.reader
 
+
+
 import com.mongodb.{MongoCredential, QueryBuilder}
 import com.mongodb.casbah.Imports._
 import com.stratio.provider.Config
@@ -27,6 +29,7 @@ import org.apache.spark.Partition
 import org.apache.spark.sql.sources._
 import org.apache.spark.sql.types.UTF8String
 import scala.util.Try
+import java.util.regex.Pattern
 
 /**
  *
@@ -104,24 +107,43 @@ class MongodbReader(
   private def queryPartition(
     filters: Array[Filter]): DBObject = {
 
-    val queryBuilder: QueryBuilder = QueryBuilder.start
+    def filtersToDBObject( sFilters: Array[Filter] ): DBObject = {
+      val queryBuilder: QueryBuilder = QueryBuilder.start
 
-    filters.foreach {
-      case EqualTo(attribute, value) =>
-        queryBuilder.put(attribute).is(convertToStandardType(value))
-      case GreaterThan(attribute, value) =>
-        queryBuilder.put(attribute).greaterThan(convertToStandardType(value))
-      case GreaterThanOrEqual(attribute, value) =>
-        queryBuilder.put(attribute).greaterThanEquals(convertToStandardType(value))
-      case In(attribute, values) =>
-        queryBuilder.put(attribute).in(values.map(convertToStandardType))
-      case LessThan(attribute, value) =>
-        queryBuilder.put(attribute).lessThan(convertToStandardType(value))
-      case LessThanOrEqual(attribute, value) =>
-        queryBuilder.put(attribute).lessThanEquals(convertToStandardType(value))
+      sFilters.foreach {
+        case EqualTo(attribute, value) =>
+          queryBuilder.put(attribute).is(convertToStandardType(value))
+        case GreaterThan(attribute, value) =>
+          queryBuilder.put(attribute).greaterThan(convertToStandardType(value))
+        case GreaterThanOrEqual(attribute, value) =>
+          queryBuilder.put(attribute).greaterThanEquals(convertToStandardType(value))
+        case In(attribute, values) =>
+          queryBuilder.put(attribute).in(values.map(convertToStandardType))
+        case LessThan(attribute, value) =>
+          queryBuilder.put(attribute).lessThan(convertToStandardType(value))
+        case LessThanOrEqual(attribute, value) =>
+          queryBuilder.put(attribute).lessThanEquals(convertToStandardType(value))
+        case IsNull(attribute) =>
+          queryBuilder.put(attribute).is(null)
+        case IsNotNull(attribute) =>
+          queryBuilder.put(attribute).notEquals(null)
+        case And(leftFilter, rightFilter) =>
+          queryBuilder.and(filtersToDBObject(Array(leftFilter)), filtersToDBObject(Array(rightFilter)))
+        case Or(leftFilter, rightFilter) =>
+          queryBuilder.or(filtersToDBObject(Array(leftFilter)), filtersToDBObject(Array(rightFilter)))
+        case StringStartsWith(attribute, value) =>
+          queryBuilder.put(attribute).regex(Pattern.compile("^" + value + ".*$"))
+        case StringEndsWith(attribute, value) =>
+          queryBuilder.put(attribute).regex(Pattern.compile("^.*" + value + "$"))
+        case StringContains(attribute, value) =>
+          queryBuilder.put(attribute).regex(Pattern.compile(".*" + value + ".*"))
+        // TODO Not filter
+      }
+
+      queryBuilder.get
     }
-    queryBuilder.get
 
+    filtersToDBObject(filters)
   }
 
   private def convertToStandardType(value: Any): Any = {
