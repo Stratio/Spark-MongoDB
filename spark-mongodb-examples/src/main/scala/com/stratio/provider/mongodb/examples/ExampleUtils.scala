@@ -20,10 +20,10 @@ package com.stratio.provider.mongodb.examples
 
 import com.mongodb.QueryBuilder
 import com.mongodb.casbah.MongoClient
-import com.mongodb.casbah.commons.MongoDBObject
+import com.mongodb.casbah.commons.{MongoDBList, MongoDBObject}
 import com.stratio.provider.mongodb.examples.DataFrameAPIExample._
-import org.apache.spark.{SparkContext, SparkConf}
 import org.apache.spark.sql.SQLContext
+import org.apache.spark.{SparkConf, SparkContext}
 
 trait MongoDefaultConstants {
   val Database = "highschool"
@@ -52,7 +52,7 @@ object MongoExampleFunctions {
   }
 
   def prepareEnvironment(): MongoClient = {
-    val mongoClient = MongoClient(MongoHost,MongoPort)
+    val mongoClient = MongoClient(MongoHost, MongoPort)
     populateTable(mongoClient)
     mongoClient
   }
@@ -66,16 +66,18 @@ object MongoExampleFunctions {
 
     val collection = client(Database)(Collection)
     for (a <- 1 to 10) {
-      collection.insert{
+      collection.insert {
         MongoDBObject("id" -> a.toString,
-          "age" -> (10+a),
+          "age" -> (10 + a),
           "description" -> s"description $a",
-          "enrolled" -> (a % 2 == 0 ),
+          "enrolled" -> (a % 2 == 0),
           "name" -> s"Name $a"
         )
       }
     }
-    collection.update(QueryBuilder.start("age").greaterThan(14).get, MongoDBObject( ("$set", MongoDBObject( ("optionalField", true))) ), multi=true)
+
+    collection.update(QueryBuilder.start("age").greaterThan(14).get, MongoDBObject(("$set", MongoDBObject(("optionalField", true)))), multi = true)
+    collection.update(QueryBuilder.start("age").is(14).get, MongoDBObject(("$set", MongoDBObject(("fieldWithSubDoc", MongoDBObject(("subDoc", MongoDBList("foo", "bar"))))))))
   }
 
   private def cleanData(client: MongoClient): Unit = {
