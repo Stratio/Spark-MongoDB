@@ -50,7 +50,7 @@ class DefaultSource extends RelationProvider with SchemaRelationProvider with Cr
     new MongodbRelation(
     MongodbConfigBuilder()
       .apply(parseParameters(parameters))
-      .build(), Some(schema))(sqlContext)
+      .build(),Some(schema))(sqlContext)
 
   }
 

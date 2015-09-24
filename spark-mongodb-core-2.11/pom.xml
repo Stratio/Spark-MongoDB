@@ -22,18 +22,15 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>spark-mongodb-core_2.11</artifactId>
     <packaging>jar</packaging>
-
     <parent>
         <artifactId>spark-mongodb</artifactId>
         <groupId>com.stratio</groupId>
         <version>0.9.0-SNAPSHOT</version>
     </parent>
-
     <properties>
         <scala.version>2.11.6</scala.version>
         <scala.binary.version>2.11</scala.binary.version>
     </properties>
-
     <dependencies>
         <dependency>
             <groupId>org.scala-lang</groupId>
@@ -86,7 +83,6 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
-
     <build>
         <sourceDirectory>../spark-mongodb-core/src/main/scala</sourceDirectory>
         <testSourceDirectory>../spark-mongodb-core/src/test/scala</testSourceDirectory>
@@ -261,7 +257,6 @@
                                         <group>stratio</group>
                                     </attributes>
                                 </mkdirs>
-
                                 <copyFile>
                                     <path>src/main/include/LICENSE</path>
                                     <toFile>/opt/sds/spark-mongodb/LICENSE</toFile>
