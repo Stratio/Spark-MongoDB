@@ -18,8 +18,6 @@
 
 package com.stratio.provider.mongodb.reader
 
-
-
 import com.mongodb.{MongoCredential, QueryBuilder}
 import com.mongodb.casbah.Imports._
 import com.stratio.provider.Config
