@@ -107,7 +107,6 @@ Configuration parameters
 | threadsAllowedToBlockForConnectionMultiplier  |   "5"                                                                          | No                      |
 +-----------------------------------------------+--------------------------------------------------------------------------------+-------------------------+
 
-ThreadsAllowedToBlockForConnectionMultiplier
 
 Examples
 ========
