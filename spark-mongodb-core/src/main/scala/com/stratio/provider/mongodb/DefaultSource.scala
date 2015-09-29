@@ -91,12 +91,12 @@ class DefaultSource extends RelationProvider with SchemaRelationProvider with Cr
       .get(SamplingRatio)
       .map(_.toDouble).getOrElse(DefaultSamplingRatio)
 
-    val readpreference = parameters.getOrElse(readPreference, DefaultReadPreference)
+    val readpreference = parameters.getOrElse(ReadPreference, DefaultReadPreference)
 
     val properties :Map[String, Any] =
-      Map(Host -> host, Database -> database, Collection -> collection , SamplingRatio -> samplingRatio, readPreference -> readpreference)
+      Map(Host -> host, Database -> database, Collection -> collection , SamplingRatio -> samplingRatio, ReadPreference -> readpreference)
 
-    val optionalProperties: List[String] = List(Credentials,SSLOptions, IdField, SearchFields, Language, Timeout)
+    val optionalProperties: List[String] = List(Credentials,SSLOptions, IdField, SearchFields, Language, ConnectTimeout)
 
     val finalMap = (properties /: optionalProperties){
       case (properties,Credentials) =>
@@ -128,8 +128,22 @@ class DefaultSource extends RelationProvider with SchemaRelationProvider with Cr
         }.getOrElse(properties)
       }
       /** Timeout in miliseconds */
-      case (properties, Timeout) => parameters.get(Timeout).map{ timeoutInput => properties.+(Timeout -> timeoutInput)}.getOrElse(properties)
+      case (properties, ConnectTimeout) => parameters.get(ConnectTimeout).map{ ConnectTimeoutInput => properties.+(ConnectTimeout -> ConnectTimeoutInput)}.getOrElse(properties)
 
+      /** Number of connection per host */
+      case (properties, ConnectionsPerHost) => parameters.get(ConnectionsPerHost).map{ ConnectionsPerHostInput => properties.+(ConnectionsPerHost -> ConnectionsPerHostInput)}.getOrElse(properties)
+
+      /** MaxWaitTime in miliseconds */
+      case (properties, MaxWaitTime) => parameters.get(MaxWaitTime).map{ MaxWaitTimeInput => properties.+(MaxWaitTime-> MaxWaitTimeInput)}.getOrElse(properties)
+
+      /** SocketTimeout in miliseconds */
+      case (properties, SocketTimeout) => parameters.get(SocketTimeout).map{ SocketTimeoutInput => properties.+(SocketTimeout-> SocketTimeoutInput)}.getOrElse(properties)
+
+      /** ThreadsAllowedToBlockForConnectionMultiplier number of threads */
+      case (properties, ThreadsAllowedToBlockForConnectionMultiplier) =>
+        parameters.get(ThreadsAllowedToBlockForConnectionMultiplier)
+          .map{ ThreadsAllowedToBlockForConnectionMultiplierInput => properties.+(ThreadsAllowedToBlockForConnectionMultiplier-> ThreadsAllowedToBlockForConnectionMultiplierInput)}
+          .getOrElse(properties)
     }
 
     finalMap

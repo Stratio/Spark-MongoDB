@@ -23,11 +23,26 @@ class MongodbClientFactorySpec extends FlatSpec with Matchers{
     Some(MongodbSSLOptions(Some("/etc/ssl/mongodb.keystore"), Some("password"), "/etc/ssl/mongodb.keystore", Some("password")))
   )
 
+  val fullClient = MongodbClientFactory.createClient(
+    List(new ServerAddress("127.0.0.1:27017")),
+    List(MongoCredential.createCredential("user","database","password".toCharArray)),
+    Some(MongodbSSLOptions(Some("/etc/ssl/mongodb.keystore"), Some("password"), "/etc/ssl/mongodb.keystore", Some("password"))),
+    Map(
+      "readPreference" -> "nearest",
+      "connectTimeout"-> "50000",
+      "socketTimeout"-> "50000",
+      "maxWaitTime"-> "50000",
+      "connectionsPerHost" -> "20",
+      "threadsAllowedToBlockForConnectionMultiplier" -> "5"
+    )
+  )
+
   it should "Valid output type" in {
 
     hostClient shouldBe a [Client]
     hostPortCredentialsClient shouldBe a [Client]
     listServerAddressListCredentialsClient shouldBe a [Client]
     sslClient shouldBe a [Client]
+    fullClient shouldBe a [Client]
   }
 }

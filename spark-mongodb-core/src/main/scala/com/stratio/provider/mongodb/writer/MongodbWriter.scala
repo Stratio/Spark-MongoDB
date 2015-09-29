@@ -58,9 +58,7 @@ abstract class MongodbWriter(config: Config) extends Serializable {
   @transient private val ssloptions: Option[MongodbSSLOptions] =
     config.get[MongodbSSLOptions](MongodbConfig.SSLOptions)
 
-  @transient private val readpreference: String = config[String](MongodbConfig.readPreference)
-
-  private val timeout: Option[String] = config.get[String](MongodbConfig.Timeout)
+  private val clientOptions = config[Map[String,String]](MongodbConfig.ClientOptions)
 
   private val databaseName: String = config(MongodbConfig.Database)
 
@@ -68,10 +66,7 @@ abstract class MongodbWriter(config: Config) extends Serializable {
 
   private val collectionFullName: String = s"$databaseName.$collectionName"
 
-
-  protected val mongoClient: Client = MongodbClientFactory.createClient(hosts,credentials, ssloptions, readpreference, timeout)
-
-
+  protected val mongoClient: Client = MongodbClientFactory.createClient(hosts,credentials, ssloptions, clientOptions)
 
 
   /**

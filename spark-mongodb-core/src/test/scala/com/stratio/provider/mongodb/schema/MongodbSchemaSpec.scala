@@ -44,7 +44,7 @@ with TestBsonData {
     .set(MongodbConfig.Database,database)
     .set(MongodbConfig.Collection,collection)
     .set(MongodbConfig.SamplingRatio,1.0)
-    .set(MongodbConfig.readPreference, readPreference)
+    .set(MongodbConfig.ReadPreference, readPreference)
     .build()
 
   val mongodbPartitioner = new MongodbPartitioner(testConfig)

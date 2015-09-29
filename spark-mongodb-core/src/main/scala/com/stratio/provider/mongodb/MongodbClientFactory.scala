@@ -4,7 +4,7 @@ import javax.net.ssl.SSLSocketFactory
 import com.stratio.provider.mongodb.MongodbConfig._
 import com.mongodb.ServerAddress
 import com.mongodb.casbah.Imports._
-import com.mongodb.casbah.{MongoClient, MongoClientOptions}
+import com.mongodb.casbah.{ReadPreference, MongoClient, MongoClientOptions}
 
 /**
  * Different client configurations to Mongodb database
@@ -65,25 +65,33 @@ object MongodbClientFactory {
 
   }
 
-
   def createClient(
                     hostPort : List[ServerAddress],
                     credentials : List[MongoCredential],
                     optionSSLOptions: Option[MongodbSSLOptions],
-                    readPreference: String,
-                    timeout: Option[String]) : Client = {
-
-
+                    clientOptions: Map[String, String]) : Client = {
 
     if (sslBuilder(optionSSLOptions)) {
       val options = new MongoClientOptions.Builder()
-        .readPreference(parseReadPreference(readPreference))
-        .socketFactory(SSLSocketFactory.getDefault()).connectTimeout(timeout.getOrElse(DefaultTimeout).toInt).build()
+        .readPreference(parseReadPreference(clientOptions.get(MongodbConfig.ReadPreference).get))
+        .connectTimeout(clientOptions.get(ConnectTimeout).get.toInt)
+        .socketFactory(SSLSocketFactory.getDefault())
+        .connectionsPerHost(clientOptions.get(ConnectionsPerHost).get.toInt)
+        .maxWaitTime(clientOptions.get(MaxWaitTime).get.toInt)
+        .threadsAllowedToBlockForConnectionMultiplier(clientOptions.get(ThreadsAllowedToBlockForConnectionMultiplier).get.toInt)
+        .build()
 
       MongoClient(hostPort, credentials, options)
     }
     else {
-      val options = new MongoClientOptions.Builder().readPreference(parseReadPreference(readPreference)).connectTimeout(timeout.getOrElse("10").toInt).build()
+
+      val options = new MongoClientOptions.Builder()
+        .readPreference(parseReadPreference(clientOptions.get(MongodbConfig.ReadPreference).get))
+        .connectTimeout(clientOptions.get(ConnectTimeout).get.toInt)
+        .connectionsPerHost(clientOptions.get(ConnectionsPerHost).get.toInt)
+        .maxWaitTime(clientOptions.get(MaxWaitTime).get.toInt)
+        .threadsAllowedToBlockForConnectionMultiplier(clientOptions.get(ThreadsAllowedToBlockForConnectionMultiplier).get.toInt)
+        .build()
 
       MongoClient(hostPort, credentials, options)
     }
