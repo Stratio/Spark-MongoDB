@@ -96,7 +96,7 @@ class DefaultSource extends RelationProvider with SchemaRelationProvider with Cr
     val properties :Map[String, Any] =
       Map(Host -> host, Database -> database, Collection -> collection , SamplingRatio -> samplingRatio, ReadPreference -> readpreference)
 
-    val optionalProperties: List[String] = List(Credentials,SSLOptions, IdField, SearchFields, Language, ConnectTimeout)
+    val optionalProperties: List[String] = List(Credentials,SSLOptions, IdField, SearchFields, Language, ConnectTimeout, ConnectionsPerHost, ThreadsAllowedToBlockForConnectionMultiplier, SocketTimeout, MaxWaitTime)
 
     val finalMap = (properties /: optionalProperties){
       case (properties,Credentials) =>
