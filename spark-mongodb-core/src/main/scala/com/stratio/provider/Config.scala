@@ -55,7 +55,7 @@ abstract class ConfigBuilder[Builder<:ConfigBuilder[Builder] ](
    * @tparam T Property type
    * @return A new builder that includes new value of the specified property
    */
-  def set[T](property: Property,value: T): Builder =
+  def set[T](property: Property, value: T): Builder =
     apply(properties + (property -> value))
 
   /**
@@ -74,6 +74,11 @@ abstract class ConfigBuilder[Builder<:ConfigBuilder[Builder] ](
           properties.keys.toList.intersect(requiredProperties))
       }")
 
+    /**
+     * Compare if two Configs have the same properties.
+     * @param other Object to compare
+     * @return Boolean
+     */
     override def equals(other: Any): Boolean = other match {
       case that: Config =>
         properties == that.properties
@@ -120,14 +125,6 @@ trait Config extends Serializable {
   def apply[T: ClassTag](property: Property): T = {
     get[T](property).get
   }
-
-
-  /**
-   * Compare if two Configs have the same properties.
-   * @param obj Object to compare
-   * @return Boolean
-   */
-
 
 }
 

@@ -22,6 +22,7 @@ import com.mongodb.casbah.Imports._
 import com.mongodb.{MongoCredential, ServerAddress}
 import com.stratio.provider.Config
 import com.stratio.provider.mongodb.MongodbClientFactory.Client
+import com.stratio.provider.mongodb.MongodbConfig._
 import com.stratio.provider.mongodb.{MongodbClientFactory, MongodbConfig, MongodbCredentials, MongodbSSLOptions}
 
 /**
@@ -58,7 +59,7 @@ abstract class MongodbWriter(config: Config) extends Serializable {
   @transient private val ssloptions: Option[MongodbSSLOptions] =
     config.get[MongodbSSLOptions](MongodbConfig.SSLOptions)
 
-  private val clientOptions = config[Map[String,String]](MongodbConfig.ClientOptions)
+  private val clientOptions = config.properties.filterKeys(ListMongoClientOptions.contains(_))
 
   private val databaseName: String = config(MongodbConfig.Database)
 
@@ -66,7 +67,7 @@ abstract class MongodbWriter(config: Config) extends Serializable {
 
   private val collectionFullName: String = s"$databaseName.$collectionName"
 
-  protected val mongoClient: Client = MongodbClientFactory.createClient(hosts,credentials, ssloptions, clientOptions)
+  protected val mongoClient: Client = MongodbClientFactory.createClient(hosts, clientOptions,credentials, ssloptions)
 
 
   /**

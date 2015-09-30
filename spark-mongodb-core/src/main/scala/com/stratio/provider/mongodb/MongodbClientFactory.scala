@@ -2,6 +2,7 @@ package com.stratio.provider.mongodb
 
 import javax.net.ssl.SSLSocketFactory
 import com.stratio.provider.mongodb.MongodbConfig._
+import com.stratio.provider.mongodb.MongodbConfig.{ReadPreference => ProviderReadPreference}
 import com.mongodb.ServerAddress
 import com.mongodb.casbah.Imports._
 import com.mongodb.casbah.{ReadPreference, MongoClient, MongoClientOptions}
@@ -22,79 +23,28 @@ object MongodbClientFactory {
     MongoClient(hostPort, credentials)
   }
 
-  def createClient(hostPort : List[ServerAddress], credentials : List[MongoCredential]) : Client = MongoClient(hostPort, credentials)
-
-  def createClient(hostPort : List[ServerAddress], credentials : List[MongoCredential], readPreference: String) : Client = {
-    val options = new MongoClientOptions.Builder().readPreference(parseReadPreference(readPreference)).build()
-    MongoClient(hostPort, credentials, options)
-  }
-
   def createClient(
                     hostPort : List[ServerAddress],
-                    credentials : List[MongoCredential],
-                    optionSSLOptions: Option[MongodbSSLOptions]) : Client = {
+                    clientOptions: Map[String, Any],
+                    credentials : List[MongoCredential] = List(),
+                    optionSSLOptions: Option[MongodbSSLOptions] = None
+                    ) : Client = {
 
-    if (sslBuilder(optionSSLOptions)) {
-
-      val options = new MongoClientOptions.Builder().socketFactory(SSLSocketFactory.getDefault()).build()
-      MongoClient(hostPort, credentials, options)
-    }
-    else
-      MongoClient(hostPort, credentials)
-
-  }
-
-  def createClient(
-    hostPort : List[ServerAddress],
-    credentials : List[MongoCredential],
-    optionSSLOptions: Option[MongodbSSLOptions],
-    readPreference: String) : Client = {
-
-    if (sslBuilder(optionSSLOptions)) {
-      val options = new MongoClientOptions.Builder()
-        .readPreference(parseReadPreference(readPreference))
-        .socketFactory(SSLSocketFactory.getDefault()).build()
-
-      MongoClient(hostPort, credentials, options)
-    }
-    else {
-      val options = new MongoClientOptions.Builder().readPreference(parseReadPreference(readPreference)).build()
-
-      MongoClient(hostPort, credentials, options)
-    }
-
-  }
-
-  def createClient(
-                    hostPort : List[ServerAddress],
-                    credentials : List[MongoCredential],
-                    optionSSLOptions: Option[MongodbSSLOptions],
-                    clientOptions: Map[String, String]) : Client = {
-
-    if (sslBuilder(optionSSLOptions)) {
-      val options = new MongoClientOptions.Builder()
-        .readPreference(parseReadPreference(clientOptions.get(MongodbConfig.ReadPreference).get))
-        .connectTimeout(clientOptions.get(ConnectTimeout).get.toInt)
+    val options = {
+      val builder = new MongoClientOptions.Builder()
+        .readPreference(parseReadPreference(clientOptions.getOrElse(ProviderReadPreference, DefaultReadPreference).asInstanceOf[String]))
+        .connectTimeout(clientOptions.getOrElse(ConnectTimeout, DefaultConnectTimeout).asInstanceOf[String].toInt)
         .socketFactory(SSLSocketFactory.getDefault())
-        .connectionsPerHost(clientOptions.get(ConnectionsPerHost).get.toInt)
-        .maxWaitTime(clientOptions.get(MaxWaitTime).get.toInt)
-        .threadsAllowedToBlockForConnectionMultiplier(clientOptions.get(ThreadsAllowedToBlockForConnectionMultiplier).get.toInt)
-        .build()
+        .connectionsPerHost(clientOptions.getOrElse(ConnectionsPerHost, DefaultConnectionsPerHost).asInstanceOf[String].toInt)
+        .maxWaitTime(clientOptions.getOrElse(MaxWaitTime, DefaultMaxWaitTime).asInstanceOf[String].toInt)
+        .threadsAllowedToBlockForConnectionMultiplier(clientOptions.getOrElse(ThreadsAllowedToBlockForConnectionMultiplier, DefaultThreadsAllowedToBlockForConnectionMultiplier).asInstanceOf[String].toInt)
 
-      MongoClient(hostPort, credentials, options)
+      if (sslBuilder(optionSSLOptions)) builder.socketFactory(SSLSocketFactory.getDefault())
+
+      builder.build()
     }
-    else {
 
-      val options = new MongoClientOptions.Builder()
-        .readPreference(parseReadPreference(clientOptions.get(MongodbConfig.ReadPreference).get))
-        .connectTimeout(clientOptions.get(ConnectTimeout).get.toInt)
-        .connectionsPerHost(clientOptions.get(ConnectionsPerHost).get.toInt)
-        .maxWaitTime(clientOptions.get(MaxWaitTime).get.toInt)
-        .threadsAllowedToBlockForConnectionMultiplier(clientOptions.get(ThreadsAllowedToBlockForConnectionMultiplier).get.toInt)
-        .build()
-
-      MongoClient(hostPort, credentials, options)
-    }
+    MongoClient(hostPort, credentials, options)
 
   }
 

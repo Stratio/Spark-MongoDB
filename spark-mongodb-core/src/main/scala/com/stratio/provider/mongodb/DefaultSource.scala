@@ -33,36 +33,33 @@ import org.apache.spark.sql.{DataFrame, SQLContext, SaveMode}
 class DefaultSource extends RelationProvider with SchemaRelationProvider with CreatableRelationProvider{
 
   override def createRelation(
-   sqlContext: SQLContext,
-   parameters: Map[String, String]): BaseRelation = {
+                               sqlContext: SQLContext,
+                               parameters: Map[String, String]): BaseRelation = {
 
     new MongodbRelation(
-      MongodbConfigBuilder()
-        .apply(parseParameters(parameters))
+      MongodbConfigBuilder(parseParameters(parameters))
         .build())(sqlContext)
 
   }
   override def createRelation(
-   sqlContext: SQLContext,
-   parameters: Map[String, String],
-   schema: StructType): BaseRelation = {
+                               sqlContext: SQLContext,
+                               parameters: Map[String, String],
+                               schema: StructType): BaseRelation = {
 
     new MongodbRelation(
-    MongodbConfigBuilder()
-      .apply(parseParameters(parameters))
-      .build(),Some(schema))(sqlContext)
+      MongodbConfigBuilder(parseParameters(parameters))
+        .build(),Some(schema))(sqlContext)
 
   }
 
   override def createRelation(
-   sqlContext: SQLContext,
-   mode: SaveMode,
-   parameters: Map[String, String],
-   data: DataFrame): BaseRelation = {
+                               sqlContext: SQLContext,
+                               mode: SaveMode,
+                               parameters: Map[String, String],
+                               data: DataFrame): BaseRelation = {
 
     val mongodbRelation = new MongodbRelation(
-      MongodbConfigBuilder()
-        .apply(parseParameters(parameters))
+      MongodbConfigBuilder(parseParameters(parameters))
         .build())(sqlContext)
 
     mode match{
@@ -76,74 +73,51 @@ class DefaultSource extends RelationProvider with SchemaRelationProvider with Cr
     mongodbRelation
   }
 
+
+
+
+
+
+
+
+
+
   private def parseParameters(parameters : Map[String,String]): Map[String, Any] = {
 
+    // required properties
     /** We will assume hosts are provided like 'host:port,host2:port2,...' */
-    val host = parameters
-      .getOrElse(Host, notFound[String](Host))
-      .split(",").toList
+    val properties: Map[String, Any] = parameters.updated(Host, parameters.getOrElse(Host, notFound[String](Host)).split(",").toList)
 
-    val database = parameters.getOrElse(Database, notFound(Database))
+    if (!parameters.contains(Database) ) notFound(Database)
+    if (!parameters.contains(Collection) ) notFound(Collection)
+    //if (!parameters.contains(SamplingRatio) ) notFound(SamplingRatio)
 
-    val collection = parameters.getOrElse(Collection, notFound(Collection))
+    //optional parseable properties
 
-    val samplingRatio = parameters
-      .get(SamplingRatio)
-      .map(_.toDouble).getOrElse(DefaultSamplingRatio)
-
-    val readpreference = parameters.getOrElse(ReadPreference, DefaultReadPreference)
-
-    val properties :Map[String, Any] =
-      Map(Host -> host, Database -> database, Collection -> collection , SamplingRatio -> samplingRatio, ReadPreference -> readpreference)
-
-    val optionalProperties: List[String] = List(Credentials,SSLOptions, IdField, SearchFields, Language, ConnectTimeout, ConnectionsPerHost, ThreadsAllowedToBlockForConnectionMultiplier, SocketTimeout, MaxWaitTime)
+    val optionalProperties: List[String] = List(Credentials,SSLOptions, SearchFields)
 
     val finalMap = (properties /: optionalProperties){
+      /** We will assume credentials are provided like 'user,database,password;user,database,password;...' */
       case (properties,Credentials) =>
-        /** We will assume credentials are provided like 'user,database,password;user,database,password;...' */
         parameters.get(Credentials).map{ credentialInput =>
-          val credentials = credentialInput.split(";")
-            .map(credential => credential.split(",")).toList
+          val credentials = credentialInput.split(";").map(_.split(",")).toList
             .map(credentials => MongodbCredentials(credentials(0), credentials(1), credentials(2).toCharArray))
-          properties.+(Credentials -> credentials)
-        }.getOrElse(properties)
+          properties + (Credentials -> credentials)
+        } getOrElse properties
 
+      /** We will assume ssloptions are provided like '/path/keystorefile,keystorepassword,/path/truststorefile,truststorepassword' */
       case (properties,SSLOptions) =>
-        /** We will assume ssloptions are provided like '/path/keystorefile,keystorepassword,/path/truststorefile,truststorepassword' */
         parameters.get(SSLOptions).map{ ssloptionsInput =>
-          val ssloption = ssloptionsInput.split(",")
-          val ssloptions = MongodbSSLOptions(Some(ssloption(0)), Some(ssloption(1)), ssloption(2), Some(ssloption(3)))
-          properties.+(SSLOptions -> ssloptions)
-        }.getOrElse(properties)
+          val ssloptions = ssloptionsInput.split(",")
+          properties + (SSLOptions ->  MongodbSSLOptions(Some(ssloptions(0)), Some(ssloptions(1)), ssloptions(2), Some(ssloptions(3))))
+        } getOrElse properties
 
-      case (properties, IdField) => parameters.get(IdField).map{idFieldInput => properties.+(IdField -> idFieldInput)}.getOrElse(properties)
-
-      case (properties, Language) => parameters.get(Language).map{ languageInput => properties.+(Language -> languageInput)}.getOrElse(properties)
-
+      /** We will assume fields are provided like 'user,database,password...' */
       case (properties, SearchFields) => {
-        /** We will assume fields are provided like 'user,database,password...' */
-        parameters.get(SearchFields).map{ searchInputs =>
-          val searchFields = searchInputs.split(",")
-          properties.+(SearchFields -> searchFields)
-        }.getOrElse(properties)
+        parameters.get(SearchFields).map { searchInputs =>
+          properties + (SearchFields -> searchInputs.split(","))
+        } getOrElse properties
       }
-      /** Timeout in miliseconds */
-      case (properties, ConnectTimeout) => parameters.get(ConnectTimeout).map{ ConnectTimeoutInput => properties.+(ConnectTimeout -> ConnectTimeoutInput)}.getOrElse(properties)
-
-      /** Number of connection per host */
-      case (properties, ConnectionsPerHost) => parameters.get(ConnectionsPerHost).map{ ConnectionsPerHostInput => properties.+(ConnectionsPerHost -> ConnectionsPerHostInput)}.getOrElse(properties)
-
-      /** MaxWaitTime in miliseconds */
-      case (properties, MaxWaitTime) => parameters.get(MaxWaitTime).map{ MaxWaitTimeInput => properties.+(MaxWaitTime-> MaxWaitTimeInput)}.getOrElse(properties)
-
-      /** SocketTimeout in miliseconds */
-      case (properties, SocketTimeout) => parameters.get(SocketTimeout).map{ SocketTimeoutInput => properties.+(SocketTimeout-> SocketTimeoutInput)}.getOrElse(properties)
-
-      /** ThreadsAllowedToBlockForConnectionMultiplier number of threads */
-      case (properties, ThreadsAllowedToBlockForConnectionMultiplier) =>
-        parameters.get(ThreadsAllowedToBlockForConnectionMultiplier)
-          .map{ ThreadsAllowedToBlockForConnectionMultiplierInput => properties.+(ThreadsAllowedToBlockForConnectionMultiplier-> ThreadsAllowedToBlockForConnectionMultiplierInput)}
-          .getOrElse(properties)
     }
 
     finalMap

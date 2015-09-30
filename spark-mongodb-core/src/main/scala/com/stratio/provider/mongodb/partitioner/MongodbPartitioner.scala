@@ -22,6 +22,7 @@ import com.mongodb.{MongoCredential, ServerAddress}
 import com.mongodb.casbah.Imports._
 import com.stratio.provider.Config
 import com.stratio.provider.mongodb.{MongodbSSLOptions, MongodbClientFactory, MongodbCredentials, MongodbConfig}
+
 import com.stratio.provider.mongodb.partitioner.MongodbPartitioner._
 import com.stratio.provider.partitioner.{PartitionRange, Partitioner}
 import com.stratio.provider.util.using
@@ -33,6 +34,8 @@ import scala.util.Try
  */
 class MongodbPartitioner(
   config: Config) extends Partitioner[MongodbPartition] {
+
+  import MongodbConfig._
 
   @transient private val hosts: List[ServerAddress] =
     config[List[String]](MongodbConfig.Host)
@@ -47,7 +50,7 @@ class MongodbPartitioner(
   @transient private val ssloptions: Option[MongodbSSLOptions] =
     config.get[MongodbSSLOptions](MongodbConfig.SSLOptions)
 
-  private val clientOptions = config[Map[String, String]](MongodbConfig.ClientOptions)
+  private val clientOptions = config.properties.filterKeys(ListMongoClientOptions.contains(_))
 
   private val databaseName: String = config(MongodbConfig.Database)
 
@@ -65,7 +68,7 @@ class MongodbPartitioner(
    * @return Whether this is a sharded collection or not
    */
   protected def isShardedCollection: Boolean =
-     using(MongodbClientFactory.createClient(hosts,credentials, ssloptions,clientOptions)) { mongoClient =>
+     using(MongodbClientFactory.createClient(hosts, clientOptions,credentials, ssloptions)) { mongoClient =>
 
       val collection = mongoClient(databaseName)(collectionName)
       collection.stats.ok && collection.stats.getBoolean("sharded", false)
@@ -75,7 +78,7 @@ class MongodbPartitioner(
    * @return MongoDB partitions as sharded chunks.
    */
   protected def computeShardedChunkPartitions(): Array[MongodbPartition] =
-    using(MongodbClientFactory.createClient(hosts,credentials, ssloptions, clientOptions)) { mongoClient =>
+    using(MongodbClientFactory.createClient(hosts, clientOptions,credentials, ssloptions)) { mongoClient =>
 
       Try {
         val chunksCollection = mongoClient(ConfigDatabase)(ChunksCollection)
@@ -113,7 +116,7 @@ class MongodbPartitioner(
    * @return Array of not-sharded MongoDB partitions.
    */
   protected def computeNotShardedPartitions(): Array[MongodbPartition] =
-    using(MongodbClientFactory.createClient(hosts,credentials,ssloptions, clientOptions)) { mongoClient =>
+    using(MongodbClientFactory.createClient(hosts, clientOptions,credentials, ssloptions)) { mongoClient =>
 
       val ranges = splitRanges()
 
@@ -143,7 +146,7 @@ class MongodbPartitioner(
       "maxChunkSize" -> config(MongodbConfig.SplitSize)
     )
 
-    using(MongodbClientFactory.createClient(hosts,credentials,ssloptions, clientOptions)) { mongoClient =>
+    using(MongodbClientFactory.createClient(hosts, clientOptions,credentials, ssloptions)) { mongoClient =>
 
       Try {
         val data = mongoClient("admin").command(cmd)
@@ -175,7 +178,7 @@ class MongodbPartitioner(
    * @return Map of shards.
    */
   protected def describeShardsMap(): Map[String, Seq[String]] =
-    using(MongodbClientFactory.createClient(hosts,credentials,ssloptions, clientOptions)) { mongoClient =>
+    using(MongodbClientFactory.createClient(hosts, clientOptions,credentials, ssloptions)) { mongoClient =>
 
       val shardsCollection = mongoClient(ConfigDatabase)(ShardsCollection)
 
