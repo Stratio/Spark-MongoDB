@@ -33,11 +33,10 @@ object MongodbClientFactory {
     val options = {
       val builder = new MongoClientOptions.Builder()
         .readPreference(parseReadPreference(clientOptions.getOrElse(ProviderReadPreference, DefaultReadPreference).asInstanceOf[String]))
-        .connectTimeout(clientOptions.getOrElse(ConnectTimeout, DefaultConnectTimeout).asInstanceOf[String].toInt)
-        .socketFactory(SSLSocketFactory.getDefault())
-        .connectionsPerHost(clientOptions.getOrElse(ConnectionsPerHost, DefaultConnectionsPerHost).asInstanceOf[String].toInt)
-        .maxWaitTime(clientOptions.getOrElse(MaxWaitTime, DefaultMaxWaitTime).asInstanceOf[String].toInt)
-        .threadsAllowedToBlockForConnectionMultiplier(clientOptions.getOrElse(ThreadsAllowedToBlockForConnectionMultiplier, DefaultThreadsAllowedToBlockForConnectionMultiplier).asInstanceOf[String].toInt)
+        .connectTimeout(clientOptions.getOrElse(ConnectTimeout, DefaultConnectTimeout.toString).asInstanceOf[String].toInt)
+        .connectionsPerHost(clientOptions.getOrElse(ConnectionsPerHost, DefaultConnectionsPerHost.toString).asInstanceOf[String].toInt)
+        .maxWaitTime(clientOptions.getOrElse(MaxWaitTime, DefaultMaxWaitTime.toString).asInstanceOf[String].toInt)
+        .threadsAllowedToBlockForConnectionMultiplier(clientOptions.getOrElse(ThreadsAllowedToBlockForConnectionMultiplier, DefaultThreadsAllowedToBlockForConnectionMultiplier.toString).asInstanceOf[String].toInt)
 
       if (sslBuilder(optionSSLOptions)) builder.socketFactory(SSLSocketFactory.getDefault())
 

@@ -78,7 +78,7 @@ class MongodbReader(
       mongoClient = Option(MongodbClientFactory.createClient(
         mongoPartition.hosts.map(add => new ServerAddress(add)).toList,
         config.properties.filterKeys(ListMongoClientOptions.contains(_)),
-        config[List[MongodbCredentials]](MongodbConfig.Credentials).map{
+        config.getOrElse[List[MongodbCredentials]](MongodbConfig.Credentials, DefaultCredentials).map{
           case MongodbCredentials(user,database,password) =>
             MongoCredential.createCredential(user,database,password)
         })

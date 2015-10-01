@@ -51,7 +51,7 @@ abstract class MongodbWriter(config: Config) extends Serializable {
       .map(add => new ServerAddress(add))
 
   @transient private val credentials: List[MongoCredential] =
-    config[List[MongodbCredentials]](MongodbConfig.Credentials).map{
+    config.getOrElse[List[MongodbCredentials]](MongodbConfig.Credentials, DefaultCredentials).map{
       case MongodbCredentials(user,database,password) =>
         MongoCredential.createCredential(user,database,password)
     }

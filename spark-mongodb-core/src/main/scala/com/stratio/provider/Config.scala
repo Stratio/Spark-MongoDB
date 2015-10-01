@@ -106,6 +106,23 @@ trait Config extends Serializable {
    */
   val properties: Map[Property, Any]
 
+  /**  Returns the value associated with a key, or a default value if the key is not contained in the configuration object.
+    *   @param   key      the key.
+    *   @param   default  a computation that yields a default value in case no binding for `key` is
+    *                     found in the map.
+    *   @tparam  T       the result type of the default computation.
+    *   @return  the value associated with `key` if it exists,
+    *            otherwise the result of the `default` computation.
+    *
+    *   @usecase def getOrElse(key: A, default: => B): B
+    *     @inheritdoc
+    */
+  def getOrElse[T](key: Property, default: => T): T = properties.get(key) match {
+    case Some(v) => v.asInstanceOf[T]
+    case None => default
+  }
+
+
   /**
    * Gets specified property from current configuration object
    * @param property Desired property

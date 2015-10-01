@@ -34,7 +34,7 @@ import com.stratio.provider.ConfigBuilder
 case class MongodbConfigBuilder(
                                  props: Map[Property, Any] = Map()
                                  ) extends {
-  override val properties =  props
+  override val properties =  props ++ Map()
 } with ConfigBuilder[MongodbConfigBuilder](properties) {
 
   val requiredProperties: List[Property] = MongodbConfig.required
