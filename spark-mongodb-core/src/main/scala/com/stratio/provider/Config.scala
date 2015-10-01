@@ -55,7 +55,7 @@ abstract class ConfigBuilder[Builder<:ConfigBuilder[Builder] ](
    * @tparam T Property type
    * @return A new builder that includes new value of the specified property
    */
-  def set[T](property: Property,value: T): Builder =
+  def set[T](property: Property, value: T): Builder =
     apply(properties + (property -> value))
 
   /**
@@ -74,6 +74,11 @@ abstract class ConfigBuilder[Builder<:ConfigBuilder[Builder] ](
           properties.keys.toList.intersect(requiredProperties))
       }")
 
+    /**
+     * Compare if two Configs have the same properties.
+     * @param other Object to compare
+     * @return Boolean
+     */
     override def equals(other: Any): Boolean = other match {
       case that: Config =>
         properties == that.properties
@@ -101,6 +106,23 @@ trait Config extends Serializable {
    */
   val properties: Map[Property, Any]
 
+  /**  Returns the value associated with a key, or a default value if the key is not contained in the configuration object.
+    *   @param   key      the key.
+    *   @param   default  a computation that yields a default value in case no binding for `key` is
+    *                     found in the map.
+    *   @tparam  T       the result type of the default computation.
+    *   @return  the value associated with `key` if it exists,
+    *            otherwise the result of the `default` computation.
+    *
+    *   @usecase def getOrElse(key: A, default: => B): B
+    *     @inheritdoc
+    */
+  def getOrElse[T](key: Property, default: => T): T = properties.get(key) match {
+    case Some(v) => v.asInstanceOf[T]
+    case None => default
+  }
+
+
   /**
    * Gets specified property from current configuration object
    * @param property Desired property
@@ -120,14 +142,6 @@ trait Config extends Serializable {
   def apply[T: ClassTag](property: Property): T = {
     get[T](property).get
   }
-
-
-  /**
-   * Compare if two Configs have the same properties.
-   * @param obj Object to compare
-   * @return Boolean
-   */
-
 
 }
 

@@ -21,6 +21,7 @@ package com.stratio.provider.mongodb.reader
 import com.mongodb.{MongoCredential, QueryBuilder}
 import com.mongodb.casbah.Imports._
 import com.stratio.provider.Config
+import com.stratio.provider.mongodb.MongodbConfig._
 import com.stratio.provider.mongodb.{MongodbCredentials, MongodbSSLOptions, MongodbClientFactory, MongodbConfig}
 import com.stratio.provider.mongodb.partitioner.MongodbPartition
 import org.apache.spark.Partition
@@ -36,9 +37,9 @@ import java.util.regex.Pattern
  * @param filters Added query filters
  */
 class MongodbReader(
-  config: Config,
-  requiredColumns: Array[String],
-  filters: Array[Filter]) {
+                     config: Config,
+                     requiredColumns: Array[String],
+                     filters: Array[Filter]) {
 
   private var mongoClient: Option[MongodbClientFactory.Client] = None
 
@@ -76,20 +77,23 @@ class MongodbReader(
 
       mongoClient = Option(MongodbClientFactory.createClient(
         mongoPartition.hosts.map(add => new ServerAddress(add)).toList,
-        config[List[MongodbCredentials]](MongodbConfig.Credentials).map{
+        config.properties.filterKeys(ListMongoClientOptions.contains(_)),
+        config.getOrElse[List[MongodbCredentials]](MongodbConfig.Credentials, DefaultCredentials).map{
           case MongodbCredentials(user,database,password) =>
-            MongoCredential.createCredential(user,database,password)},
-        config.get[MongodbSSLOptions](MongodbConfig.SSLOptions), config[String](MongodbConfig.readPreference), config.get[String](MongodbConfig.Timeout)))
+            MongoCredential.createCredential(user,database,password)
+        })
+      )
 
       dbCursor = (for {
         client <- mongoClient
         collection <- Option(client(config(MongodbConfig.Database))(config(MongodbConfig.Collection)))
         dbCursor <- Option(collection.find(queryPartition(filters), selectFields(requiredColumns)))
       } yield {
-        mongoPartition.partitionRange.minKey.foreach(min => dbCursor.addSpecial("$min", min))
-        mongoPartition.partitionRange.maxKey.foreach(max => dbCursor.addSpecial("$max", max))
-        dbCursor
-      }).headOption
+          mongoPartition.partitionRange.minKey.foreach(min => dbCursor.addSpecial("$min", min))
+          mongoPartition.partitionRange.maxKey.foreach(max => dbCursor.addSpecial("$max", max))
+          dbCursor
+        }).headOption
+
 
     }.recover {
       case throwable =>
@@ -103,7 +107,7 @@ class MongodbReader(
    * @return the dB object
    */
   private def queryPartition(
-    filters: Array[Filter]): DBObject = {
+                              filters: Array[Filter]): DBObject = {
 
     def filtersToDBObject( sFilters: Array[Filter] ): DBObject = {
       val queryBuilder: QueryBuilder = QueryBuilder.start
@@ -144,11 +148,11 @@ class MongodbReader(
     filtersToDBObject(filters)
   }
 
-  private def convertToStandardType(value: Any): Any = {
-    if (value.isInstanceOf[UTF8String])
-      value.toString
-    else
-      value
+  private def convertToStandardType(value: Any): Any = value match {
+    case utfString: UTF8String =>
+      utfString.toString
+    case other =>
+      other
   }
 
   /**
@@ -167,5 +171,5 @@ class MongodbReader(
 }
 
 case class MongodbReadException(
-  msg: String,
-  causedBy: Throwable) extends RuntimeException(msg, causedBy)
+                                 msg: String,
+                                 causedBy: Throwable) extends RuntimeException(msg, causedBy)

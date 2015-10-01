@@ -22,6 +22,7 @@ import com.mongodb.{MongoCredential, ServerAddress}
 import com.mongodb.casbah.Imports._
 import com.stratio.provider.Config
 import com.stratio.provider.mongodb.{MongodbSSLOptions, MongodbClientFactory, MongodbCredentials, MongodbConfig}
+
 import com.stratio.provider.mongodb.partitioner.MongodbPartitioner._
 import com.stratio.provider.partitioner.{PartitionRange, Partitioner}
 import com.stratio.provider.util.using
@@ -34,12 +35,13 @@ import scala.util.Try
 class MongodbPartitioner(
   config: Config) extends Partitioner[MongodbPartition] {
 
+
   @transient private val hosts: List[ServerAddress] =
     config[List[String]](MongodbConfig.Host)
       .map(add => new ServerAddress(add))
 
   @transient private val credentials: List[MongoCredential] =
-    config[List[MongodbCredentials]](MongodbConfig.Credentials).map{
+    config.getOrElse[List[MongodbCredentials]](MongodbConfig.Credentials, MongodbConfig.DefaultCredentials).map{
       case MongodbCredentials(user,database,password) =>
         MongoCredential.createCredential(user,database,password)
     }
@@ -47,9 +49,7 @@ class MongodbPartitioner(
   @transient private val ssloptions: Option[MongodbSSLOptions] =
     config.get[MongodbSSLOptions](MongodbConfig.SSLOptions)
 
-  @transient private val readpreference: String = config[String](MongodbConfig.readPreference)
-
-  private val timeout: Option[String] = config.get[String](MongodbConfig.Timeout)
+  private val clientOptions = config.properties.filterKeys(MongodbConfig.ListMongoClientOptions.contains(_))
 
   private val databaseName: String = config(MongodbConfig.Database)
 
@@ -67,7 +67,7 @@ class MongodbPartitioner(
    * @return Whether this is a sharded collection or not
    */
   protected def isShardedCollection: Boolean =
-     using(MongodbClientFactory.createClient(hosts,credentials, ssloptions, readpreference, timeout)) { mongoClient =>
+     using(MongodbClientFactory.createClient(hosts, clientOptions,credentials, ssloptions)) { mongoClient =>
 
       val collection = mongoClient(databaseName)(collectionName)
       collection.stats.ok && collection.stats.getBoolean("sharded", false)
@@ -77,7 +77,7 @@ class MongodbPartitioner(
    * @return MongoDB partitions as sharded chunks.
    */
   protected def computeShardedChunkPartitions(): Array[MongodbPartition] =
-    using(MongodbClientFactory.createClient(hosts,credentials, ssloptions, readpreference, timeout)) { mongoClient =>
+    using(MongodbClientFactory.createClient(hosts, clientOptions,credentials, ssloptions)) { mongoClient =>
 
       Try {
         val chunksCollection = mongoClient(ConfigDatabase)(ChunksCollection)
@@ -115,7 +115,7 @@ class MongodbPartitioner(
    * @return Array of not-sharded MongoDB partitions.
    */
   protected def computeNotShardedPartitions(): Array[MongodbPartition] =
-    using(MongodbClientFactory.createClient(hosts,credentials,ssloptions, readpreference, timeout)) { mongoClient =>
+    using(MongodbClientFactory.createClient(hosts, clientOptions,credentials, ssloptions)) { mongoClient =>
 
       val ranges = splitRanges()
 
@@ -140,12 +140,12 @@ class MongodbPartitioner(
 
     val cmd: MongoDBObject = MongoDBObject(
       "splitVector" -> collectionFullName,
-      "keyPattern" -> MongoDBObject(config[String](MongodbConfig.SplitKey) -> 1),
+      "keyPattern" -> MongoDBObject(config.getOrElse[String](MongodbConfig.SplitKey, MongodbConfig.DefaultSplitKey) -> 1),
       "force" -> false,
-      "maxChunkSize" -> config(MongodbConfig.SplitSize)
+      "maxChunkSize" -> config.getOrElse(MongodbConfig.SplitSize, MongodbConfig.DefaultSplitSize)
     )
 
-    using(MongodbClientFactory.createClient(hosts,credentials,ssloptions, readpreference, timeout)) { mongoClient =>
+    using(MongodbClientFactory.createClient(hosts, clientOptions,credentials, ssloptions)) { mongoClient =>
 
       Try {
         val data = mongoClient("admin").command(cmd)
@@ -177,7 +177,7 @@ class MongodbPartitioner(
    * @return Map of shards.
    */
   protected def describeShardsMap(): Map[String, Seq[String]] =
-    using(MongodbClientFactory.createClient(hosts,credentials,ssloptions, readpreference, timeout)) { mongoClient =>
+    using(MongodbClientFactory.createClient(hosts, clientOptions,credentials, ssloptions)) { mongoClient =>
 
       val shardsCollection = mongoClient(ConfigDatabase)(ShardsCollection)
 
