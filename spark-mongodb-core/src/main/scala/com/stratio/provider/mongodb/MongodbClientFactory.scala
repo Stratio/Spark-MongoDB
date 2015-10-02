@@ -2,6 +2,7 @@ package com.stratio.provider.mongodb
 
 import javax.net.ssl.SSLSocketFactory
 import com.stratio.provider.mongodb.MongodbConfig._
+import com.stratio.provider.mongodb.MongodbConfig.{ReadPreference => ProviderReadPreference}
 import com.mongodb.ServerAddress
 import com.mongodb.casbah.Imports._
 import com.mongodb.casbah.{ReadPreference, MongoClient, MongoClientOptions}
@@ -69,32 +70,22 @@ object MongodbClientFactory {
                     hostPort : List[ServerAddress],
                     credentials : List[MongoCredential],
                     optionSSLOptions: Option[MongodbSSLOptions],
-                    clientOptions: Map[String, String]) : Client = {
+                    clientOptions: Map[String, Any]) : Client = {
 
-    if (sslBuilder(optionSSLOptions)) {
-      val options = new MongoClientOptions.Builder()
-        .readPreference(parseReadPreference(clientOptions.get(MongodbConfig.ReadPreference).get))
-        .connectTimeout(clientOptions.get(ConnectTimeout).get.toInt)
-        .socketFactory(SSLSocketFactory.getDefault())
-        .connectionsPerHost(clientOptions.get(ConnectionsPerHost).get.toInt)
-        .maxWaitTime(clientOptions.get(MaxWaitTime).get.toInt)
-        .threadsAllowedToBlockForConnectionMultiplier(clientOptions.get(ThreadsAllowedToBlockForConnectionMultiplier).get.toInt)
-        .build()
+    val options = {
+      val builder = new MongoClientOptions.Builder()
+        .readPreference(parseReadPreference(clientOptions.getOrElse(ProviderReadPreference, DefaultReadPreference).asInstanceOf[String]))
+        .connectTimeout(clientOptions.getOrElse(ConnectTimeout, DefaultConnectTimeout.toString).asInstanceOf[String].toInt)
+        .connectionsPerHost(clientOptions.getOrElse(ConnectionsPerHost, DefaultConnectionsPerHost.toString).asInstanceOf[String].toInt)
+        .maxWaitTime(clientOptions.getOrElse(MaxWaitTime, DefaultMaxWaitTime.toString).asInstanceOf[String].toInt)
+        .threadsAllowedToBlockForConnectionMultiplier(clientOptions.getOrElse(ThreadsAllowedToBlockForConnectionMultiplier, DefaultThreadsAllowedToBlockForConnectionMultiplier.toString).asInstanceOf[String].toInt)
 
-      MongoClient(hostPort, credentials, options)
+      if (sslBuilder(optionSSLOptions)) builder.socketFactory(SSLSocketFactory.getDefault())
+
+      builder.build()
     }
-    else {
 
-      val options = new MongoClientOptions.Builder()
-        .readPreference(parseReadPreference(clientOptions.get(MongodbConfig.ReadPreference).get))
-        .connectTimeout(clientOptions.get(ConnectTimeout).get.toInt)
-        .connectionsPerHost(clientOptions.get(ConnectionsPerHost).get.toInt)
-        .maxWaitTime(clientOptions.get(MaxWaitTime).get.toInt)
-        .threadsAllowedToBlockForConnectionMultiplier(clientOptions.get(ThreadsAllowedToBlockForConnectionMultiplier).get.toInt)
-        .build()
-
-      MongoClient(hostPort, credentials, options)
-    }
+    MongoClient(hostPort, credentials, options)
 
   }
 

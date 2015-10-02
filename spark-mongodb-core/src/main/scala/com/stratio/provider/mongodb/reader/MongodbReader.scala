@@ -76,10 +76,10 @@ class MongodbReader(
 
       mongoClient = Option(MongodbClientFactory.createClient(
         mongoPartition.hosts.map(add => new ServerAddress(add)).toList,
-        config[List[MongodbCredentials]](MongodbConfig.Credentials).map{
+        config.getOrElse[List[MongodbCredentials]](MongodbConfig.Credentials, MongodbConfig.DefaultCredentials).map{
           case MongodbCredentials(user,database,password) =>
             MongoCredential.createCredential(user,database,password)},
-        config.get[MongodbSSLOptions](MongodbConfig.SSLOptions), config[Map[String, String]](MongodbConfig.ClientOptions)))
+        config.get[MongodbSSLOptions](MongodbConfig.SSLOptions), config.properties.filterKeys(_.contains(MongodbConfig.ListMongoClientOptions))))
 
       dbCursor = (for {
         client <- mongoClient

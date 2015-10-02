@@ -32,24 +32,15 @@ import com.stratio.provider.mongodb.MongodbConfig._
  * @param props Initial properties map
  */
 case class MongodbConfigBuilder(
-                                 props: Map[Property, Any] = Defaults
+                                 props: Map[Property, Any] = Map()
                                  ) extends {
-  override val properties = Defaults ++ props
+  override val properties = Map() ++ props
 } with ConfigBuilder[MongodbConfigBuilder](properties) {
 
-  val requiredProperties: List[Property] = MongodbConfig.all
+  val requiredProperties: List[Property] = MongodbConfig.required
 
   def apply(props: Map[Property, Any]) =
-    MongodbConfigBuilder(mapClientOptions(Defaults ++ props))
-
-   /**
-   * Create a new Map with mongoClientOptions in one element Map.
-   +
-   * @param props Initial properties map
-   * @return Map[Property, Any]
-   */
-  def mapClientOptions(props: Map[Property, Any]) : Map[Property, Any] =
-    props ++ Map ( MongodbConfig.ClientOptions -> MongodbConfig.ListMongoClientOptions.map(opt => opt -> props(opt).toString).toMap)
+    MongodbConfigBuilder(props)
 
 }
 
@@ -91,24 +82,14 @@ object MongodbConfig {
   /**
    * Mandatory
    */
-  val all = List(
+  val required = List(
     Host,
     Database,
-    Collection,
-    SamplingRatio,
-    WriteConcern,
-    SplitKey,
-    SplitSize,
-    ReadPreference,
-    ConnectionsPerHost,
-    ConnectTimeout,
-    MaxWaitTime,
-    ThreadsAllowedToBlockForConnectionMultiplier
-    )
+    Collection
+  )
 
   //  Default values
 
-  type Builder = JavaMongoClientOptions.Builder
   val DefaultMongoClientOptions = new JavaMongoClientOptions.Builder().build()
 
   val DefaultSamplingRatio = 1.0

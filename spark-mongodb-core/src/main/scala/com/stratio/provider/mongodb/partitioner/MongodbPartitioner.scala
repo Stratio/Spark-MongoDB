@@ -38,8 +38,8 @@ class MongodbPartitioner(
     config[List[String]](MongodbConfig.Host)
       .map(add => new ServerAddress(add))
 
-  @transient private val credentials: List[MongoCredential] =
-    config[List[MongodbCredentials]](MongodbConfig.Credentials).map{
+  @transient private val credentials: List[MongoCredential]= List()
+    config.getOrElse[List[MongodbCredentials]](MongodbConfig.Credentials, MongodbConfig.DefaultCredentials).map{
       case MongodbCredentials(user,database,password) =>
         MongoCredential.createCredential(user,database,password)
     }
@@ -47,7 +47,7 @@ class MongodbPartitioner(
   @transient private val ssloptions: Option[MongodbSSLOptions] =
     config.get[MongodbSSLOptions](MongodbConfig.SSLOptions)
 
-  private val clientOptions = config[Map[String, String]](MongodbConfig.ClientOptions)
+  private val clientOptions = config.properties//config.properties.filterKeys(_.contains(MongodbConfig.ListMongoClientOptions)) // TODO review this Map. Can't filter keys
 
   private val databaseName: String = config(MongodbConfig.Database)
 
@@ -138,9 +138,9 @@ class MongodbPartitioner(
 
     val cmd: MongoDBObject = MongoDBObject(
       "splitVector" -> collectionFullName,
-      "keyPattern" -> MongoDBObject(config[String](MongodbConfig.SplitKey) -> 1),
+      "keyPattern" -> MongoDBObject(config.getOrElse(MongodbConfig.SplitKey, MongodbConfig.DefaultSplitKey) -> 1),
       "force" -> false,
-      "maxChunkSize" -> config(MongodbConfig.SplitSize)
+      "maxChunkSize" -> config.getOrElse(MongodbConfig.SplitSize, MongodbConfig.DefaultSplitSize)
     )
 
     using(MongodbClientFactory.createClient(hosts,credentials,ssloptions, clientOptions)) { mongoClient =>
