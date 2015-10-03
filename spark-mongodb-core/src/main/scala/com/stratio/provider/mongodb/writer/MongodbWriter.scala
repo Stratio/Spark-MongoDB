@@ -98,7 +98,7 @@ abstract class MongodbWriter(config: Config) extends Serializable {
   def dropCollection: Unit = dbCollection.dropCollection()
 
   /**
-   * Drop MongoDB collection.
+   * Indicates if a collection is empty.
    */
   def isEmpty: Boolean = dbCollection.isEmpty
 

@@ -59,6 +59,13 @@ with Matchers {
     .set(MongodbConfig.Host, List(host + ":" + port2))
     .build()
 
+  val testConfig4 = MongodbConfigBuilder()
+    .set(MongodbConfig.Host, List(host + ":" + port))
+    .set(MongodbConfig.Database, database)
+    .set(MongodbConfig.Collection, collection)
+    .set(MongodbConfig.Credentials, List(MongodbCredentials("user","database", "password".toCharArray)))
+    .build()
+
   val schema = new StructType(Array(new StructField(
     "att1",IntegerType,false),
     new StructField(
@@ -102,10 +109,12 @@ with Matchers {
   val mongodbrelation = new MongodbRelation(testConfig, Some(schema))(TestSQLContext)
   val mongodbrelation2 = new MongodbRelation(testConfig2, Some(schema))(TestSQLContext)
   val mongodbrelation3 = new MongodbRelation(testConfig3, Some(schema))(TestSQLContext)
+  val mongodbrelation4 = new MongodbRelation(testConfig4, Some(schema))(TestSQLContext)
 
   it should "provide info about equality in MongodbRelation" in {
     mongodbrelation.equals(mongodbrelation) shouldEqual true
     mongodbrelation.equals(mongodbrelation2) shouldEqual true
     mongodbrelation.equals(mongodbrelation3) shouldEqual false
+    mongodbrelation.equals(mongodbrelation4) shouldEqual false
   }
 }

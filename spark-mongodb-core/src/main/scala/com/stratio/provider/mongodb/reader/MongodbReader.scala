@@ -65,7 +65,6 @@ class MongodbReader(
       throw new IllegalStateException("DbCursor is not initialized"))(_.next())
   }
 
-
   /**
    * Initialize MongoDB reader
    * @param partition Where to read from
@@ -144,12 +143,10 @@ class MongodbReader(
     filtersToDBObject(filters)
   }
 
-  private def convertToStandardType(value: Any): Any = {
-    if (value.isInstanceOf[UTF8String])
-      value.toString
-    else
-      value
-  }
+  private def convertToStandardType(value: Any): Any = value match {
+      case utf8String: UTF8String => value.toString
+      case other => other
+    }
 
   /**
    *

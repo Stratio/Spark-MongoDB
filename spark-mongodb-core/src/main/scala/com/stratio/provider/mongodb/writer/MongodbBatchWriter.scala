@@ -36,7 +36,7 @@ class MongodbBatchWriter(
   final val IdKey = "_id"
 
   def save(it: Iterator[DBObject]): Unit = {
-    val pkConfig: Option[Array[String]] = config.get[Array[String]](MongodbConfig.SearchFields)
+    val pkConfig: Option[Array[String]] = config.get[Array[String]](MongodbConfig.UpdateFields)
     val idFieldConfig: Option[String] = config.get[String](MongodbConfig.IdField)
     it.grouped(batchSize).foreach { group =>
       val bulkOperation = dbCollection.initializeUnorderedBulkOperation
@@ -46,7 +46,7 @@ class MongodbBatchWriter(
           if (query.isEmpty) bulkOperation.insert(element) else bulkOperation.find(query).upsert().replaceOne(element)
         } else bulkOperation.insert(element)
       }
-      bulkOperation.execute(config[WriteConcern](MongodbConfig.WriteConcern))
+      bulkOperation.execute(config.getOrElse[WriteConcern](MongodbConfig.WriteConcern, MongodbConfig.DefaultWriteConcern))
     }
   }
 

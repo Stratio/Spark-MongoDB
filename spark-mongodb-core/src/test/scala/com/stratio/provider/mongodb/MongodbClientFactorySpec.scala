@@ -12,17 +12,6 @@ class MongodbClientFactorySpec extends FlatSpec with Matchers{
 
   val hostPortCredentialsClient = MongodbClientFactory.createClient("127.0.0.1", 27017, "user", "database", "password")
 
-  val listServerAddressListCredentialsClient = MongodbClientFactory.createClient(
-    List(new ServerAddress("127.0.0.1:27017")),
-    List(MongoCredential.createCredential("user","database","password".toCharArray))
-  )
-
-  val sslClient = MongodbClientFactory.createClient(
-    List(new ServerAddress("127.0.0.1:27017")),
-    List(MongoCredential.createCredential("user","database","password".toCharArray)),
-    Some(MongodbSSLOptions(Some("/etc/ssl/mongodb.keystore"), Some("password"), "/etc/ssl/mongodb.keystore", Some("password")))
-  )
-
   val fullClient = MongodbClientFactory.createClient(
     List(new ServerAddress("127.0.0.1:27017")),
     List(MongoCredential.createCredential("user","database","password".toCharArray)),
@@ -41,8 +30,6 @@ class MongodbClientFactorySpec extends FlatSpec with Matchers{
 
     hostClient shouldBe a [Client]
     hostPortCredentialsClient shouldBe a [Client]
-    listServerAddressListCredentialsClient shouldBe a [Client]
-    sslClient shouldBe a [Client]
     fullClient shouldBe a [Client]
   }
 }

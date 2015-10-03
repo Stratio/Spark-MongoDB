@@ -23,49 +23,6 @@ object MongodbClientFactory {
     MongoClient(hostPort, credentials)
   }
 
-  def createClient(hostPort : List[ServerAddress], credentials : List[MongoCredential]) : Client = MongoClient(hostPort, credentials)
-
-  def createClient(hostPort : List[ServerAddress], credentials : List[MongoCredential], readPreference: String) : Client = {
-    val options = new MongoClientOptions.Builder().readPreference(parseReadPreference(readPreference)).build()
-    MongoClient(hostPort, credentials, options)
-  }
-
-  def createClient(
-                    hostPort : List[ServerAddress],
-                    credentials : List[MongoCredential],
-                    optionSSLOptions: Option[MongodbSSLOptions]) : Client = {
-
-    if (sslBuilder(optionSSLOptions)) {
-
-      val options = new MongoClientOptions.Builder().socketFactory(SSLSocketFactory.getDefault()).build()
-      MongoClient(hostPort, credentials, options)
-    }
-    else
-      MongoClient(hostPort, credentials)
-
-  }
-
-  def createClient(
-    hostPort : List[ServerAddress],
-    credentials : List[MongoCredential],
-    optionSSLOptions: Option[MongodbSSLOptions],
-    readPreference: String) : Client = {
-
-    if (sslBuilder(optionSSLOptions)) {
-      val options = new MongoClientOptions.Builder()
-        .readPreference(parseReadPreference(readPreference))
-        .socketFactory(SSLSocketFactory.getDefault()).build()
-
-      MongoClient(hostPort, credentials, options)
-    }
-    else {
-      val options = new MongoClientOptions.Builder().readPreference(parseReadPreference(readPreference)).build()
-
-      MongoClient(hostPort, credentials, options)
-    }
-
-  }
-
   def createClient(
                     hostPort : List[ServerAddress],
                     credentials : List[MongoCredential],
@@ -119,7 +76,7 @@ object MongodbClientFactory {
       case "nearest"             => ReadPreference.Nearest
       case "primaryPreferred"    => ReadPreference.primaryPreferred
       case "secondaryPreferred"  => ReadPreference.SecondaryPreferred
-      case _                     => ReadPreference.SecondaryPreferred
+      case _                     => ReadPreference.Nearest
     }
   }
 

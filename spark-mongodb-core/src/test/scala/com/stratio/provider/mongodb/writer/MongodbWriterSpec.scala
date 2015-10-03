@@ -35,7 +35,7 @@ with TestBsonData {
   private val collection: String = "testCol"
   private val writeConcern: WriteConcern = WriteConcern.NORMAL
   private val idField: String = "att2"
-  private val searchField: String = "att3"
+  private val updateField: String = "att3"
   private val wrongIdField: String = "non-existentColumn"
   private val language: String = "english"
 
@@ -75,13 +75,13 @@ with TestBsonData {
     .set(MongodbConfig.IdField, wrongIdField)
     .build()
 
-  val testConfigWithSearchFields = MongodbConfigBuilder()
+  val testConfigWithUpdateFields = MongodbConfigBuilder()
     .set(MongodbConfig.Host, List(host + ":" + port))
     .set(MongodbConfig.Database, database)
     .set(MongodbConfig.Collection, collection)
     .set(MongodbConfig.SamplingRatio, 1.0)
     .set(MongodbConfig.WriteConcern, writeConcern)
-    .set(MongodbConfig.SearchFields, searchField)
+    .set(MongodbConfig.UpdateFields, updateField)
     .build()
 
   val dbObject = JSON.parse(
