@@ -51,7 +51,6 @@ object MongodbConfig {
   val Database = "database"
   val Collection = "collection"
   val SSLOptions = "sslOptions"
-  val ClientOptions = "clientOptions"
   val ReadPreference = "readPreference"
   val ConnectTimeout = "connectTimeout"
   val ConnectionsPerHost = "connectionsPerHost"
