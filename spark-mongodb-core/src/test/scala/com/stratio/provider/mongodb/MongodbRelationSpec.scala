@@ -63,15 +63,12 @@ with Matchers {
     //.set(MongodbConfig.Credentials, List())
     .build()
 
-
   val testConfig4 = MongodbConfigBuilder()
     .set(MongodbConfig.Host, List(host + ":" + port))
     .set(MongodbConfig.Database, database)
     .set(MongodbConfig.Collection, collection)
     .set(MongodbConfig.Credentials, List(MongodbCredentials("user","database", "password".toCharArray)))
-    /*.set(MongodbConfig.SamplingRatio, 1.0)
-    .set(MongodbConfig.WriteConcern, writeConcern)
-    */.build()
+    .build()
 
   val schema = new StructType(Array(new StructField(
     "att1",IntegerType,false),

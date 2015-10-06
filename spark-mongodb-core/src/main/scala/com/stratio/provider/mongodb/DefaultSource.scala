@@ -38,6 +38,7 @@ class DefaultSource extends RelationProvider with SchemaRelationProvider with Cr
         .build())(sqlContext)
 
   }
+
   override def createRelation(
                                sqlContext: SQLContext,
                                parameters: Map[String, String],
@@ -70,28 +71,16 @@ class DefaultSource extends RelationProvider with SchemaRelationProvider with Cr
     mongodbRelation
   }
 
-
-
-
-
-
-
-
-
-
   private def parseParameters(parameters : Map[String,String]): Map[String, Any] = {
 
     // required properties
     /** We will assume hosts are provided like 'host:port,host2:port2,...' */
     val properties: Map[String, Any] = parameters.updated(Host, parameters.getOrElse(Host, notFound[String](Host)).split(",").toList)
-
-    if (!parameters.contains(Database) ) notFound(Database)
-    if (!parameters.contains(Collection) ) notFound(Collection)
-    //if (!parameters.contains(SamplingRatio) ) notFound(SamplingRatio)
+    if (!parameters.contains(Database)) notFound(Database)
+    if (!parameters.contains(Collection)) notFound(Collection)
 
     //optional parseable properties
-
-    val optionalProperties: List[String] = List(Credentials,SSLOptions, SearchFields)
+    val optionalProperties: List[String] = List(Credentials,SSLOptions, UpdateFields)
 
     val finalMap = (properties /: optionalProperties){
       /** We will assume credentials are provided like 'user,database,password;user,database,password;...' */
@@ -105,14 +94,17 @@ class DefaultSource extends RelationProvider with SchemaRelationProvider with Cr
       /** We will assume ssloptions are provided like '/path/keystorefile,keystorepassword,/path/truststorefile,truststorepassword' */
       case (properties,SSLOptions) =>
         parameters.get(SSLOptions).map{ ssloptionsInput =>
-          val ssloptions = ssloptionsInput.split(",")
-          properties + (SSLOptions ->  MongodbSSLOptions(Some(ssloptions(0)), Some(ssloptions(1)), ssloptions(2), Some(ssloptions(3))))
+
+          val ssloption = ssloptionsInput.split(",")
+          val ssloptions = MongodbSSLOptions(Some(ssloption(0)), Some(ssloption(1)), ssloption(2), Some(ssloption(3)))
+          properties + (SSLOptions -> ssloptions)
         } getOrElse properties
 
       /** We will assume fields are provided like 'user,database,password...' */
-      case (properties, SearchFields) => {
-        parameters.get(SearchFields).map { searchInputs =>
-          properties + (SearchFields -> searchInputs.split(","))
+      case (properties, UpdateFields) => {
+        parameters.get(UpdateFields).map{ updateInputs =>
+          val updateFields = updateInputs.split(",")
+          properties + (UpdateFields -> updateFields)
         } getOrElse properties
       }
     }

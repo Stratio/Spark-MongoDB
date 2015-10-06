@@ -31,7 +31,8 @@ import com.stratio.provider.ConfigBuilder
 case class MongodbConfigBuilder(
                                  props: Map[Property, Any] = Map()
                                  ) extends {
-  override val properties =  props ++ Map()
+
+  override val properties = Map() ++ props
 } with ConfigBuilder[MongodbConfigBuilder](properties) {
 
   val requiredProperties: List[Property] = MongodbConfig.required
@@ -46,25 +47,24 @@ object MongodbConfig {
   val Host = "host"
   val Database = "database"
   val Collection = "collection"
-  val SamplingRatio = "schema_samplingRatio"
-  val WriteConcern = "writeConcern"
-  val SplitSize = "splitSize"
-  val SplitKey = "splitKey"
-  val AllowSlaveReads = "allowSlaveReads"
-  val Credentials = "credentials"
-  val IdField = "_idField"
-  val SearchFields = "searchFields"
   val SSLOptions = "sslOptions"
-  val Language = "language"
-  val ClientOptions = "clientOptions"
   val ReadPreference = "readPreference"
   val ConnectTimeout = "connectTimeout"
   val ConnectionsPerHost = "connectionsPerHost"
   val MaxWaitTime = "maxWaitTime"
   val SocketTimeout = "socketTimeout"
   val ThreadsAllowedToBlockForConnectionMultiplier = "threadsAllowedToBlockForConnectionMultiplier"
+  val WriteConcern = "writeConcern"
+  val Credentials = "credentials"
 
-  // List of parameters for mongoclientoption
+  val SamplingRatio = "schema_samplingRatio"
+  val SplitSize = "splitSize"
+  val SplitKey = "splitKey"
+  val IdField = "_idField"
+  val UpdateFields = "updateFields"
+  val Language = "language"
+
+  // List of parameters for mongoClientOptions
   val ListMongoClientOptions = List(
     ReadPreference,
     ConnectionsPerHost,
@@ -73,9 +73,7 @@ object MongodbConfig {
     ThreadsAllowedToBlockForConnectionMultiplier
   )
 
-  /**
-   * Mandatory
-   */
+  // Mandatory
   val required = List(
     Host,
     Database,
@@ -84,19 +82,18 @@ object MongodbConfig {
 
   //  Default MongoDB values
   val DefaultMongoClientOptions = new JavaMongoClientOptions.Builder().build()
-  val DefaultWriteConcern = DefaultMongoClientOptions.getWriteConcern
-  val DefaultAllowSlaveReads = false
-  val DefaultCredentials = List[MongodbCredentials]()
   val DefaultReadPreference = "nearest"
   val DefaultConnectTimeout = DefaultMongoClientOptions.getConnectTimeout
   val DefaultConnectionsPerHost = DefaultMongoClientOptions.getConnectionsPerHost
   val DefaultMaxWaitTime = DefaultMongoClientOptions.getMaxWaitTime
   val DefaultSocketTimeout = DefaultMongoClientOptions.getSocketTimeout
   val DefaultThreadsAllowedToBlockForConnectionMultiplier= DefaultMongoClientOptions.getThreadsAllowedToBlockForConnectionMultiplier
+  val DefaultWriteConcern = DefaultMongoClientOptions.getWriteConcern
+  val DefaultCredentials = List[MongodbCredentials]()
 
-  //  Default provider specific values
+  // Default provider specific values
   val DefaultSamplingRatio = 1.0
-  val DefaultSplitKey = "_id"
   val DefaultSplitSize = 10
+  val DefaultSplitKey = "_id"
 
 }

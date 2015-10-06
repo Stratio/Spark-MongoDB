@@ -29,6 +29,6 @@ class MongodbSimpleWriter(
 
   def save(it: Iterator[DBObject]): Unit =
     it.foreach(dbo =>
-      dbCollection.save(dbo, config(MongodbConfig.WriteConcern)))
+      dbCollection.save(dbo, config.getOrElse[WriteConcern](MongodbConfig.WriteConcern, MongodbConfig.DefaultWriteConcern)))
 
 }

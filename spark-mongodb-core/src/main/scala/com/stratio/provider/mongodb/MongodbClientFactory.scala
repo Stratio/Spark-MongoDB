@@ -38,20 +38,20 @@ object MongodbClientFactory {
     MongoClient(hostPort, credentials)
   }
 
-  def createClient(
+   def createClient(
                     hostPort : List[ServerAddress],
-                    clientOptions: Map[String, Any],
-                    credentials : List[MongoCredential] = List(),
-                    optionSSLOptions: Option[MongodbSSLOptions] = None
-                    ) : Client = {
+                    credentials : List[MongoCredential],
+                    optionSSLOptions: Option[MongodbSSLOptions],
+                    clientOptions: Map[String, Any]) : Client = {
 
     val options = {
+
       val builder = new MongoClientOptions.Builder()
-        .readPreference(parseReadPreference(clientOptions.getOrElse(ProviderReadPreference, DefaultReadPreference).asInstanceOf[String]))
-        .connectTimeout(clientOptions.getOrElse(ConnectTimeout, DefaultConnectTimeout.toString).asInstanceOf[String].toInt)
-        .connectionsPerHost(clientOptions.getOrElse(ConnectionsPerHost, DefaultConnectionsPerHost.toString).asInstanceOf[String].toInt)
-        .maxWaitTime(clientOptions.getOrElse(MaxWaitTime, DefaultMaxWaitTime.toString).asInstanceOf[String].toInt)
-        .threadsAllowedToBlockForConnectionMultiplier(clientOptions.getOrElse(ThreadsAllowedToBlockForConnectionMultiplier, DefaultThreadsAllowedToBlockForConnectionMultiplier.toString).asInstanceOf[String].toInt)
+        .readPreference(parseReadPreference(extractValue(clientOptions, ProviderReadPreference).getOrElse(DefaultReadPreference)))
+        .connectTimeout(extractValue[String](clientOptions, ConnectTimeout).map(_.toInt).getOrElse(DefaultConnectTimeout))
+        .connectionsPerHost(extractValue[String](clientOptions, ConnectionsPerHost).map(_.toInt).getOrElse(DefaultConnectionsPerHost))
+        .maxWaitTime(extractValue[String](clientOptions, MaxWaitTime).map(_.toInt).getOrElse(DefaultMaxWaitTime))
+        .threadsAllowedToBlockForConnectionMultiplier(extractValue[String](clientOptions, ThreadsAllowedToBlockForConnectionMultiplier).map(_.toInt).getOrElse(DefaultThreadsAllowedToBlockForConnectionMultiplier))
 
       if (sslBuilder(optionSSLOptions)) builder.socketFactory(SSLSocketFactory.getDefault())
 
@@ -61,6 +61,8 @@ object MongodbClientFactory {
     MongoClient(hostPort, credentials, options)
 
   }
+
+  private def extractValue[T](options :Map[String, Any], key : String): Option[T] = options.get(key).map(_.asInstanceOf[T])
 
   private def sslBuilder(optionSSLOptions: Option[MongodbSSLOptions]): Boolean = {
 
@@ -92,7 +94,7 @@ object MongodbClientFactory {
       case "nearest"             => ReadPreference.Nearest
       case "primaryPreferred"    => ReadPreference.primaryPreferred
       case "secondaryPreferred"  => ReadPreference.SecondaryPreferred
-      case _                     => ReadPreference.SecondaryPreferred
+      case _                     => ReadPreference.Nearest
     }
   }
 

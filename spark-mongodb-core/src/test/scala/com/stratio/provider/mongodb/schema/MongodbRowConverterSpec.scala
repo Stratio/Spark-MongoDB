@@ -114,6 +114,8 @@ with TestBsonData {
       val mongodbPartitioner = new MongodbPartitioner(testConfig)
       val mongodbRDD = new MongodbRDD(TestSQLContext, testConfig, mongodbPartitioner)
       val schema = MongodbSchema(mongodbRDD, 1.0).schema()
+      println("\n\nschema")
+      schema.fieldNames.foreach(println)
       val collected = toSQL(complexFieldAndType2.head,schema)
       MongodbRowConverter
         .asRow(schema,mongodbRDD)

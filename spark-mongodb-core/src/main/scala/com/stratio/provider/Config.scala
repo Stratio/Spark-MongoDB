@@ -30,7 +30,7 @@ abstract class ConfigBuilder[Builder<:ConfigBuilder[Builder] ](
   val properties: Map[Property,Any] = Map()) extends Serializable { builder =>
 
   /**
-   * Required properties to build a Deep config object.
+   * Required properties to build a Mongo config object.
    * At build time, if these properties are not set, an assert
    * exception will be thrown.
    */
@@ -58,7 +58,7 @@ abstract class ConfigBuilder[Builder<:ConfigBuilder[Builder] ](
   /**
    * Build the config object from current builder properties.
    *
-   * @return The Deep configuration object.
+   * @return The Mongo configuration object.
    */
   def build(): Config = new Config {
 
@@ -89,12 +89,10 @@ abstract class ConfigBuilder[Builder<:ConfigBuilder[Builder] ](
 
   }
 
-
-
 }
 
 /**
- * Deep standard configuration object
+ * Mongo standard configuration object
  */
 trait Config extends Serializable {
 
@@ -104,21 +102,20 @@ trait Config extends Serializable {
   val properties: Map[Property, Any]
 
   /**  Returns the value associated with a key, or a default value if the key is not contained in the configuration object.
-    *   @param   key      the key.
-    *   @param   default  a computation that yields a default value in case no binding for `key` is
-    *                     found in the map.
-    *   @tparam  T       the result type of the default computation.
-    *   @return  the value associated with `key` if it exists,
-    *            otherwise the result of the `default` computation.
-    *
-    *   @usecase def getOrElse(key: A, default: => B): B
-    *     @inheritdoc
-    */
+
+   *   @param   key Desired property.
+   *   @param   default Value in case no binding for `key` is found in the map.
+   *   @tparam  T Result type of the default computation.
+   *   @return  the value associated with `key` if it exists,
+   *            otherwise the result of the `default` computation.
+   *
+   *   @usecase def getOrElse(key: A, default: => B): B
+   *     @inheritdoc
+   */
   def getOrElse[T](key: Property, default: => T): T = properties.get(key) match {
     case Some(v) => v.asInstanceOf[T]
     case None => default
   }
-
 
   /**
    * Gets specified property from current configuration object
