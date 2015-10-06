@@ -1,6 +1,8 @@
 # Changelog
-## 0.8.8
 
+## 0.9.0 (upcoming)
+
+* Mapping config for client
 * Refactor documentation
 * R API added to documentation
 * Bugs fixed
