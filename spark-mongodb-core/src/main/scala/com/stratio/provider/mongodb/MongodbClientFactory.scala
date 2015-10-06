@@ -25,9 +25,9 @@ object MongodbClientFactory {
 
    def createClient(
                     hostPort : List[ServerAddress],
-                    credentials : List[MongoCredential],
-                    optionSSLOptions: Option[MongodbSSLOptions],
-                    clientOptions: Map[String, Any]) : Client = {
+                    credentials : List[MongoCredential] = List(),
+                    optionSSLOptions: Option[MongodbSSLOptions] = None,
+                    clientOptions: Map[String, Any] = Map()) : Client = {
 
     val options = {
 
