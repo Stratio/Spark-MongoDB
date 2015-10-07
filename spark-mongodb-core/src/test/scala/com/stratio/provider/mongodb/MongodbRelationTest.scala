@@ -23,7 +23,7 @@ import org.scalatest.junit.JUnitRunner
 import org.scalatest.{FlatSpec, Matchers}
 
 @RunWith(classOf[JUnitRunner])
-class MongodbRelationSpec extends FlatSpec
+class MongodbRelationTest extends FlatSpec
 with Matchers {
 
   private val host: String = "localhost"

@@ -67,7 +67,7 @@
         <dependency>
             <groupId>de.flapdoodle.embed</groupId>
             <artifactId>de.flapdoodle.embed.mongo</artifactId>
-            <version>1.46.4</version>
+            <version>1.50.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -114,8 +114,9 @@
                 <artifactId>scala-maven-plugin</artifactId>
                 <version>3.2.1</version>
                 <configuration>
-                    <!--<checkMultipleScalaVersions>false</checkMultipleScalaVersions>-->
+                    <checkMultipleScalaVersions>false</checkMultipleScalaVersions>
                     <scalaVersion>${scala.version}</scalaVersion>
+                    <recompileMode>incremental</recompileMode>
                 </configuration>
                 <executions>
                     <execution>
@@ -123,22 +124,32 @@
                         <phase>process-resources</phase>
                         <goals>
                             <goal>add-source</goal>
-                            <goal>compile</goal>
-                            <goal>testCompile</goal>
-                            <goal>doc</goal>
-                            <goal>doc-jar</goal>
                         </goals>
                     </execution>
                     <execution>
-                        <id>scala-test-compile</id>
-                        <phase>process-test-resources</phase>
+                        <id>scala-compile</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>compile</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>scala-testCompile</id>
+                        <phase>test-compile</phase>
                         <goals>
                             <goal>testCompile</goal>
                         </goals>
                     </execution>
+                    <execution>
+                        <id>scala-doc</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>doc</goal>
+                            <goal>doc-jar</goal>
+                        </goals>
+                    </execution>
                 </executions>
             </plugin>
-
         </plugins>
     </build>
 

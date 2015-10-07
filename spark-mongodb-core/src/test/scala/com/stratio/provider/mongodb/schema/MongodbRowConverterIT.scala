@@ -31,7 +31,7 @@ import org.scalatest.{FlatSpec, Matchers}
 import scala.collection.mutable.ArrayBuffer
 
 @RunWith(classOf[JUnitRunner])
-class MongodbRowConverterSpec extends FlatSpec
+class MongodbRowConverterIT extends FlatSpec
 with Matchers
 with MongoEmbedDatabase
 with TestBsonData {

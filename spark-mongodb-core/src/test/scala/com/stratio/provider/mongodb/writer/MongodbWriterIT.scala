@@ -24,7 +24,7 @@ import org.scalatest.junit.JUnitRunner
 import org.scalatest.{FlatSpec, Matchers}
 
 @RunWith(classOf[JUnitRunner])
-class MongodbWriterSpec extends FlatSpec
+class MongodbWriterIT extends FlatSpec
 with Matchers
 with MongoEmbedDatabase
 with TestBsonData {

@@ -28,7 +28,7 @@ import org.scalatest._
 import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
-class MongodbSchemaSpec extends FlatSpec
+class MongodbSchemaIT extends FlatSpec
 with Matchers
 with MongoEmbedDatabase
 with TestBsonData {

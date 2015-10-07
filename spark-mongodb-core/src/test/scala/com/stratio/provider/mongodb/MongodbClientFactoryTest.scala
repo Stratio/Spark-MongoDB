@@ -22,7 +22,7 @@ import org.scalatest.junit.JUnitRunner
 import org.scalatest.{Matchers, FlatSpec}
 
 @RunWith(classOf[JUnitRunner])
-class MongodbClientFactorySpec extends FlatSpec with Matchers{
+class MongodbClientFactoryTest extends FlatSpec with Matchers{
 
   type Client = MongoClient
 
