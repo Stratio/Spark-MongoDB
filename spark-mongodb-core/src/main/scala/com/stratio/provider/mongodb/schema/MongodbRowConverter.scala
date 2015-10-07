@@ -125,7 +125,7 @@ object MongodbRowConverter extends RowConverter[DBObject]
       (value,dataType) match {
         case (dbList: BasicDBList,ArrayType(elementType, _)) =>
           dbList.map(toSQL(_, elementType))
-        case (list: List[AnyRef],ArrayType(elementType, _)) =>
+        case (list: List[AnyRef  @unchecked],ArrayType(elementType, _)) =>
           val dbList = new BasicDBList
           dbList.addAll(list)
           toSQL(dbList,dataType)

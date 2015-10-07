@@ -65,7 +65,6 @@ class MongodbReader(
       throw new IllegalStateException("DbCursor is not initialized"))(_.next())
   }
 
-
   /**
    * Initialize MongoDB reader
    * @param partition Where to read from
@@ -76,10 +75,10 @@ class MongodbReader(
 
       mongoClient = Option(MongodbClientFactory.createClient(
         mongoPartition.hosts.map(add => new ServerAddress(add)).toList,
-        config[List[MongodbCredentials]](MongodbConfig.Credentials).map{
+        config.getOrElse[List[MongodbCredentials]](MongodbConfig.Credentials, MongodbConfig.DefaultCredentials).map{
           case MongodbCredentials(user,database,password) =>
             MongoCredential.createCredential(user,database,password)},
-        config.get[MongodbSSLOptions](MongodbConfig.SSLOptions), config[String](MongodbConfig.readPreference), config.get[String](MongodbConfig.Timeout)))
+        config.get[MongodbSSLOptions](MongodbConfig.SSLOptions), config.properties.filterKeys(_.contains(MongodbConfig.ListMongoClientOptions))))
 
       dbCursor = (for {
         client <- mongoClient
@@ -144,12 +143,10 @@ class MongodbReader(
     filtersToDBObject(filters)
   }
 
-  private def convertToStandardType(value: Any): Any = {
-    if (value.isInstanceOf[UTF8String])
-      value.toString
-    else
-      value
-  }
+  private def convertToStandardType(value: Any): Any = value match {
+      case utf8String: UTF8String => value.toString
+      case other => other
+    }
 
   /**
    *

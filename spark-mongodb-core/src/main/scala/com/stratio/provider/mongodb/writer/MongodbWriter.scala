@@ -36,21 +36,13 @@ abstract class MongodbWriter(config: Config) extends Serializable {
   /**
    * A MongoDB client is created for each writer.
    */
-//  protected val mongoClient: MongodbClientFactory.Client =
-//    MongodbClientFactory.createClient(
-//      config[List[String]](MongodbConfig.Host)
-//        .map(add => new ServerAddress(add)),
-//      config[List[MongodbCredentials]](MongodbConfig.Credentials).map{
-//        case MongodbCredentials(user,database,password) =>
-//          MongoCredential.createCredential(user,database,password)},
-//      config.get[MongodbSSLOptions](MongodbConfig.SSLOptions), config[String](MongodbConfig.Timeout))
 
   @transient private val hosts: List[ServerAddress] =
     config[List[String]](MongodbConfig.Host)
       .map(add => new ServerAddress(add))
 
   @transient private val credentials: List[MongoCredential] =
-    config[List[MongodbCredentials]](MongodbConfig.Credentials).map{
+    config.getOrElse[List[MongodbCredentials]](MongodbConfig.Credentials, MongodbConfig.DefaultCredentials).map{
       case MongodbCredentials(user,database,password) =>
         MongoCredential.createCredential(user,database,password)
     }
@@ -58,9 +50,7 @@ abstract class MongodbWriter(config: Config) extends Serializable {
   @transient private val ssloptions: Option[MongodbSSLOptions] =
     config.get[MongodbSSLOptions](MongodbConfig.SSLOptions)
 
-  @transient private val readpreference: String = config[String](MongodbConfig.readPreference)
-
-  private val timeout: Option[String] = config.get[String](MongodbConfig.Timeout)
+  private val clientOptions = config.properties.filterKeys(_.contains(MongodbConfig.ListMongoClientOptions))
 
   private val databaseName: String = config(MongodbConfig.Database)
 
@@ -68,10 +58,7 @@ abstract class MongodbWriter(config: Config) extends Serializable {
 
   private val collectionFullName: String = s"$databaseName.$collectionName"
 
-
-  protected val mongoClient: Client = MongodbClientFactory.createClient(hosts,credentials, ssloptions, readpreference, timeout)
-
-
+  protected val mongoClient: Client = MongodbClientFactory.createClient(hosts,credentials, ssloptions, clientOptions)
 
 
   /**
@@ -111,7 +98,7 @@ abstract class MongodbWriter(config: Config) extends Serializable {
   def dropCollection: Unit = dbCollection.dropCollection()
 
   /**
-   * Drop MongoDB collection.
+   * Indicates if a collection is empty.
    */
   def isEmpty: Boolean = dbCollection.isEmpty
 

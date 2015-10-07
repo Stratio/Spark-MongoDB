@@ -18,7 +18,7 @@
 
 package com.stratio.provider.mongodb
 
-import com.mongodb
+import com.mongodb.{MongoClientOptions => JavaMongoClientOptions}
 import com.stratio.provider.Config._
 import com.stratio.provider.ConfigBuilder
 import com.stratio.provider.mongodb.MongodbConfig._
@@ -26,78 +26,78 @@ import com.stratio.provider.mongodb.MongodbConfig._
 /**
  * Created by jsantos on 5/02/15.
  *
- * A specialized deep configuration builder.
+ * A specialized Mongo configuration builder.
  * It focuses on mongodb config parameters
  * such as host,database,collection, samplingRatio (for schema infer)
  * @param props Initial properties map
  */
 case class MongodbConfigBuilder(
-                                 props: Map[Property, Any] = Defaults
+                                 props: Map[Property, Any] = Map()
                                  ) extends {
-  override val properties = Defaults ++ props
+  override val properties = Map() ++ props
 } with ConfigBuilder[MongodbConfigBuilder](properties) {
 
-  val requiredProperties: List[Property] = MongodbConfig.all
+  val requiredProperties: List[Property] = MongodbConfig.required
 
   def apply(props: Map[Property, Any]) =
     MongodbConfigBuilder(props)
+
 }
 
 object MongodbConfig {
 
   //  Parameter names
-
   val Host = "host"
   val Database = "database"
   val Collection = "collection"
-  val SamplingRatio = "schema_samplingRatio"
+  val SSLOptions = "sslOptions"
+  val ReadPreference = "readPreference"
+  val ConnectTimeout = "connectTimeout"
+  val ConnectionsPerHost = "connectionsPerHost"
+  val MaxWaitTime = "maxWaitTime"
+  val SocketTimeout = "socketTimeout"
+  val ThreadsAllowedToBlockForConnectionMultiplier = "threadsAllowedToBlockForConnectionMultiplier"
   val WriteConcern = "writeConcern"
+  val Credentials = "credentials"
+
+  val SamplingRatio = "schema_samplingRatio"
   val SplitSize = "splitSize"
   val SplitKey = "splitKey"
-  val AllowSlaveReads = "allowSlaveReads"
-  val Credentials = "credentials"
   val IdField = "_idField"
-  val SearchFields = "searchFields"
-  val SSLOptions = "ssloptions"
-  val readPreference = "readpreference"
+  val UpdateFields = "updateFields"
   val Language = "language"
-  val Timeout = "timeout"
 
-  /**
-   * Mandatory
-   */
-  val all = List(
+  // List of parameters for mongoClientOptions
+  val ListMongoClientOptions = List(
+    ReadPreference,
+    ConnectionsPerHost,
+    ConnectTimeout,
+    MaxWaitTime,
+    ThreadsAllowedToBlockForConnectionMultiplier
+  )
+
+  // Mandatory
+  val required = List(
     Host,
     Database,
-    Collection,
-    SamplingRatio,
-    WriteConcern,
-    SplitKey,
-    SplitSize,
-    readPreference,
-    Timeout
-    )
+    Collection
+  )
 
+  //  Default MongoDB values
+  val DefaultMongoClientOptions = new JavaMongoClientOptions.Builder().build()
 
-  //  Default values
-
-  val DefaultSamplingRatio = 1.0
-  val DefaultWriteConcern = mongodb.WriteConcern.ACKNOWLEDGED
-  val DefaultSplitKey = "_id"
-  val DefaultSplitSize = 10
-  val DefaultAllowSlaveReads = false
-  val DefaultCredentials = List[MongodbCredentials]()
   val DefaultReadPreference = "nearest"
-  val DefaultTimeout = "1000"
+  val DefaultConnectTimeout = DefaultMongoClientOptions.getConnectTimeout
+  val DefaultConnectionsPerHost = DefaultMongoClientOptions.getConnectionsPerHost
+  val DefaultMaxWaitTime = DefaultMongoClientOptions.getMaxWaitTime
+  val DefaultSocketTimeout = DefaultMongoClientOptions.getSocketTimeout
+  val DefaultThreadsAllowedToBlockForConnectionMultiplier= DefaultMongoClientOptions.getThreadsAllowedToBlockForConnectionMultiplier
+  val DefaultWriteConcern = DefaultMongoClientOptions.getWriteConcern
+  val DefaultCredentials = List[MongodbCredentials]()
 
-  val Defaults = Map(
-    SamplingRatio -> DefaultSamplingRatio,
-    WriteConcern -> DefaultWriteConcern,
-    SplitKey -> DefaultSplitKey,
-    SplitSize -> DefaultSplitSize,
-    AllowSlaveReads -> DefaultAllowSlaveReads,
-    Credentials -> DefaultCredentials,
-    readPreference-> DefaultReadPreference,
-    Timeout->DefaultTimeout
-    )
-}
+  // Default provider specific values
+  val DefaultSamplingRatio = 1.0
+  val DefaultSplitSize = 10
+  val DefaultSplitKey = "_id"
+
+  }

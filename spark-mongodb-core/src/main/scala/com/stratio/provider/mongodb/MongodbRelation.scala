@@ -32,7 +32,7 @@ import org.apache.spark.sql.types._
  * A MongoDB baseRelation that can eliminate unneeded columns
  * and filter using selected predicates before producing
  * an RDD containing all matching tuples as Row objects.
- * @param config A Deep configuration with needed properties for MongoDB
+ * @param config A Mongo configuration with needed properties for MongoDB
  * @param schemaProvided The optionally provided schema. If not provided,
  *                       it will be inferred from the whole field projection
  *                       of the specified table in Spark SQL statement using
@@ -58,7 +58,7 @@ with PrunedFilteredScan with InsertableRelation {
   @transient private lazy val lazySchema =
     MongodbSchema(
       new MongodbRDD(sqlContext, config, rddPartitioner),
-      config[Double](MongodbConfig.SamplingRatio)).schema()
+      config.getOrElse[Double](MongodbConfig.SamplingRatio, MongodbConfig.DefaultSamplingRatio)).schema()
 
   override val schema: StructType = schemaProvided.getOrElse(lazySchema)
 
@@ -77,8 +77,10 @@ with PrunedFilteredScan with InsertableRelation {
 
   }
 
-
-
+  /**
+   * Indicates if a collection is empty.
+   * @return Boolean
+   */
   def isEmptyCollection: Boolean = new MongodbSimpleWriter(config).isEmpty
 
   /**
@@ -93,7 +95,6 @@ with PrunedFilteredScan with InsertableRelation {
 
     data.saveToMongodb(config)
   }
-
 
   /**
    * Compare if two MongodbRelation are the same.
