@@ -19,12 +19,12 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
-    <groupId>com.stratio</groupId>
-    <artifactId>spark-mongodb</artifactId>
+    <groupId>com.stratio.datasource</groupId>
+    <artifactId>spark-mongodb-parent</artifactId>
     <version>0.9.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>spark-mongodb</name>
-    <description>A Spark SQl library for MongoDB</description>
+    <description>A Spark SQL library for MongoDB</description>
     <url>http://github.com/Stratio/spark-mongodb</url>
     <inceptionYear>2015</inceptionYear>
 
@@ -41,8 +41,8 @@
 
     <modules>
         <module>doc</module>
-        <module>spark-mongodb-core-2.10</module>
-        <module>spark-mongodb-core-2.11</module>
+        <module>spark-mongodb_2.10</module>
+        <module>spark-mongodb_2.11</module>
     </modules>
 
     <properties>

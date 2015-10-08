@@ -13,7 +13,7 @@ You can link against this library by putting the following lines in your program
 ::
 
  <groupId>com.stratio</groupId>
- <artifactId>spark-mongodb-core_2.10</artifactId>
+ <artifactId>spark-mongodb_2.10</artifactId>
  <version>LATEST_VERSION</version>
 
 There also exists the possibility of downloading the project by doing:
@@ -31,14 +31,14 @@ Spark packages option:
 
 ::
 
- $ bin/spark-shell --packages com.stratio:spark-mongodb-core_2.10:<VERSION>
+ $ bin/spark-shell --packages com.stratio.datasource:spark-mongodb_2.10:<VERSION>
 
 
 Jars option:
 
 ::
 
- $ bin/spark-shell --jars <path-to>/spark-mongodb-core_2.10-<version>.jar,<path-to>/casbah-commons_2.10-2.8.0.jar,<path-to>/casbah-core_2.10-2.8.0.jar,<path-to>/casbah-query_2.10-2.8.0.jar,<path-to>/mongo-java-driver-2.13.0.jar
+ $ bin/spark-shell --jars <path-to>/spark-mongodb_2.10-<version>.jar,<path-to>/casbah-commons_2.10-2.8.0.jar,<path-to>/casbah-core_2.10-2.8.0.jar,<path-to>/casbah-query_2.10-2.8.0.jar,<path-to>/mongo-java-driver-2.13.0.jar
 
 ::
 
@@ -208,7 +208,7 @@ First, enter the pyspark shell from your SPARK_HOME.
 
 ::
 
- $ bin/pyspark --packages com.stratio:spark-mongodb-core_2.10:<VERSION>
+ $ bin/pyspark --packages com.stratio.datasource:spark-mongodb_2.10:<VERSION>
 
 Then:
 
@@ -227,7 +227,7 @@ First, enter the SparkR shell from your SPARK_HOME.
 
 ::
 
- $ bin/sparkR --packages com.stratio:spark-mongodb-core_2.10:<VERSION>
+ $ bin/sparkR --packages com.stratio.datasource:spark-mongodb_2.10:<VERSION>
 
 Then:
 

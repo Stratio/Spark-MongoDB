@@ -92,7 +92,6 @@ object MongodbRowConverter extends RowConverter[DBObject]
    * @param value Row attribute
    * @param dataType Attribute type
    * @return The converted value into a DBObject field.
-   * @return The converted value into a DBObject field.
    */
   def toDBObject(value: Any, dataType: DataType): Any = {
     Option(value).map{v =>

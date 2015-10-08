@@ -45,13 +45,10 @@ with ScalaBinaryVersion{
     .build()
 
   val testConfig2 = MongodbConfigBuilder()
-    //.set(MongodbConfig.WriteConcern, writeConcern)
     .set(MongodbConfig.Host, List(host + ":" + port))
     .set(MongodbConfig.Collection, collection)
     .set(MongodbConfig.Database, database)
-   // .set(MongodbConfig.Credentials, List())
-    /*.set(MongodbConfig.SamplingRatio, 1.0)
-    */.build()
+    .build()
 
   val testConfig3 = MongodbConfigBuilder()
     .set(MongodbConfig.Collection, collection2)
@@ -59,7 +56,6 @@ with ScalaBinaryVersion{
     .set(MongodbConfig.SamplingRatio, 1.0)
     .set(MongodbConfig.WriteConcern, writeConcern)
     .set(MongodbConfig.Host, List(host + ":" + port2))
-    //.set(MongodbConfig.Credentials, List())
     .build()
 
   val testConfig4 = MongodbConfigBuilder()

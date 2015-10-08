@@ -108,9 +108,6 @@ trait Config extends Serializable {
    *   @tparam  T Result type of the default computation.
    *   @return  the value associated with `key` if it exists,
    *            otherwise the result of the `default` computation.
-   *
-   *   @usecase def getOrElse(key: A, default: => B): B
-   *     @inheritdoc
    */
   def getOrElse[T](key: Property, default: => T): T = properties.get(key) match {
     case Some(v) => v.asInstanceOf[T]
