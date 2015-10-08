@@ -18,6 +18,7 @@ package com.stratio.provider.mongodb.schema
 import java.text.SimpleDateFormat
 import java.util.Locale
 
+import com.stratio.provider.ScalaBinaryVersion
 import com.stratio.provider.mongodb.partitioner.MongodbPartitioner
 import com.stratio.provider.mongodb.rdd.MongodbRDD
 import com.stratio.provider.mongodb.{MongoEmbedDatabase, MongodbConfig, MongodbConfigBuilder, TestBsonData}
@@ -31,7 +32,8 @@ import org.scalatest.junit.JUnitRunner
 class MongodbSchemaIT extends FlatSpec
 with Matchers
 with MongoEmbedDatabase
-with TestBsonData {
+with TestBsonData
+with ScalaBinaryVersion {
 
   private val host: String = "localhost"
   private val port: Int = 12345
@@ -53,7 +55,7 @@ with TestBsonData {
 
   behavior of "A schema"
 
-  it should "be inferred from rdd with primitives" in {
+  it should "be inferred from rdd with primitives" + scalaBinaryVersion in {
     withEmbedMongoFixture(primitiveFieldAndType) { mongodProc =>
       val schema = MongodbSchema(mongodbRDD, 1.0).schema()
 
@@ -64,7 +66,7 @@ with TestBsonData {
     }
   }
 
-  it should "be inferred from rdd with complex fields" in {
+  it should "be inferred from rdd with complex fields" + scalaBinaryVersion in {
     withEmbedMongoFixture(complexFieldAndType1) { mongodProc =>
       val schema = MongodbSchema(mongodbRDD, 1.0).schema()
 
@@ -74,7 +76,7 @@ with TestBsonData {
     }
   }
 
-  it should "resolve type conflicts between fields" in {
+  it should "resolve type conflicts between fields" + scalaBinaryVersion in {
     withEmbedMongoFixture(primitiveFieldValueTypeConflict) { mongodProc =>
       val schema = MongodbSchema(mongodbRDD, 1.0).schema()
 
@@ -84,7 +86,7 @@ with TestBsonData {
     }
   }
 
-  it should "be inferred from rdd with more complex fields" in {
+  it should "be inferred from rdd with more complex fields" + scalaBinaryVersion in {
     withEmbedMongoFixture(complexFieldAndType2) { mongodProc =>
       val schema = MongodbSchema(mongodbRDD, 1.0).schema()
 
@@ -94,7 +96,7 @@ with TestBsonData {
     }
   }
 
-  it should "read java.util.Date fields as timestamptype" in {
+  it should "read java.util.Date fields as timestamptype" + scalaBinaryVersion in {
     val dfunc = (s: String) => new SimpleDateFormat("EEE MMM dd HH:mm:ss Z yyyy", Locale.ENGLISH).parse(s)
     import com.mongodb.casbah.Imports.DBObject
     val stringAndDate = List(DBObject("string" -> "this is a simple string.", "date" -> dfunc("Mon Aug 10 07:52:49 EDT 2015")))

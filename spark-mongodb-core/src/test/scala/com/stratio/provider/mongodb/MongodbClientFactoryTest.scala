@@ -17,12 +17,13 @@ package com.stratio.provider.mongodb
 
 import com.mongodb.casbah.MongoClient
 import com.mongodb.{MongoCredential, ServerAddress}
+import com.stratio.provider.ScalaBinaryVersion
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.{Matchers, FlatSpec}
 
 @RunWith(classOf[JUnitRunner])
-class MongodbClientFactoryTest extends FlatSpec with Matchers{
+class MongodbClientFactoryTest extends FlatSpec with Matchers with ScalaBinaryVersion{
 
   type Client = MongoClient
 
@@ -44,7 +45,10 @@ class MongodbClientFactoryTest extends FlatSpec with Matchers{
       )
   )
 
-  it should "Valid output type" in {
+
+  behavior of "MongodbClientFactory"
+
+  it should "Valid output type " + scalaBinaryVersion in {
 
     hostClient shouldBe a [Client]
     hostPortCredentialsClient shouldBe a [Client]

@@ -17,6 +17,7 @@ package com.stratio.provider.mongodb.schema
 
 import com.mongodb.DBObject
 import com.mongodb.util.JSON
+import com.stratio.provider.ScalaBinaryVersion
 import com.stratio.provider.mongodb.partitioner.MongodbPartitioner
 import com.stratio.provider.mongodb.rdd.MongodbRDD
 import com.stratio.provider.mongodb.schema.MongodbRowConverter._
@@ -34,7 +35,8 @@ import scala.collection.mutable.ArrayBuffer
 class MongodbRowConverterIT extends FlatSpec
 with Matchers
 with MongoEmbedDatabase
-with TestBsonData {
+with TestBsonData
+with ScalaBinaryVersion {
 
   private val host: String = "localhost"
   private val port: Int = 12345
@@ -98,18 +100,17 @@ with TestBsonData {
           }
           """).asInstanceOf[DBObject]
 
-
   behavior of "The MongodbRowConverter"
 
-  it should "be able to convert any value from a row into a dbobject field" in{
+  it should "be able to convert any value from a row into a dbobject field" + scalaBinaryVersion in{
     toDBObject(row, rowSchema) should equal(dbObject)
   }
 
-  it should "be able to convert any value from a dbobject field  into a row field" in{
+  it should "be able to convert any value from a dbobject field  into a row field" + scalaBinaryVersion in{
     toSQL(dbObject,rowSchema) should equal(row)
   }
 
-  it should "apply dbobject to row mapping in a RDD context" in {
+  it should "apply dbobject to row mapping in a RDD context" + scalaBinaryVersion in {
     withEmbedMongoFixture(complexFieldAndType2) { mongodProc =>
       val mongodbPartitioner = new MongodbPartitioner(testConfig)
       val mongodbRDD = new MongodbRDD(TestSQLContext, testConfig, mongodbPartitioner)

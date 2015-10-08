@@ -18,6 +18,7 @@ package com.stratio.provider.mongodb.writer
 import com.mongodb._
 import com.mongodb.casbah.commons.MongoDBObject
 import com.mongodb.util.JSON
+import com.stratio.provider.ScalaBinaryVersion
 import com.stratio.provider.mongodb.{MongoEmbedDatabase, TestBsonData, MongodbConfig, MongodbConfigBuilder}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
@@ -27,7 +28,8 @@ import org.scalatest.{FlatSpec, Matchers}
 class MongodbWriterIT extends FlatSpec
 with Matchers
 with MongoEmbedDatabase
-with TestBsonData {
+with TestBsonData
+with ScalaBinaryVersion{
 
   private val host: String = "localhost"
   private val port: Int = 12345
@@ -117,10 +119,9 @@ with TestBsonData {
           "att2" : 2.0 ,
           "att1" : 2}""").asInstanceOf[DBObject])
 
-
   behavior of "A writer"
 
-  it should "properly write in a Mongo collection using the Simple Writer" in {
+  it should "properly write in a Mongo collection using the Simple Writer" + scalaBinaryVersion in {
 
     withEmbedMongoFixture(List()) { mongodbProc =>
 
@@ -143,7 +144,7 @@ with TestBsonData {
     }
   }
 
-  it should "properly write in a Mongo collection using the Batch Writer" in {
+  it should "properly write in a Mongo collection using the Batch Writer" + scalaBinaryVersion in {
 
     withEmbedMongoFixture(List()) { mongodbProc =>
 
@@ -167,7 +168,7 @@ with TestBsonData {
   }
 
   it should "manage the primary key rightly, it has to read the same value " +
-    "from the primary key as from the _id column" in {
+    "from the primary key as from the _id column" + scalaBinaryVersion in {
     withEmbedMongoFixture(List()) { mongodbProc =>
 
       val mongodbBatchWriter = new MongodbBatchWriter(testConfigWithPk)
@@ -191,7 +192,7 @@ with TestBsonData {
   }
 
   it should "manage the incorrect primary key, created in a column that" +
-    " doesn't exist, rightly" in {
+    " doesn't exist, rightly" + scalaBinaryVersion in {
     withEmbedMongoFixture(List()) { mongodbProc =>
 
       val mongodbBatchWriter = new MongodbBatchWriter(testConfigWithWrongPk)
@@ -215,7 +216,7 @@ with TestBsonData {
     }
   }
 
-  it should "manage the language field for text index" in {
+  it should "manage the language field for text index" + scalaBinaryVersion in {
     withEmbedMongoFixture(List()) { mongodbProc =>
 
       val mongodbBatchWriter = new MongodbBatchWriter(testConfigWithLanguage)
@@ -239,7 +240,7 @@ with TestBsonData {
   }
 
   it should "manage the search fields and the update query, it has to read the same value from the search fields in " +
-    "configuration" in {
+    "configuration" + scalaBinaryVersion in {
     withEmbedMongoFixture(List()) { mongodbProc =>
 
       val mongodbBatchWriter = new MongodbBatchWriter(testConfigWithPk)

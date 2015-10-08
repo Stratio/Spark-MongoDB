@@ -17,17 +17,19 @@ package com.stratio.provider.mongodb.partitioner
 
 import com.mongodb.DBObject
 import com.mongodb.util.JSON
+import com.stratio.provider.ScalaBinaryVersion
 import com.stratio.provider.mongodb._
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.{BeforeAndAfter, Matchers, FlatSpec}
 
 @RunWith(classOf[JUnitRunner])
-class MongodbPartitionerSpec extends FlatSpec
+class MongodbPartitionerIT extends FlatSpec
 with BeforeAndAfter
 with Matchers
 with MongoClusterEmbedDatabase
-with TestBsonData {
+with TestBsonData
+with ScalaBinaryVersion {
 
   val configServerPorts = List(12341)
   val database = "database-1"
@@ -43,8 +45,7 @@ with TestBsonData {
 
   behavior of "MongodbPartitioner"
 
-  it should "get proper partition ranges when connecting" +
-    " to a sharded cluster" in {
+  it should "get proper partition ranges when connecting" + " to a sharded cluster" + scalaBinaryVersion in {
 
     val testConfig = MongodbConfigBuilder()
       .set(MongodbConfig.Host, replicaSets.values.flatMap(

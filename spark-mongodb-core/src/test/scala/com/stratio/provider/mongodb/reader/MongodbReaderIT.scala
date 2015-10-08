@@ -21,6 +21,7 @@ import java.util.Locale
 
 import com.mongodb.util.JSON
 import com.mongodb.{BasicDBObject, DBObject}
+import com.stratio.provider.ScalaBinaryVersion
 import com.stratio.provider.mongodb._
 import com.stratio.provider.mongodb.partitioner.MongodbPartition
 import com.stratio.provider.partitioner.PartitionRange
@@ -35,7 +36,8 @@ import org.scalatest.{FlatSpec, Matchers}
 class MongodbReaderIT extends FlatSpec
 with Matchers
 with MongoEmbedDatabase
-with TestBsonData {
+with TestBsonData
+with ScalaBinaryVersion {
 
   private val host: String = "localhost"
   private val port: Int = 12345
@@ -51,7 +53,7 @@ with TestBsonData {
 
   behavior of "A reader"
 
-  it should "throw IllegalStateException if next() operation is invoked after closing the Reader" in {
+  it should "throw IllegalStateException if next() operation is invoked after closing the Reader" + scalaBinaryVersion in {
     val mongodbReader = new MongodbReader(testConfig,Array(),Array())
     mongodbReader.init(
       MongodbPartition(0,
@@ -65,7 +67,7 @@ with TestBsonData {
     }
   }
 
-  it should "not advance the cursor position when calling hasNext() operation" in {
+  it should "not advance the cursor position when calling hasNext() operation" + scalaBinaryVersion in {
     withEmbedMongoFixture(complexFieldAndType1) { mongodbProc =>
 
       val mongodbReader = new MongodbReader(testConfig,Array(),Array())
@@ -78,7 +80,7 @@ with TestBsonData {
     }
   }
 
-  it should "advance the cursor position when calling next() operation" in {
+  it should "advance the cursor position when calling next() operation" + scalaBinaryVersion in {
     withEmbedMongoFixture(complexFieldAndType1) { mongodbProc =>
 
       val mongodbReader = new MongodbReader(testConfig,Array(),Array())
@@ -94,7 +96,7 @@ with TestBsonData {
     }
   }
 
-  it should "properly read java.util.Date (mongodb Date) type as Timestamp" in {
+  it should "properly read java.util.Date (mongodb Date) type as Timestamp" + scalaBinaryVersion in {
     val dfunc = (s: String) => new SimpleDateFormat("EEE MMM dd HH:mm:ss Z yyyy", Locale.ENGLISH).parse(s)
     import com.mongodb.casbah.Imports.DBObject
     val stringAndDate = List(DBObject("string" -> "this is a simple string.", "date" -> dfunc("Mon Aug 10 07:52:49 EDT 2015")))
@@ -110,7 +112,7 @@ with TestBsonData {
   }
 
   it should "retrieve the data properly filtering & selecting some fields " +
-    "from a one row table" in {
+    "from a one row table" + scalaBinaryVersion in {
     withEmbedMongoFixture(primitiveFieldAndType) { mongodbProc =>
       //Test data preparation
       val requiredColumns = Array("_id","string", "integer")
@@ -145,7 +147,7 @@ with TestBsonData {
 
 
   it should "retrieve the data properly filtering & selecting some fields " +
-    "from a five rows table" in {
+    "from a five rows table" + scalaBinaryVersion in {
     withEmbedMongoFixture(primitiveFieldAndType5rows) { mongodbProc =>
 
       //Test data preparation

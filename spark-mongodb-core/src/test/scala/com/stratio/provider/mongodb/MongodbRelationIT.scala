@@ -16,6 +16,7 @@
 package com.stratio.provider.mongodb
 
 import com.mongodb.WriteConcern
+import com.stratio.provider.ScalaBinaryVersion
 import org.apache.spark.sql.test.TestSQLContext
 import org.apache.spark.sql.types._
 import org.junit.runner.RunWith
@@ -23,8 +24,9 @@ import org.scalatest.junit.JUnitRunner
 import org.scalatest.{FlatSpec, Matchers}
 
 @RunWith(classOf[JUnitRunner])
-class MongodbRelationTest extends FlatSpec
-with Matchers {
+class MongodbRelationIT extends FlatSpec
+with Matchers
+with ScalaBinaryVersion{
 
   private val host: String = "localhost"
   private val port: Int = 12345
@@ -40,10 +42,7 @@ with Matchers {
     .set(MongodbConfig.Host, List(host + ":" + port))
     .set(MongodbConfig.Database, database)
     .set(MongodbConfig.Collection, collection)
-    //.set(MongodbConfig.Credentials, List(MongodbCredentials("user","database", "password".toCharArray)))
-    /*.set(MongodbConfig.SamplingRatio, 1.0)
-    .set(MongodbConfig.WriteConcern, writeConcern)
-    */.build()
+    .build()
 
   val testConfig2 = MongodbConfigBuilder()
     //.set(MongodbConfig.WriteConcern, writeConcern)
@@ -86,9 +85,9 @@ with Matchers {
         new StructField("att62",IntegerType,true)
       )),false)))
 
-  behavior of "MongodbRelationSpec"
+  behavior of "MongodbRelation"
 
-  it should "prune schema to adapt it to required columns" in {
+  it should "prune schema to adapt it to required columns" + scalaBinaryVersion in {
 
     MongodbRelation.pruneSchema(schema,Array()) should equal(
       new StructType(Array()))
@@ -115,7 +114,7 @@ with Matchers {
   val mongodbrelation3 = new MongodbRelation(testConfig3, Some(schema))(TestSQLContext)
   val mongodbrelation4 = new MongodbRelation(testConfig4, Some(schema))(TestSQLContext)
 
-  it should "provide info about equality in MongodbRelation" in {
+  it should "provide info about equality in MongodbRelation" + scalaBinaryVersion in {
     mongodbrelation.equals(mongodbrelation) shouldEqual true
     mongodbrelation.equals(mongodbrelation2) shouldEqual true
     mongodbrelation.equals(mongodbrelation3) shouldEqual false

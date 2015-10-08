@@ -67,7 +67,7 @@
         <dependency>
             <groupId>de.flapdoodle.embed</groupId>
             <artifactId>de.flapdoodle.embed.mongo</artifactId>
-            <version>1.50.0</version>
+            <version>1.46.4</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -84,6 +84,12 @@
         </dependency>
     </dependencies>
     <build>
+        <testResources>
+            <testResource>
+                <directory>../spark-mongodb-core/src/test/resources</directory>
+                <filtering>true</filtering>
+            </testResource>
+        </testResources>
         <sourceDirectory>../spark-mongodb-core/src/main/scala</sourceDirectory>
         <testSourceDirectory>../spark-mongodb-core/src/test/scala</testSourceDirectory>
         <plugins>

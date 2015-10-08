@@ -21,13 +21,14 @@ import org.scalatest.junit.JUnitRunner
 import org.scalatest.{FlatSpec, Matchers}
 
 @RunWith(classOf[JUnitRunner])
-class ConfigSpec extends FlatSpec
+class ConfigTest extends FlatSpec
 with Matchers
-with ConfigHelpers {
+with ConfigHelpers
+with ScalaBinaryVersion{
 
   behavior of "ConfigBuilder"
 
-  it should "config a builder with any kind of property types" in {
+  it should "config a builder with any kind of property types" + scalaBinaryVersion in {
 
     val b = (Builder() /: desiredProps.toList){
       case (builder,(property,propValue)) => builder.set(property,propValue)
@@ -37,7 +38,7 @@ with ConfigHelpers {
 
   }
 
-  it should "build a deep config with configured properties" in {
+  it should "build a deep config with configured properties" + scalaBinaryVersion in {
 
     val b = (Builder() /: desiredProps.toList){
       case (builder,(property,propValue)) => builder.set(property,propValue)
@@ -47,7 +48,7 @@ with ConfigHelpers {
 
   }
 
-  it should "fail at getting any property with the wrong expected type" in {
+  it should "fail at getting any property with the wrong expected type" + scalaBinaryVersion in {
 
     val config = Builder().set("prop1",1).set("prop2",new { val x = 1}).build()
 
@@ -57,7 +58,7 @@ with ConfigHelpers {
 
   }
 
-  it should "fail at building time if any required property is not defined" in {
+  it should "fail at building time if any required property is not defined" + scalaBinaryVersion in {
 
     a [IllegalArgumentException] should be thrownBy {
       Builder()
