@@ -40,12 +40,11 @@ with TestBsonData
 with ScalaBinaryVersion {
 
   private val host: String = "localhost"
-  private val port: Int = 12345
   private val database: String = "testDb"
   private val collection: String = "testCol"
 
   val testConfig = MongodbConfigBuilder()
-    .set(MongodbConfig.Host, List(host + ":" + port))
+    .set(MongodbConfig.Host, List(host + ":" + mongoPort))
     .set(MongodbConfig.Database, database)
     .set(MongodbConfig.Collection, collection)
     .set(MongodbConfig.SamplingRatio, 1.0)

@@ -37,11 +37,10 @@ with ScalaBinaryVersion {
   val shardKey = "_id"
   val shardMaxSize = 1
   val chunkSize = 1
-  val mongoPort = 12344
   val currentHost = "localhost"
   val replicaSets = Map(
-    "replicaSet1" -> List(12345, 12346, 12347),
-    "replicaSet2" -> List(12348, 12349, 12350))
+    "replicaSet1" -> List(mongoPort+1, mongoPort+2, mongoPort+3),
+    "replicaSet2" -> List(mongoPort+4, mongoPort+5, mongoPort+6))
 
   behavior of "MongodbPartitioner"
 

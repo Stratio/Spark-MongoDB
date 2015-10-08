@@ -32,7 +32,6 @@ with TestBsonData
 with ScalaBinaryVersion{
 
   private val host: String = "localhost"
-  private val port: Int = 12345
   private val database: String = "testDb"
   private val collection: String = "testCol"
   private val writeConcern: WriteConcern = WriteConcern.NORMAL
@@ -43,7 +42,7 @@ with ScalaBinaryVersion{
 
 
   val testConfig = MongodbConfigBuilder()
-    .set(MongodbConfig.Host, List(host + ":" + port))
+    .set(MongodbConfig.Host, List(host + ":" + mongoPort))
     .set(MongodbConfig.Database, database)
     .set(MongodbConfig.Collection, collection)
     .set(MongodbConfig.SamplingRatio, 1.0)
@@ -51,7 +50,7 @@ with ScalaBinaryVersion{
     .build()
 
   val testConfigWithPk = MongodbConfigBuilder()
-    .set(MongodbConfig.Host, List(host + ":" + port))
+    .set(MongodbConfig.Host, List(host + ":" + mongoPort))
     .set(MongodbConfig.Database, database)
     .set(MongodbConfig.Collection, collection)
     .set(MongodbConfig.SamplingRatio, 1.0)
@@ -60,7 +59,7 @@ with ScalaBinaryVersion{
     .build()
 
   val testConfigWithLanguage = MongodbConfigBuilder()
-    .set(MongodbConfig.Host, List(host + ":" + port))
+    .set(MongodbConfig.Host, List(host + ":" + mongoPort))
     .set(MongodbConfig.Database, database)
     .set(MongodbConfig.Collection, collection)
     .set(MongodbConfig.SamplingRatio, 1.0)
@@ -69,7 +68,7 @@ with ScalaBinaryVersion{
     .build()
 
   val testConfigWithWrongPk = MongodbConfigBuilder()
-    .set(MongodbConfig.Host, List(host + ":" + port))
+    .set(MongodbConfig.Host, List(host + ":" + mongoPort))
     .set(MongodbConfig.Database, database)
     .set(MongodbConfig.Collection, collection)
     .set(MongodbConfig.SamplingRatio, 1.0)
@@ -78,7 +77,7 @@ with ScalaBinaryVersion{
     .build()
 
   val testConfigWithUpdateFields = MongodbConfigBuilder()
-    .set(MongodbConfig.Host, List(host + ":" + port))
+    .set(MongodbConfig.Host, List(host + ":" + mongoPort))
     .set(MongodbConfig.Database, database)
     .set(MongodbConfig.Collection, collection)
     .set(MongodbConfig.SamplingRatio, 1.0)
@@ -131,7 +130,7 @@ with ScalaBinaryVersion{
 
       mongodbSimpleWriter.saveWithPk(dbOIterator)
 
-      val mongodbClient = new MongoClient(host, port)
+      val mongodbClient = new MongoClient(host, mongoPort)
 
       val dbCollection = mongodbClient.getDB(database).getCollection(collection)
 
@@ -154,7 +153,7 @@ with ScalaBinaryVersion{
 
       mongodbBatchWriter.saveWithPk(dbOIterator)
 
-      val mongodbClient = new MongoClient(host, port)
+      val mongodbClient = new MongoClient(host, mongoPort)
 
       val dbCollection = mongodbClient.getDB(database).getCollection(collection)
 
@@ -177,7 +176,7 @@ with ScalaBinaryVersion{
 
       mongodbBatchWriter.saveWithPk(dbOIterator)
 
-      val mongodbClient = new MongoClient(host, port)
+      val mongodbClient = new MongoClient(host, mongoPort)
 
       val dbCollection = mongodbClient.getDB(database).getCollection(collection)
 
@@ -201,7 +200,7 @@ with ScalaBinaryVersion{
 
       mongodbBatchWriter.saveWithPk(dbOIterator)
 
-      val mongodbClient = new MongoClient(host, port)
+      val mongodbClient = new MongoClient(host, mongoPort)
 
       val dbCollection = mongodbClient.getDB(database).getCollection(collection)
 
@@ -225,7 +224,7 @@ with ScalaBinaryVersion{
 
       mongodbBatchWriter.saveWithPk(dbOIterator)
 
-      val mongodbClient = new MongoClient(host, port)
+      val mongodbClient = new MongoClient(host, mongoPort)
 
       val dbCollection = mongodbClient.getDB(database).getCollection(collection)
 
@@ -251,7 +250,7 @@ with ScalaBinaryVersion{
 
       mongodbBatchWriter.saveWithPk(dbOIterator)
 
-      val mongodbClient = new MongoClient(host, port)
+      val mongodbClient = new MongoClient(host, mongoPort)
 
       val dbCollection = mongodbClient.getDB(database).getCollection(collection)
 

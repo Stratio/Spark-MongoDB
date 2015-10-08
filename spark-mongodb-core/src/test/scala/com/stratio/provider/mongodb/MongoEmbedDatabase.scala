@@ -16,6 +16,7 @@
 package com.stratio.provider.mongodb
 
 import com.mongodb.{DBCollection, DBObject, MongoClient}
+import com.stratio.provider.ScalaBinaryVersion
 import de.flapdoodle.embed.mongo.config.{MongodConfigBuilder, Net, RuntimeConfigBuilder}
 import de.flapdoodle.embed.mongo.distribution.{IFeatureAwareVersion, Version}
 import de.flapdoodle.embed.mongo.{Command, MongodExecutable, MongodProcess, MongodStarter}
@@ -23,13 +24,13 @@ import de.flapdoodle.embed.process.config.IRuntimeConfig
 import de.flapdoodle.embed.process.config.io.ProcessOutput
 import de.flapdoodle.embed.process.runtime.Network
 
-trait MongoEmbedDatabase {
+trait MongoEmbedDatabase extends ScalaBinaryVersion {
   private val runtimeConfig = new RuntimeConfigBuilder()
     .defaults(Command.MongoD)
     .processOutput(ProcessOutput.getDefaultInstanceSilent)
     .build()
 
-  protected def mongoStart(port: Int = 12345,
+  protected def mongoStart(port: Int = mongoPort,
     version: IFeatureAwareVersion = Version.Main.PRODUCTION,
     runtimeConfig: IRuntimeConfig = runtimeConfig): MongodProps = {
     val mongodExe: MongodExecutable = mongodExec(port, version, runtimeConfig)
@@ -42,7 +43,7 @@ trait MongoEmbedDatabase {
   }
 
   protected def withEmbedMongoFixture(dataset: List[DBObject],
-    port: Int = 12345,
+    port: Int = mongoPort,
     version: IFeatureAwareVersion = Version.Main.PRODUCTION,
     runtimeConfig: IRuntimeConfig = runtimeConfig)
       (fixture: MongodProps => Any) {

@@ -18,4 +18,8 @@ package com.stratio.provider
 
 import scala.io.Source
 
-trait ScalaBinaryVersion {  val scalaBinaryVersion = Source.fromInputStream(getClass.getResourceAsStream("/scala.version")).mkString  }
+trait ScalaBinaryVersion {
+
+  val scalaBinaryVersion = Source.fromInputStream(getClass.getResourceAsStream("/scala.version")).mkString
+  val mongoPort: Int = if(scalaBinaryVersion== "2.10") 21027 else 21127
+}
