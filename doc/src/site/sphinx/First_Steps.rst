@@ -1,7 +1,7 @@
 First steps
 ***********
 
-We are going to introduce how to use our MongoDB provider for Apache Spark.
+We are going to introduce how to use our MongoDB datasource for Apache Spark.
 
 Using the library
 =================
@@ -112,7 +112,7 @@ Examples
 Scala API
 ---------
 
-To read a DataFrame from a Mongo collection, you can use the library by loading the implicits from `com.stratio.provider.mongodb._`.
+To read a DataFrame from a Mongo collection, you can use the library by loading the implicits from `com.stratio.datasource.mongodb._`.
 
 To save a DataFrame in MongoDB you should use the saveToMongodb() function as follows:
 
@@ -123,7 +123,7 @@ To save a DataFrame in MongoDB you should use the saveToMongodb() function as fo
  case class Student(name: String, age: Int)
  val dataFrame: DataFrame = createDataFrame(sc.parallelize(List(Student("Torcuato", 27), Student("Rosalinda", 34))))
  import com.mongodb.casbah.{WriteConcern => MongodbWriteConcern}
- import com.stratio.provider.mongodb._
+ import com.stratio.datasource.mongodb._
  import MongodbConfig._
  val saveConfig = MongodbConfigBuilder(Map(Host -> List("localhost:27017"), Database -> "highschool", Collection -> "students", SamplingRatio -> 1.0, WriteConcern -> MongodbWriteConcern.Normal, SplitKey -> "_id", SplitSize -> 8, SplitKey -> "_id"))
  dataFrame.saveToMongodb(saveConfig.build)
@@ -134,10 +134,10 @@ In the example we can see how to use the fromMongoDB() function to read from Mon
 ::
 
  import com.mongodb.casbah.{WriteConcern => MongodbWriteConcern}
- import com.stratio.provider._
- import com.stratio.provider.mongodb._
- import com.stratio.provider.mongodb.schema._
- import com.stratio.provider.mongodb.writer._
+ import com.stratio.datasource._
+ import com.stratio.datasource.mongodb._
+ import com.stratio.datasource.mongodb.schema._
+ import com.stratio.datasource.mongodb.writer._
  import org.apache.spark.sql.SQLContext
  import Config._
  import MongodbConfig._
@@ -153,7 +153,7 @@ If you want to use a SSL connection, you need to add this 'import', and add 'SSL
 
 ::
 
- import com.stratio.provider.mongodb.MongodbSSLOptions._
+ import com.stratio.datasource.mongodb.MongodbSSLOptions._
  val builder = MongodbConfigBuilder(Map(Host -> List("localhost:27017"), Database -> "highschool", Collection -> "students", SamplingRatio -> 1.0, WriteConcern -> MongodbWriteConcern.Normal, SSLOptions -> MongodbSSLOptions("<path-to>/keyStoreFile.keystore","keyStorePassword","<path-to>/trustStoreFile.keystore","trustStorePassword")))
 
 
@@ -164,7 +164,7 @@ Using  StructType:
 
  import org.apache.spark.sql.types._
  val schemaMongo = StructType(StructField("name", StringType, true) :: StructField("age", IntegerType, true ) :: Nil)
- sqlContext.createExternalTable("mongoTable", "com.stratio.provider.mongodb", schemaMongo, Map("host" -> "localhost:27017", "database" -> "highschool", "collection" -> "students"))
+ sqlContext.createExternalTable("mongoTable", "com.stratio.datasource.mongodb", schemaMongo, Map("host" -> "localhost:27017", "database" -> "highschool", "collection" -> "students"))
  sqlContext.sql("SELECT * FROM mongoTable WHERE name = 'Torcuato'").show()
  sqlContext.sql("DROP TABLE mongoTable")
 
@@ -178,8 +178,8 @@ Using DataFrameWriter:
  val options = Map("host" -> "localhost:27017", "database" -> "highschool", "collection" -> "students")
  case class Student(name: String, age: Int)
  val dfw: DataFrame = sqlContext.createDataFrame(sc.parallelize(List(Student("Michael", 46))))
- dfw.write.format("com.stratio.provider.mongodb").mode(SaveMode.Append).options(options).save()
- val df = sqlContext.read.format("com.stratio.provider.mongodb").options(options).load
+ dfw.write.format("com.stratio.datasource.mongodb").mode(SaveMode.Append).options(options).save()
+ val df = sqlContext.read.format("com.stratio.datasource.mongodb").options(options).load
  df.show
 
 
@@ -187,7 +187,7 @@ Using HiveContext (sqlContext in spark-shell provide Hive support):
 
 ::
 
- sqlContext.sql("CREATE TABLE IF NOT EXISTS mongoTable(name STRING, age INTEGER) USING com.stratio.provider.mongodb OPTIONS (host 'localhost:27017', database 'highschool', collection 'students')")
+ sqlContext.sql("CREATE TABLE IF NOT EXISTS mongoTable(name STRING, age INTEGER) USING com.stratio.datasource.mongodb OPTIONS (host 'localhost:27017', database 'highschool', collection 'students')")
  sqlContext.sql("SELECT * FROM mongoTable WHERE name = 'Torcuato'").show()
  sqlContext.sql("DROP TABLE mongoTable")
 
@@ -195,7 +195,7 @@ Using spark-sql shell:
 
 ::
 
- CREATE TEMPORARY TABLE mongoTable USING com.stratio.provider.mongodb OPTIONS (host 'host:port', database 'highschool', collection 'students');
+ CREATE TEMPORARY TABLE mongoTable USING com.stratio.datasource.mongodb OPTIONS (host 'host:port', database 'highschool', collection 'students');
  SELECT * FROM mongoTable WHERE name = 'Torcuato';
  DROP TABLE mongoTable;
 
@@ -215,7 +215,7 @@ Then:
 ::
 
  from pyspark.sql import SQLContext
- sqlContext.sql("CREATE TEMPORARY TABLE students_table USING com.stratio.provider.mongodb OPTIONS (host 'host:port', database 'highschool', collection 'students')")
+ sqlContext.sql("CREATE TEMPORARY TABLE students_table USING com.stratio.datasource.mongodb OPTIONS (host 'host:port', database 'highschool', collection 'students')")
  sqlContext.sql("SELECT * FROM students_table").collect()
 
 
@@ -234,7 +234,7 @@ Then:
 ::
 
  # credentials and samplingratio are optionals.
- df <- read.df(sqlContext, source= "com.stratio.provider.mongodb", host = "host:port", database = "highschool", collection = "students", splitSize = 8, splitKey = "_id", credentials="user1,database,password;user2,database2,password2", samplingRatio=1.0)
+ df <- read.df(sqlContext, source= "com.stratio.datasource.mongodb", host = "host:port", database = "highschool", collection = "students", splitSize = 8, splitKey = "_id", credentials="user1,database,password;user2,database2,password2", samplingRatio=1.0)
  registerTempTable(df, "students_table")
  collect(sql(sqlContext, "SELECT * FROM students_table"))
 
