@@ -1,27 +1,25 @@
-/*
- *  Licensed to STRATIO (C) under one or more contributor license agreements.
- *  See the NOTICE file distributed with this work for additional information
- *  regarding copyright ownership. The STRATIO (C) licenses this file
- *  to you under the Apache License, Version 2.0 (the
- *  "License"); you may not use this file except in compliance
- *  with the License. You may obtain a copy of the License at
+/**
+ * Copyright (C) 2015 Stratio (http://stratio.com)
  *
- *  http://www.apache.org/licenses/LICENSE-2.0
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- *  Unless required by applicable law or agreed to in writing,
- *  software distributed under the License is distributed on an
- *  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- *  KIND, either express or implied. See the License for the
- *  specific language governing permissions and limitations
- *  under the License.
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
-
 package com.stratio.provider.mongodb.partitioner
 
 import com.mongodb.{MongoCredential, ServerAddress}
 import com.mongodb.casbah.Imports._
 import com.stratio.provider.Config
 import com.stratio.provider.mongodb.{MongodbSSLOptions, MongodbClientFactory, MongodbCredentials, MongodbConfig}
+
 import com.stratio.provider.mongodb.partitioner.MongodbPartitioner._
 import com.stratio.provider.partitioner.{PartitionRange, Partitioner}
 import com.stratio.provider.util.using
@@ -33,6 +31,7 @@ import scala.util.Try
  */
 class MongodbPartitioner(
   config: Config) extends Partitioner[MongodbPartition] {
+
 
   @transient private val hosts: List[ServerAddress] =
     config[List[String]](MongodbConfig.Host)
@@ -65,7 +64,7 @@ class MongodbPartitioner(
    * @return Whether this is a sharded collection or not
    */
   protected def isShardedCollection: Boolean =
-     using(MongodbClientFactory.createClient(hosts,credentials, ssloptions,clientOptions)) { mongoClient =>
+     using(MongodbClientFactory.createClient(hosts,credentials, ssloptions, clientOptions)) { mongoClient =>
 
       val collection = mongoClient(databaseName)(collectionName)
       collection.stats.ok && collection.stats.getBoolean("sharded", false)
@@ -113,7 +112,7 @@ class MongodbPartitioner(
    * @return Array of not-sharded MongoDB partitions.
    */
   protected def computeNotShardedPartitions(): Array[MongodbPartition] =
-    using(MongodbClientFactory.createClient(hosts,credentials,ssloptions, clientOptions)) { mongoClient =>
+    using(MongodbClientFactory.createClient(hosts,credentials, ssloptions, clientOptions)) { mongoClient =>
 
       val ranges = splitRanges()
 
@@ -143,7 +142,7 @@ class MongodbPartitioner(
       "maxChunkSize" -> config.getOrElse(MongodbConfig.SplitSize, MongodbConfig.DefaultSplitSize)
     )
 
-    using(MongodbClientFactory.createClient(hosts,credentials,ssloptions, clientOptions)) { mongoClient =>
+    using(MongodbClientFactory.createClient(hosts,credentials, ssloptions, clientOptions)) { mongoClient =>
 
       Try {
         val data = mongoClient("admin").command(cmd)
@@ -175,7 +174,7 @@ class MongodbPartitioner(
    * @return Map of shards.
    */
   protected def describeShardsMap(): Map[String, Seq[String]] =
-    using(MongodbClientFactory.createClient(hosts,credentials,ssloptions, clientOptions)) { mongoClient =>
+    using(MongodbClientFactory.createClient(hosts,credentials, ssloptions, clientOptions)) { mongoClient =>
 
       val shardsCollection = mongoClient(ConfigDatabase)(ShardsCollection)
 

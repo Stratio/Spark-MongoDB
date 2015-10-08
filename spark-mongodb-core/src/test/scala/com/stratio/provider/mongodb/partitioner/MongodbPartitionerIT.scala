@@ -1,32 +1,50 @@
+/**
+ * Copyright (C) 2015 Stratio (http://stratio.com)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.stratio.provider.mongodb.partitioner
 
 import com.mongodb.DBObject
 import com.mongodb.util.JSON
+import com.stratio.provider.ScalaBinaryVersion
 import com.stratio.provider.mongodb._
+import org.junit.runner.RunWith
+import org.scalatest.junit.JUnitRunner
 import org.scalatest.{BeforeAndAfter, Matchers, FlatSpec}
 
-class MongodbPartitionerSpec extends FlatSpec
+@RunWith(classOf[JUnitRunner])
+class MongodbPartitionerIT extends FlatSpec
 with BeforeAndAfter
 with Matchers
 with MongoClusterEmbedDatabase
-with TestBsonData {
+with TestBsonData
+with ScalaBinaryVersion {
 
-  val configServerPorts = List(12341)
+  val configServerPorts = List(mongoPort+10)
   val database = "database-1"
   val collection = "collection-1"
   val shardKey = "_id"
   val shardMaxSize = 1
   val chunkSize = 1
-  val mongoPort = 12344
   val currentHost = "localhost"
   val replicaSets = Map(
-    "replicaSet1" -> List(12345, 12346, 12347),
-    "replicaSet2" -> List(12348, 12349, 12350))
+    "replicaSet1" -> List(mongoPort+1, mongoPort+2, mongoPort+3),
+    "replicaSet2" -> List(mongoPort+4, mongoPort+5, mongoPort+6))
 
   behavior of "MongodbPartitioner"
 
-  it should "get proper partition ranges when connecting" +
-    " to a sharded cluster" in {
+  it should "get proper partition ranges when connecting" + " to a sharded cluster" + scalaBinaryVersion in {
 
     val testConfig = MongodbConfigBuilder()
       .set(MongodbConfig.Host, replicaSets.values.flatMap(
@@ -66,4 +84,3 @@ with TestBsonData {
 
 
 }
-

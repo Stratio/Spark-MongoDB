@@ -1,36 +1,37 @@
-/*
- *  Licensed to STRATIO (C) under one or more contributor license agreements.
- *  See the NOTICE file distributed with this work for additional information
- *  regarding copyright ownership. The STRATIO (C) licenses this file
- *  to you under the Apache License, Version 2.0 (the
- *  "License"); you may not use this file except in compliance
- *  with the License. You may obtain a copy of the License at
+/**
+ * Copyright (C) 2015 Stratio (http://stratio.com)
  *
- *  http://www.apache.org/licenses/LICENSE-2.0
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- *  Unless required by applicable law or agreed to in writing,
- *  software distributed under the License is distributed on an
- *  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- *  KIND, either express or implied. See the License for the
- *  specific language governing permissions and limitations
- *  under the License.
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
-
 package com.stratio.provider.mongodb.writer
 
 import com.mongodb._
 import com.mongodb.casbah.commons.MongoDBObject
 import com.mongodb.util.JSON
+import com.stratio.provider.ScalaBinaryVersion
 import com.stratio.provider.mongodb.{MongoEmbedDatabase, TestBsonData, MongodbConfig, MongodbConfigBuilder}
+import org.junit.runner.RunWith
+import org.scalatest.junit.JUnitRunner
 import org.scalatest.{FlatSpec, Matchers}
 
-class MongodbWriterSpec extends FlatSpec
+@RunWith(classOf[JUnitRunner])
+class MongodbWriterIT extends FlatSpec
 with Matchers
 with MongoEmbedDatabase
-with TestBsonData {
+with TestBsonData
+with ScalaBinaryVersion{
 
   private val host: String = "localhost"
-  private val port: Int = 12345
   private val database: String = "testDb"
   private val collection: String = "testCol"
   private val writeConcern: WriteConcern = WriteConcern.NORMAL
@@ -41,7 +42,7 @@ with TestBsonData {
 
 
   val testConfig = MongodbConfigBuilder()
-    .set(MongodbConfig.Host, List(host + ":" + port))
+    .set(MongodbConfig.Host, List(host + ":" + mongoPort))
     .set(MongodbConfig.Database, database)
     .set(MongodbConfig.Collection, collection)
     .set(MongodbConfig.SamplingRatio, 1.0)
@@ -49,7 +50,7 @@ with TestBsonData {
     .build()
 
   val testConfigWithPk = MongodbConfigBuilder()
-    .set(MongodbConfig.Host, List(host + ":" + port))
+    .set(MongodbConfig.Host, List(host + ":" + mongoPort))
     .set(MongodbConfig.Database, database)
     .set(MongodbConfig.Collection, collection)
     .set(MongodbConfig.SamplingRatio, 1.0)
@@ -58,7 +59,7 @@ with TestBsonData {
     .build()
 
   val testConfigWithLanguage = MongodbConfigBuilder()
-    .set(MongodbConfig.Host, List(host + ":" + port))
+    .set(MongodbConfig.Host, List(host + ":" + mongoPort))
     .set(MongodbConfig.Database, database)
     .set(MongodbConfig.Collection, collection)
     .set(MongodbConfig.SamplingRatio, 1.0)
@@ -67,7 +68,7 @@ with TestBsonData {
     .build()
 
   val testConfigWithWrongPk = MongodbConfigBuilder()
-    .set(MongodbConfig.Host, List(host + ":" + port))
+    .set(MongodbConfig.Host, List(host + ":" + mongoPort))
     .set(MongodbConfig.Database, database)
     .set(MongodbConfig.Collection, collection)
     .set(MongodbConfig.SamplingRatio, 1.0)
@@ -76,7 +77,7 @@ with TestBsonData {
     .build()
 
   val testConfigWithUpdateFields = MongodbConfigBuilder()
-    .set(MongodbConfig.Host, List(host + ":" + port))
+    .set(MongodbConfig.Host, List(host + ":" + mongoPort))
     .set(MongodbConfig.Database, database)
     .set(MongodbConfig.Collection, collection)
     .set(MongodbConfig.SamplingRatio, 1.0)
@@ -117,10 +118,9 @@ with TestBsonData {
           "att2" : 2.0 ,
           "att1" : 2}""").asInstanceOf[DBObject])
 
-
   behavior of "A writer"
 
-  it should "properly write in a Mongo collection using the Simple Writer" in {
+  it should "properly write in a Mongo collection using the Simple Writer" + scalaBinaryVersion in {
 
     withEmbedMongoFixture(List()) { mongodbProc =>
 
@@ -130,7 +130,7 @@ with TestBsonData {
 
       mongodbSimpleWriter.saveWithPk(dbOIterator)
 
-      val mongodbClient = new MongoClient(host, port)
+      val mongodbClient = new MongoClient(host, mongoPort)
 
       val dbCollection = mongodbClient.getDB(database).getCollection(collection)
 
@@ -143,7 +143,7 @@ with TestBsonData {
     }
   }
 
-  it should "properly write in a Mongo collection using the Batch Writer" in {
+  it should "properly write in a Mongo collection using the Batch Writer" + scalaBinaryVersion in {
 
     withEmbedMongoFixture(List()) { mongodbProc =>
 
@@ -153,7 +153,7 @@ with TestBsonData {
 
       mongodbBatchWriter.saveWithPk(dbOIterator)
 
-      val mongodbClient = new MongoClient(host, port)
+      val mongodbClient = new MongoClient(host, mongoPort)
 
       val dbCollection = mongodbClient.getDB(database).getCollection(collection)
 
@@ -167,7 +167,7 @@ with TestBsonData {
   }
 
   it should "manage the primary key rightly, it has to read the same value " +
-    "from the primary key as from the _id column" in {
+    "from the primary key as from the _id column" + scalaBinaryVersion in {
     withEmbedMongoFixture(List()) { mongodbProc =>
 
       val mongodbBatchWriter = new MongodbBatchWriter(testConfigWithPk)
@@ -176,7 +176,7 @@ with TestBsonData {
 
       mongodbBatchWriter.saveWithPk(dbOIterator)
 
-      val mongodbClient = new MongoClient(host, port)
+      val mongodbClient = new MongoClient(host, mongoPort)
 
       val dbCollection = mongodbClient.getDB(database).getCollection(collection)
 
@@ -191,7 +191,7 @@ with TestBsonData {
   }
 
   it should "manage the incorrect primary key, created in a column that" +
-    " doesn't exist, rightly" in {
+    " doesn't exist, rightly" + scalaBinaryVersion in {
     withEmbedMongoFixture(List()) { mongodbProc =>
 
       val mongodbBatchWriter = new MongodbBatchWriter(testConfigWithWrongPk)
@@ -200,7 +200,7 @@ with TestBsonData {
 
       mongodbBatchWriter.saveWithPk(dbOIterator)
 
-      val mongodbClient = new MongoClient(host, port)
+      val mongodbClient = new MongoClient(host, mongoPort)
 
       val dbCollection = mongodbClient.getDB(database).getCollection(collection)
 
@@ -215,7 +215,7 @@ with TestBsonData {
     }
   }
 
-  it should "manage the language field for text index" in {
+  it should "manage the language field for text index" + scalaBinaryVersion in {
     withEmbedMongoFixture(List()) { mongodbProc =>
 
       val mongodbBatchWriter = new MongodbBatchWriter(testConfigWithLanguage)
@@ -224,7 +224,7 @@ with TestBsonData {
 
       mongodbBatchWriter.saveWithPk(dbOIterator)
 
-      val mongodbClient = new MongoClient(host, port)
+      val mongodbClient = new MongoClient(host, mongoPort)
 
       val dbCollection = mongodbClient.getDB(database).getCollection(collection)
 
@@ -239,7 +239,7 @@ with TestBsonData {
   }
 
   it should "manage the search fields and the update query, it has to read the same value from the search fields in " +
-    "configuration" in {
+    "configuration" + scalaBinaryVersion in {
     withEmbedMongoFixture(List()) { mongodbProc =>
 
       val mongodbBatchWriter = new MongodbBatchWriter(testConfigWithPk)
@@ -250,7 +250,7 @@ with TestBsonData {
 
       mongodbBatchWriter.saveWithPk(dbOIterator)
 
-      val mongodbClient = new MongoClient(host, port)
+      val mongodbClient = new MongoClient(host, mongoPort)
 
       val dbCollection = mongodbClient.getDB(database).getCollection(collection)
 

@@ -1,33 +1,34 @@
-/*
- *  Licensed to STRATIO (C) under one or more contributor license agreements.
- *  See the NOTICE file distributed with this work for additional information
- *  regarding copyright ownership. The STRATIO (C) licenses this file
- *  to you under the Apache License, Version 2.0 (the
- *  "License"); you may not use this file except in compliance
- *  with the License. You may obtain a copy of the License at
+/**
+ * Copyright (C) 2015 Stratio (http://stratio.com)
  *
- *  http://www.apache.org/licenses/LICENSE-2.0
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- *  Unless required by applicable law or agreed to in writing,
- *  software distributed under the License is distributed on an
- *  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- *  KIND, either express or implied. See the License for the
- *  specific language governing permissions and limitations
- *  under the License.
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
-
 package com.stratio.provider
 
 import com.stratio.provider.Config.Property
+import org.junit.runner.RunWith
+import org.scalatest.junit.JUnitRunner
 import org.scalatest.{FlatSpec, Matchers}
 
-class ConfigSpec extends FlatSpec
+@RunWith(classOf[JUnitRunner])
+class ConfigTest extends FlatSpec
 with Matchers
-with ConfigHelpers {
+with ConfigHelpers
+with ScalaBinaryVersion{
 
   behavior of "ConfigBuilder"
 
-  it should "config a builder with any kind of property types" in {
+  it should "config a builder with any kind of property types" + scalaBinaryVersion in {
 
     val b = (Builder() /: desiredProps.toList){
       case (builder,(property,propValue)) => builder.set(property,propValue)
@@ -37,7 +38,7 @@ with ConfigHelpers {
 
   }
 
-  it should "build a deep config with configured properties" in {
+  it should "build a deep config with configured properties" + scalaBinaryVersion in {
 
     val b = (Builder() /: desiredProps.toList){
       case (builder,(property,propValue)) => builder.set(property,propValue)
@@ -47,7 +48,7 @@ with ConfigHelpers {
 
   }
 
-  it should "fail at getting any property with the wrong expected type" in {
+  it should "fail at getting any property with the wrong expected type" + scalaBinaryVersion in {
 
     val config = Builder().set("prop1",1).set("prop2",new { val x = 1}).build()
 
@@ -57,7 +58,7 @@ with ConfigHelpers {
 
   }
 
-  it should "fail at building time if any required property is not defined" in {
+  it should "fail at building time if any required property is not defined" + scalaBinaryVersion in {
 
     a [IllegalArgumentException] should be thrownBy {
       Builder()

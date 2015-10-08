@@ -1,21 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  ~ * Licensed to STRATIO (C) under one or more contributor license agreements.
-  ~ * See the NOTICE file distributed with this work for additional information
-  ~ * regarding copyright ownership. The STRATIO (C) licenses this file
-  ~ * to you under the Apache License, Version 2.0 (the
-  ~ * "License"); you may not use this file except in compliance
-  ~ * with the License. You may obtain a copy of the License at
-  ~ *
-  ~ * http://www.apache.org/licenses/LICENSE-2.0
-  ~ *
-  ~ * Unless required by applicable law or agreed to in writing,
-  ~ * software distributed under the License is distributed on an
-  ~ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-  ~ * KIND, either express or implied. See the License for the
-  ~ * specific language governing permissions and limitations
-  ~ * under the License.
-  -->
+
+    Copyright (C) 2015 Stratio (http://stratio.com)
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+            http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
@@ -84,23 +84,16 @@
         </dependency>
     </dependencies>
     <build>
+        <testResources>
+            <testResource>
+                <directory>../spark-mongodb-core/src/test/resources</directory>
+                <filtering>true</filtering>
+            </testResource>
+        </testResources>
         <sourceDirectory>../spark-mongodb-core/src/main/scala</sourceDirectory>
         <testSourceDirectory>../spark-mongodb-core/src/test/scala</testSourceDirectory>
         <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <configuration>
-                    <skip>true</skip>
-                    <includes>
-                        <include>.*Spec</include>
-                    </includes>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.jacoco</groupId>
-                <artifactId>jacoco-maven-plugin</artifactId>
-            </plugin>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
@@ -127,8 +120,9 @@
                 <artifactId>scala-maven-plugin</artifactId>
                 <version>3.2.1</version>
                 <configuration>
-                    <!--<checkMultipleScalaVersions>false</checkMultipleScalaVersions>-->
+                    <checkMultipleScalaVersions>false</checkMultipleScalaVersions>
                     <scalaVersion>${scala.version}</scalaVersion>
+                    <recompileMode>incremental</recompileMode>
                 </configuration>
                 <executions>
                     <execution>
@@ -136,190 +130,33 @@
                         <phase>process-resources</phase>
                         <goals>
                             <goal>add-source</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>scala-compile</id>
+                        <phase>compile</phase>
+                        <goals>
                             <goal>compile</goal>
                         </goals>
                     </execution>
                     <execution>
-                        <id>scala-test-compile</id>
-                        <phase>process-test-resources</phase>
+                        <id>scala-testCompile</id>
+                        <phase>test-compile</phase>
                         <goals>
                             <goal>testCompile</goal>
                         </goals>
                     </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-source-plugin</artifactId>
-                <version>2.2.1</version>
-                <executions>
                     <execution>
-                        <id>attach-sources</id>
+                        <id>scala-doc</id>
+                        <phase>prepare-package</phase>
                         <goals>
-                            <goal>jar</goal>
+                            <goal>doc</goal>
+                            <goal>doc-jar</goal>
                         </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <version>2.2</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>test-jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.scalatest</groupId>
-                <artifactId>scalatest-maven-plugin</artifactId>
-                <version>1.0</version>
-                <configuration>
-                    <reportsDirectory>${project.build.directory}/surefire-reports</reportsDirectory>
-                    <junitxml>.</junitxml>
-                    <filereports>WDF TestSuite.txt</filereports>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>test</id>
-                        <goals>
-                            <goal>test</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <!-- We must generate a -javadoc JAR file to publish on Maven Central -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>empty-javadoc-jar</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                        <configuration>
-                            <classifier>javadoc</classifier>
-                            <classesDirectory>${basedir}/javadoc</classesDirectory>
-                        </configuration>
                     </execution>
                 </executions>
             </plugin>
         </plugins>
     </build>
-    <profiles>
-        <profile>
-            <id>package</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>com.stratio.mojo.unix</groupId>
-                        <artifactId>unix-maven-plugin</artifactId>
-                        <version>1.1.6</version>
-                        <extensions>true</extensions>
-                        <inherited>false</inherited>
-                        <configuration>
-                            <outputFileName>stratio-spark-mongodb</outputFileName>
-                            <contact><![CDATA[Stratio <jmgomez@stratio.com>]]></contact>
-                            <contactEmail>jmgomez@stratio.com</contactEmail>
-                            <deb>
-                                <section>devel</section>
-                            </deb>
-                            <rpm>
-                                <group>stratio</group>
-                            </rpm>
-                            <name>spark-mongodb</name>
-                            <excludeDirectoryAttributes>
-                                <dir>/etc</dir>
-                                <dir>/etc/init.d</dir>
-                                <dir>/etc/default</dir>
-                                <dir>/var</dir>
-                                <dir>/opt</dir>
-                                <dir>/usr</dir>
-                                <dir>/bin</dir>
-                            </excludeDirectoryAttributes>
-                            <assembly>
-                                <mkdirs>
-                                    <path>/opt/sds/spark/lib/mongodb</path>
-                                    <attributes>
-                                        <user>stratio</user>
-                                        <group>stratio</group>
-                                    </attributes>
-                                </mkdirs>
-                                <mkdirs>
-                                    <path>/opt/sds/spark-mongodb</path>
-                                    <attributes>
-                                        <user>stratio</user>
-                                        <group>stratio</group>
-                                    </attributes>
-                                </mkdirs>
-                                <copyFile>
-                                    <path>src/main/include/LICENSE</path>
-                                    <toFile>/opt/sds/spark-mongodb/LICENSE</toFile>
-                                </copyFile>
-                                <copyFile>
-                                    <path>src/main/include/NOTICE</path>
-                                    <toFile>/opt/sds/spark-mongodb/NOTICE</toFile>
-                                </copyFile>
-                                <copyFile>
-                                    <path>target/alternateLocation/casbah-commons_${scala.binary.version}-${casbah.version}.jar</path>
-                                    <toFile>/opt/sds/spark/lib/mongodb/casbah-commons_${scala.binary.version}-${casbah.version}.jar</toFile>
-                                </copyFile>
-                                <copyFile>
-                                    <path>target/alternateLocation/casbah-core_${scala.binary.version}-${casbah.version}.jar</path>
-                                    <toFile>/opt/sds/spark/lib/mongodb/casbah-core_${scala.binary.version}-${casbah.version}.jar</toFile>
-                                </copyFile>
-                                <copyFile>
-                                    <path>target/alternateLocation/casbah-query_${scala.binary.version}-${casbah.version}.jar</path>
-                                    <toFile>/opt/sds/spark/lib/mongodb/casbah-query_${scala.binary.version}-${casbah.version}.jar</toFile>
-                                </copyFile>
-                                <copyFile>
-                                    <path>target/alternateLocation/mongo-java-driver-2.13.0.jar</path>
-                                    <toFile>/opt/sds/spark/lib/mongodb/mongo-java-driver-2.13.0.jar</toFile>
-                                </copyFile>
-                                <copyFile>
-                                    <path>target/spark-mongodb-core_${scala.binary.version}-${project.version}.jar</path>
-                                    <toFile>/opt/sds/spark/lib/mongodb/spark-mongodb-core_${scala.binary.version}-${project.version}.jar</toFile>
-                                </copyFile>
-                            </assembly>
-                            <defaults>
-                                <directoryAttributes>
-                                    <mode>0755</mode>
-                                </directoryAttributes>
-                                <fileAttributes>
-                                    <mode>0644</mode>
-                                </fileAttributes>
-                            </defaults>
-                        </configuration>
-                        <executions>
-                            <execution>
-                                <id>deb</id>
-                                <phase>package</phase>
-                                <goals>
-                                    <goal>package-deb</goal>
-                                </goals>
-                                <configuration>
-                                    <architecture>all</architecture>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>rpm</id>
-                                <phase>package</phase>
-                                <goals>
-                                    <goal>package-rpm</goal>
-                                </goals>
-                                <configuration>
-                                    <architecture>noarch</architecture>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
+
 </project>

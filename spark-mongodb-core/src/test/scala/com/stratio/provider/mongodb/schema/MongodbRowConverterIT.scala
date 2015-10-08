@@ -1,25 +1,23 @@
-/*
- *  Licensed to STRATIO (C) under one or more contributor license agreements.
- *  See the NOTICE file distributed with this work for additional information
- *  regarding copyright ownership. The STRATIO (C) licenses this file
- *  to you under the Apache License, Version 2.0 (the
- *  "License"); you may not use this file except in compliance
- *  with the License. You may obtain a copy of the License at
+/**
+ * Copyright (C) 2015 Stratio (http://stratio.com)
  *
- *  http://www.apache.org/licenses/LICENSE-2.0
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- *  Unless required by applicable law or agreed to in writing,
- *  software distributed under the License is distributed on an
- *  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- *  KIND, either express or implied. See the License for the
- *  specific language governing permissions and limitations
- *  under the License.
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
-
 package com.stratio.provider.mongodb.schema
 
 import com.mongodb.DBObject
 import com.mongodb.util.JSON
+import com.stratio.provider.ScalaBinaryVersion
 import com.stratio.provider.mongodb.partitioner.MongodbPartitioner
 import com.stratio.provider.mongodb.rdd.MongodbRDD
 import com.stratio.provider.mongodb.schema.MongodbRowConverter._
@@ -27,22 +25,25 @@ import com.stratio.provider.mongodb.{MongoEmbedDatabase, MongodbConfig, MongodbC
 import org.apache.spark.sql.catalyst.expressions.GenericRow
 import org.apache.spark.sql.test.TestSQLContext
 import org.apache.spark.sql.types._
+import org.junit.runner.RunWith
+import org.scalatest.junit.JUnitRunner
 import org.scalatest.{FlatSpec, Matchers}
 
 import scala.collection.mutable.ArrayBuffer
 
-class MongodbRowConverterSpec extends FlatSpec
+@RunWith(classOf[JUnitRunner])
+class MongodbRowConverterIT extends FlatSpec
 with Matchers
 with MongoEmbedDatabase
-with TestBsonData {
+with TestBsonData
+with ScalaBinaryVersion {
 
   private val host: String = "localhost"
-  private val port: Int = 12345
   private val database: String = "testDb"
   private val collection: String = "testCol"
 
   val testConfig = MongodbConfigBuilder()
-    .set(MongodbConfig.Host,List(host + ":" + port))
+    .set(MongodbConfig.Host,List(host + ":" + mongoPort))
     .set(MongodbConfig.Database,database)
     .set(MongodbConfig.Collection,collection)
     .set(MongodbConfig.SamplingRatio,1.0)
@@ -98,18 +99,17 @@ with TestBsonData {
           }
           """).asInstanceOf[DBObject]
 
-
   behavior of "The MongodbRowConverter"
 
-  it should "be able to convert any value from a row into a dbobject field" in{
+  it should "be able to convert any value from a row into a dbobject field" + scalaBinaryVersion in{
     toDBObject(row, rowSchema) should equal(dbObject)
   }
 
-  it should "be able to convert any value from a dbobject field  into a row field" in{
+  it should "be able to convert any value from a dbobject field  into a row field" + scalaBinaryVersion in{
     toSQL(dbObject,rowSchema) should equal(row)
   }
 
-  it should "apply dbobject to row mapping in a RDD context" in {
+  it should "apply dbobject to row mapping in a RDD context" + scalaBinaryVersion in {
     withEmbedMongoFixture(complexFieldAndType2) { mongodProc =>
       val mongodbPartitioner = new MongodbPartitioner(testConfig)
       val mongodbRDD = new MongodbRDD(TestSQLContext, testConfig, mongodbPartitioner)

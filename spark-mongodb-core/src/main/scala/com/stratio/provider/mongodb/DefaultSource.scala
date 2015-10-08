@@ -1,21 +1,18 @@
-/*
- *  Licensed to STRATIO (C) under one or more contributor license agreements.
- *  See the NOTICE file distributed with this work for additional information
- *  regarding copyright ownership. The STRATIO (C) licenses this file
- *  to you under the Apache License, Version 2.0 (the
- *  "License"); you may not use this file except in compliance
- *  with the License. You may obtain a copy of the License at
+/**
+ * Copyright (C) 2015 Stratio (http://stratio.com)
  *
- *  http://www.apache.org/licenses/LICENSE-2.0
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- *  Unless required by applicable law or agreed to in writing,
- *  software distributed under the License is distributed on an
- *  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- *  KIND, either express or implied. See the License for the
- *  specific language governing permissions and limitations
- *  under the License.
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
-
 package com.stratio.provider.mongodb
 
 import com.stratio.provider.Config._
@@ -33,37 +30,34 @@ import org.apache.spark.sql.{DataFrame, SQLContext, SaveMode}
 class DefaultSource extends RelationProvider with SchemaRelationProvider with CreatableRelationProvider{
 
   override def createRelation(
-   sqlContext: SQLContext,
-   parameters: Map[String, String]): BaseRelation = {
+                               sqlContext: SQLContext,
+                               parameters: Map[String, String]): BaseRelation = {
 
     new MongodbRelation(
-      MongodbConfigBuilder()
-        .apply(parseParameters(parameters))
+      MongodbConfigBuilder(parseParameters(parameters))
         .build())(sqlContext)
 
   }
 
   override def createRelation(
-   sqlContext: SQLContext,
-   parameters: Map[String, String],
-   schema: StructType): BaseRelation = {
+                               sqlContext: SQLContext,
+                               parameters: Map[String, String],
+                               schema: StructType): BaseRelation = {
 
     new MongodbRelation(
-    MongodbConfigBuilder()
-      .apply(parseParameters(parameters))
-      .build(),Some(schema))(sqlContext)
+      MongodbConfigBuilder(parseParameters(parameters))
+        .build(),Some(schema))(sqlContext)
 
   }
 
   override def createRelation(
-   sqlContext: SQLContext,
-   mode: SaveMode,
-   parameters: Map[String, String],
-   data: DataFrame): BaseRelation = {
+                               sqlContext: SQLContext,
+                               mode: SaveMode,
+                               parameters: Map[String, String],
+                               data: DataFrame): BaseRelation = {
 
     val mongodbRelation = new MongodbRelation(
-      MongodbConfigBuilder()
-        .apply(parseParameters(parameters))
+      MongodbConfigBuilder(parseParameters(parameters))
         .build())(sqlContext)
 
     mode match{
@@ -79,19 +73,20 @@ class DefaultSource extends RelationProvider with SchemaRelationProvider with Cr
 
   private def parseParameters(parameters : Map[String,String]): Map[String, Any] = {
 
+    // required properties
     /** We will assume hosts are provided like 'host:port,host2:port2,...' */
     val properties: Map[String, Any] = parameters.updated(Host, parameters.getOrElse(Host, notFound[String](Host)).split(",").toList)
     if (!parameters.contains(Database)) notFound(Database)
     if (!parameters.contains(Collection)) notFound(Collection)
 
+    //optional parseable properties
     val optionalProperties: List[String] = List(Credentials,SSLOptions, UpdateFields)
 
     val finalMap = (properties /: optionalProperties){
       /** We will assume credentials are provided like 'user,database,password;user,database,password;...' */
       case (properties,Credentials) =>
         parameters.get(Credentials).map{ credentialInput =>
-          val credentials = credentialInput.split(";")
-            .map(credential => credential.split(",")).toList
+          val credentials = credentialInput.split(";").map(_.split(",")).toList
             .map(credentials => MongodbCredentials(credentials(0), credentials(1), credentials(2).toCharArray))
           properties + (Credentials -> credentials)
         } getOrElse properties
@@ -99,6 +94,7 @@ class DefaultSource extends RelationProvider with SchemaRelationProvider with Cr
       /** We will assume ssloptions are provided like '/path/keystorefile,keystorepassword,/path/truststorefile,truststorepassword' */
       case (properties,SSLOptions) =>
         parameters.get(SSLOptions).map{ ssloptionsInput =>
+
           val ssloption = ssloptionsInput.split(",")
           val ssloptions = MongodbSSLOptions(Some(ssloption(0)), Some(ssloption(1)), ssloption(2), Some(ssloption(3)))
           properties + (SSLOptions -> ssloptions)

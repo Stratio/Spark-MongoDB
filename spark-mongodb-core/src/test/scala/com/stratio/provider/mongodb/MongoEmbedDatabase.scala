@@ -1,24 +1,22 @@
-/*
- *  Licensed to STRATIO (C) under one or more contributor license agreements.
- *  See the NOTICE file distributed with this work for additional information
- *  regarding copyright ownership. The STRATIO (C) licenses this file
- *  to you under the Apache License, Version 2.0 (the
- *  "License"); you may not use this file except in compliance
- *  with the License. You may obtain a copy of the License at
+/**
+ * Copyright (C) 2015 Stratio (http://stratio.com)
  *
- *  http://www.apache.org/licenses/LICENSE-2.0
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- *  Unless required by applicable law or agreed to in writing,
- *  software distributed under the License is distributed on an
- *  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- *  KIND, either express or implied. See the License for the
- *  specific language governing permissions and limitations
- *  under the License.
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
-
 package com.stratio.provider.mongodb
 
 import com.mongodb.{DBCollection, DBObject, MongoClient}
+import com.stratio.provider.ScalaBinaryVersion
 import de.flapdoodle.embed.mongo.config.{MongodConfigBuilder, Net, RuntimeConfigBuilder}
 import de.flapdoodle.embed.mongo.distribution.{IFeatureAwareVersion, Version}
 import de.flapdoodle.embed.mongo.{Command, MongodExecutable, MongodProcess, MongodStarter}
@@ -26,13 +24,13 @@ import de.flapdoodle.embed.process.config.IRuntimeConfig
 import de.flapdoodle.embed.process.config.io.ProcessOutput
 import de.flapdoodle.embed.process.runtime.Network
 
-trait MongoEmbedDatabase {
+trait MongoEmbedDatabase extends ScalaBinaryVersion {
   private val runtimeConfig = new RuntimeConfigBuilder()
     .defaults(Command.MongoD)
     .processOutput(ProcessOutput.getDefaultInstanceSilent)
     .build()
 
-  protected def mongoStart(port: Int = 12345,
+  protected def mongoStart(port: Int = mongoPort,
     version: IFeatureAwareVersion = Version.Main.PRODUCTION,
     runtimeConfig: IRuntimeConfig = runtimeConfig): MongodProps = {
     val mongodExe: MongodExecutable = mongodExec(port, version, runtimeConfig)
@@ -45,7 +43,7 @@ trait MongoEmbedDatabase {
   }
 
   protected def withEmbedMongoFixture(dataset: List[DBObject],
-    port: Int = 12345,
+    port: Int = mongoPort,
     version: IFeatureAwareVersion = Version.Main.PRODUCTION,
     runtimeConfig: IRuntimeConfig = runtimeConfig)
       (fixture: MongodProps => Any) {

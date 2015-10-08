@@ -1,26 +1,24 @@
-/*
- *  Licensed to STRATIO (C) under one or more contributor license agreements.
- *  See the NOTICE file distributed with this work for additional information
- *  regarding copyright ownership. The STRATIO (C) licenses this file
- *  to you under the Apache License, Version 2.0 (the
- *  "License"); you may not use this file except in compliance
- *  with the License. You may obtain a copy of the License at
+/**
+ * Copyright (C) 2015 Stratio (http://stratio.com)
  *
- *  http://www.apache.org/licenses/LICENSE-2.0
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- *  Unless required by applicable law or agreed to in writing,
- *  software distributed under the License is distributed on an
- *  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- *  KIND, either express or implied. See the License for the
- *  specific language governing permissions and limitations
- *  under the License.
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
-
 package com.stratio.provider.mongodb.reader
 
 import com.mongodb.{MongoCredential, QueryBuilder}
 import com.mongodb.casbah.Imports._
 import com.stratio.provider.Config
+import com.stratio.provider.mongodb.MongodbConfig._
 import com.stratio.provider.mongodb.{MongodbCredentials, MongodbSSLOptions, MongodbClientFactory, MongodbConfig}
 import com.stratio.provider.mongodb.partitioner.MongodbPartition
 import org.apache.spark.Partition
@@ -36,9 +34,9 @@ import java.util.regex.Pattern
  * @param filters Added query filters
  */
 class MongodbReader(
-  config: Config,
-  requiredColumns: Array[String],
-  filters: Array[Filter]) {
+                     config: Config,
+                     requiredColumns: Array[String],
+                     filters: Array[Filter]) {
 
   private var mongoClient: Option[MongodbClientFactory.Client] = None
 
@@ -85,10 +83,11 @@ class MongodbReader(
         collection <- Option(client(config(MongodbConfig.Database))(config(MongodbConfig.Collection)))
         dbCursor <- Option(collection.find(queryPartition(filters), selectFields(requiredColumns)))
       } yield {
-        mongoPartition.partitionRange.minKey.foreach(min => dbCursor.addSpecial("$min", min))
-        mongoPartition.partitionRange.maxKey.foreach(max => dbCursor.addSpecial("$max", max))
-        dbCursor
-      }).headOption
+          mongoPartition.partitionRange.minKey.foreach(min => dbCursor.addSpecial("$min", min))
+          mongoPartition.partitionRange.maxKey.foreach(max => dbCursor.addSpecial("$max", max))
+          dbCursor
+        }).headOption
+
 
     }.recover {
       case throwable =>
@@ -102,7 +101,7 @@ class MongodbReader(
    * @return the dB object
    */
   private def queryPartition(
-    filters: Array[Filter]): DBObject = {
+                              filters: Array[Filter]): DBObject = {
 
     def filtersToDBObject( sFilters: Array[Filter] ): DBObject = {
       val queryBuilder: QueryBuilder = QueryBuilder.start
@@ -164,5 +163,5 @@ class MongodbReader(
 }
 
 case class MongodbReadException(
-  msg: String,
-  causedBy: Throwable) extends RuntimeException(msg, causedBy)
+                                 msg: String,
+                                 causedBy: Throwable) extends RuntimeException(msg, causedBy)

@@ -1,30 +1,32 @@
-/*
- *  Licensed to STRATIO (C) under one or more contributor license agreements.
- *  See the NOTICE file distributed with this work for additional information
- *  regarding copyright ownership. The STRATIO (C) licenses this file
- *  to you under the Apache License, Version 2.0 (the
- *  "License"); you may not use this file except in compliance
- *  with the License. You may obtain a copy of the License at
+/**
+ * Copyright (C) 2015 Stratio (http://stratio.com)
  *
- *  http://www.apache.org/licenses/LICENSE-2.0
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- *  Unless required by applicable law or agreed to in writing,
- *  software distributed under the License is distributed on an
- *  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- *  KIND, either express or implied. See the License for the
- *  specific language governing permissions and limitations
- *  under the License.
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
-
 package com.stratio.provider.mongodb
 
 import com.mongodb.WriteConcern
+import com.stratio.provider.ScalaBinaryVersion
 import org.apache.spark.sql.test.TestSQLContext
 import org.apache.spark.sql.types._
+import org.junit.runner.RunWith
+import org.scalatest.junit.JUnitRunner
 import org.scalatest.{FlatSpec, Matchers}
 
-class MongodbRelationSpec extends FlatSpec
-with Matchers {
+@RunWith(classOf[JUnitRunner])
+class MongodbRelationIT extends FlatSpec
+with Matchers
+with ScalaBinaryVersion{
 
   private val host: String = "localhost"
   private val port: Int = 12345
@@ -35,19 +37,19 @@ with Matchers {
   private val collection2: String = "testCol2"
   private val writeConcern : WriteConcern = WriteConcern.NORMAL
 
+
   val testConfig = MongodbConfigBuilder()
     .set(MongodbConfig.Host, List(host + ":" + port))
     .set(MongodbConfig.Database, database)
     .set(MongodbConfig.Collection, collection)
-    /*.set(MongodbConfig.SamplingRatio, 1.0)
-    .set(MongodbConfig.WriteConcern, writeConcern)
-    */.build()
+    .build()
 
   val testConfig2 = MongodbConfigBuilder()
     //.set(MongodbConfig.WriteConcern, writeConcern)
     .set(MongodbConfig.Host, List(host + ":" + port))
     .set(MongodbConfig.Collection, collection)
     .set(MongodbConfig.Database, database)
+   // .set(MongodbConfig.Credentials, List())
     /*.set(MongodbConfig.SamplingRatio, 1.0)
     */.build()
 
@@ -57,6 +59,7 @@ with Matchers {
     .set(MongodbConfig.SamplingRatio, 1.0)
     .set(MongodbConfig.WriteConcern, writeConcern)
     .set(MongodbConfig.Host, List(host + ":" + port2))
+    //.set(MongodbConfig.Credentials, List())
     .build()
 
   val testConfig4 = MongodbConfigBuilder()
@@ -82,9 +85,9 @@ with Matchers {
         new StructField("att62",IntegerType,true)
       )),false)))
 
-  behavior of "MongodbRelationSpec"
+  behavior of "MongodbRelation"
 
-  it should "prune schema to adapt it to required columns" in {
+  it should "prune schema to adapt it to required columns" + scalaBinaryVersion in {
 
     MongodbRelation.pruneSchema(schema,Array()) should equal(
       new StructType(Array()))
@@ -111,7 +114,7 @@ with Matchers {
   val mongodbrelation3 = new MongodbRelation(testConfig3, Some(schema))(TestSQLContext)
   val mongodbrelation4 = new MongodbRelation(testConfig4, Some(schema))(TestSQLContext)
 
-  it should "provide info about equality in MongodbRelation" in {
+  it should "provide info about equality in MongodbRelation" + scalaBinaryVersion in {
     mongodbrelation.equals(mongodbrelation) shouldEqual true
     mongodbrelation.equals(mongodbrelation2) shouldEqual true
     mongodbrelation.equals(mongodbrelation3) shouldEqual false
