@@ -31,7 +31,7 @@ with MongoClusterEmbedDatabase
 with TestBsonData
 with ScalaBinaryVersion {
 
-  val configServerPorts = List(12341)
+  val configServerPorts = List(mongoPort+10)
   val database = "database-1"
   val collection = "collection-1"
   val shardKey = "_id"
