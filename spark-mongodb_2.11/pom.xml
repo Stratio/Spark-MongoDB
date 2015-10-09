@@ -30,7 +30,7 @@
     <properties>
         <scala.version>2.11.6</scala.version>
         <scala.binary.version>2.11</scala.binary.version>
-        <sonar.projectBaseDir>spark-mongodb-core</sonar.projectBaseDir>
+        <sonar.projectBaseDir>spark-mongodb</sonar.projectBaseDir>
     </properties>
     <dependencies>
         <dependency>
