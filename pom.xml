@@ -23,7 +23,7 @@
     <artifactId>spark-mongodb-parent</artifactId>
     <version>0.9.0-RC1</version>
     <packaging>pom</packaging>
-    <name>spark-mongodb</name>
+    <name>Stratio Spark Mongodb Datasource</name>
     <description>A Spark SQL library for MongoDB</description>
     <url>http://github.com/Stratio/spark-mongodb</url>
     <inceptionYear>2015</inceptionYear>
