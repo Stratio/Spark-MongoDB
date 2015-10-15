@@ -21,8 +21,8 @@ import java.util.Locale
 import com.stratio.datasource.ScalaBinaryVersion
 import com.stratio.datasource.mongodb.partitioner.MongodbPartitioner
 import com.stratio.datasource.mongodb.rdd.MongodbRDD
-import com.stratio.datasource.mongodb.{MongoEmbedDatabase, MongodbConfig, MongodbConfigBuilder, TestBsonData}
-import org.apache.spark.sql.test.TestSQLContext
+import com.stratio.datasource.mongodb._
+
 import org.apache.spark.sql.types.TimestampType
 import org.junit.runner.RunWith
 import org.scalatest._

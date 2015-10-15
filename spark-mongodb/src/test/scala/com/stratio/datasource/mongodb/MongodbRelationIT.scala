@@ -17,7 +17,6 @@ package com.stratio.datasource.mongodb
 
 import com.mongodb.WriteConcern
 import com.stratio.datasource.ScalaBinaryVersion
-import org.apache.spark.sql.test.TestSQLContext
 import org.apache.spark.sql.types._
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner

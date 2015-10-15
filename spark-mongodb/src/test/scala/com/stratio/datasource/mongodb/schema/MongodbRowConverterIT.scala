@@ -21,9 +21,9 @@ import com.stratio.datasource.ScalaBinaryVersion
 import com.stratio.datasource.mongodb.partitioner.MongodbPartitioner
 import com.stratio.datasource.mongodb.rdd.MongodbRDD
 import com.stratio.datasource.mongodb.schema.MongodbRowConverter._
-import com.stratio.datasource.mongodb.{MongoEmbedDatabase, MongodbConfig, MongodbConfigBuilder, TestBsonData}
+import com.stratio.datasource.mongodb._
+
 import org.apache.spark.sql.catalyst.expressions.GenericRow
-import org.apache.spark.sql.test.TestSQLContext
 import org.apache.spark.sql.types._
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner

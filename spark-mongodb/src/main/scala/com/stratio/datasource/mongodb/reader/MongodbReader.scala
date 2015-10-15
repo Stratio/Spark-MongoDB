@@ -18,12 +18,11 @@ package com.stratio.datasource.mongodb.reader
 import com.mongodb.{MongoCredential, QueryBuilder}
 import com.mongodb.casbah.Imports._
 import com.stratio.datasource.Config
-import com.stratio.datasource.mongodb.MongodbConfig._
 import com.stratio.datasource.mongodb.{MongodbCredentials, MongodbSSLOptions, MongodbClientFactory, MongodbConfig}
 import com.stratio.datasource.mongodb.partitioner.MongodbPartition
 import org.apache.spark.Partition
 import org.apache.spark.sql.sources._
-import org.apache.spark.sql.types.UTF8String
+import org.apache.spark.unsafe.types.UTF8String
 import scala.util.Try
 import java.util.regex.Pattern
 

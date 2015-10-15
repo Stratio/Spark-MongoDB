@@ -26,7 +26,6 @@ import com.stratio.datasource.mongodb._
 import com.stratio.datasource.mongodb.partitioner.MongodbPartition
 import com.stratio.datasource.partitioner.PartitionRange
 import org.apache.spark.sql.sources.{EqualTo, Filter}
-import org.apache.spark.sql.test.TestSQLContext
 import org.apache.spark.sql.types._
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
