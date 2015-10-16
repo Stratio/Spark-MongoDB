@@ -41,7 +41,7 @@ class MongodbClientFactoryTest extends FlatSpec with Matchers with ScalaBinaryVe
         "socketTimeout"-> "50000",
         "maxWaitTime"-> "50000",
         "connectionsPerHost" -> "20",
-          "threadsAllowedToBlockForConnectionMultiplier" -> "5"
+        "threadsAllowedToBlockForConnectionMultiplier" -> "5"
       )
   )
 

@@ -17,6 +17,7 @@ package com.stratio.datasource.mongodb
 
 import com.mongodb.WriteConcern
 import com.stratio.datasource.ScalaBinaryVersion
+import org.apache.spark.sql.mongodb.{TemporaryTestSQLContext, TestSQLContext}
 import org.apache.spark.sql.types._
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
@@ -104,10 +105,10 @@ with ScalaBinaryVersion{
 
   }
 
-  val mongodbrelation = new MongodbRelation(testConfig, Some(schema))(TestSQLContext)
-  val mongodbrelation2 = new MongodbRelation(testConfig2, Some(schema))(TestSQLContext)
-  val mongodbrelation3 = new MongodbRelation(testConfig3, Some(schema))(TestSQLContext)
-  val mongodbrelation4 = new MongodbRelation(testConfig4, Some(schema))(TestSQLContext)
+  val mongodbrelation = new MongodbRelation(testConfig, Some(schema))(TemporaryTestSQLContext)
+  val mongodbrelation2 = new MongodbRelation(testConfig2, Some(schema))(TemporaryTestSQLContext)
+  val mongodbrelation3 = new MongodbRelation(testConfig3, Some(schema))(TemporaryTestSQLContext)
+  val mongodbrelation4 = new MongodbRelation(testConfig4, Some(schema))(TemporaryTestSQLContext)
 
   it should "provide info about equality in MongodbRelation" + scalaBinaryVersion in {
     mongodbrelation.equals(mongodbrelation) shouldEqual true

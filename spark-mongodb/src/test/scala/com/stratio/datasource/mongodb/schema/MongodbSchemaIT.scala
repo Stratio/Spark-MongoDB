@@ -22,6 +22,7 @@ import com.stratio.datasource.ScalaBinaryVersion
 import com.stratio.datasource.mongodb.partitioner.MongodbPartitioner
 import com.stratio.datasource.mongodb.rdd.MongodbRDD
 import com.stratio.datasource.mongodb._
+import org.apache.spark.sql.mongodb.{TemporaryTestSQLContext, TestSQLContext}
 
 import org.apache.spark.sql.types.TimestampType
 import org.junit.runner.RunWith
@@ -50,7 +51,7 @@ with ScalaBinaryVersion {
 
   val mongodbPartitioner = new MongodbPartitioner(testConfig)
 
-  val mongodbRDD = new MongodbRDD(TestSQLContext, testConfig, mongodbPartitioner)
+  val mongodbRDD = new MongodbRDD(TemporaryTestSQLContext, testConfig, mongodbPartitioner)
 
   behavior of "A schema"
 

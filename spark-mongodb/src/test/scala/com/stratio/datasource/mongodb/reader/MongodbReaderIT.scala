@@ -25,6 +25,7 @@ import com.stratio.datasource.ScalaBinaryVersion
 import com.stratio.datasource.mongodb._
 import com.stratio.datasource.mongodb.partitioner.MongodbPartition
 import com.stratio.datasource.partitioner.PartitionRange
+import org.apache.spark.sql.mongodb.{TemporaryTestSQLContext, TestSQLContext}
 import org.apache.spark.sql.sources.{EqualTo, Filter}
 import org.apache.spark.sql.types._
 import org.junit.runner.RunWith
@@ -100,7 +101,7 @@ with ScalaBinaryVersion {
     val stringAndDate = List(DBObject("string" -> "this is a simple string.", "date" -> dfunc("Mon Aug 10 07:52:49 EDT 2015")))
 
     withEmbedMongoFixture(stringAndDate) { mongodbProc =>
-      val back = TestSQLContext.fromMongoDB(testConfig)
+      val back = TemporaryTestSQLContext.fromMongoDB(testConfig)
       back.printSchema()
       assert(back.schema.fields.filter(_.name == "date").head.dataType == TimestampType)
       val timestamp = back.first().get(2).asInstanceOf[Timestamp]
