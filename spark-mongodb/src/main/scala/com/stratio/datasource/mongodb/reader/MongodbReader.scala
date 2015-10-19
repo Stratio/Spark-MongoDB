@@ -18,12 +18,10 @@ package com.stratio.datasource.mongodb.reader
 import com.mongodb.{MongoCredential, QueryBuilder}
 import com.mongodb.casbah.Imports._
 import com.stratio.datasource.Config
-import com.stratio.datasource.mongodb.MongodbConfig._
 import com.stratio.datasource.mongodb.{MongodbCredentials, MongodbSSLOptions, MongodbClientFactory, MongodbConfig}
 import com.stratio.datasource.mongodb.partitioner.MongodbPartition
 import org.apache.spark.Partition
 import org.apache.spark.sql.sources._
-import org.apache.spark.sql.types.UTF8String
 import scala.util.Try
 import java.util.regex.Pattern
 
@@ -108,17 +106,17 @@ class MongodbReader(
 
       sFilters.foreach {
         case EqualTo(attribute, value) =>
-          queryBuilder.put(attribute).is(convertToStandardType(value))
+          queryBuilder.put(attribute).is(value)
         case GreaterThan(attribute, value) =>
-          queryBuilder.put(attribute).greaterThan(convertToStandardType(value))
+          queryBuilder.put(attribute).greaterThan(value)
         case GreaterThanOrEqual(attribute, value) =>
-          queryBuilder.put(attribute).greaterThanEquals(convertToStandardType(value))
+          queryBuilder.put(attribute).greaterThanEquals(value)
         case In(attribute, values) =>
-          queryBuilder.put(attribute).in(values.map(convertToStandardType))
+          queryBuilder.put(attribute).in(values)
         case LessThan(attribute, value) =>
-          queryBuilder.put(attribute).lessThan(convertToStandardType(value))
+          queryBuilder.put(attribute).lessThan(value)
         case LessThanOrEqual(attribute, value) =>
-          queryBuilder.put(attribute).lessThanEquals(convertToStandardType(value))
+          queryBuilder.put(attribute).lessThanEquals(value)
         case IsNull(attribute) =>
           queryBuilder.put(attribute).is(null)
         case IsNotNull(attribute) =>
@@ -141,11 +139,6 @@ class MongodbReader(
 
     filtersToDBObject(filters)
   }
-
-  private def convertToStandardType(value: Any): Any = value match {
-      case utf8String: UTF8String => value.toString
-      case other => other
-    }
 
   /**
    *

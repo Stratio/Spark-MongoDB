@@ -21,9 +21,10 @@ import com.stratio.datasource.ScalaBinaryVersion
 import com.stratio.datasource.mongodb.partitioner.MongodbPartitioner
 import com.stratio.datasource.mongodb.rdd.MongodbRDD
 import com.stratio.datasource.mongodb.schema.MongodbRowConverter._
-import com.stratio.datasource.mongodb.{MongoEmbedDatabase, MongodbConfig, MongodbConfigBuilder, TestBsonData}
+import com.stratio.datasource.mongodb._
+
 import org.apache.spark.sql.catalyst.expressions.GenericRow
-import org.apache.spark.sql.test.TestSQLContext
+import org.apache.spark.sql.mongodb.{TemporaryTestSQLContext, TestSQLContext}
 import org.apache.spark.sql.types._
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
@@ -112,7 +113,7 @@ with ScalaBinaryVersion {
   it should "apply dbobject to row mapping in a RDD context" + scalaBinaryVersion in {
     withEmbedMongoFixture(complexFieldAndType2) { mongodProc =>
       val mongodbPartitioner = new MongodbPartitioner(testConfig)
-      val mongodbRDD = new MongodbRDD(TestSQLContext, testConfig, mongodbPartitioner)
+      val mongodbRDD = new MongodbRDD(TemporaryTestSQLContext, testConfig, mongodbPartitioner)
       val schema = MongodbSchema(mongodbRDD, 1.0).schema()
       println("\n\nschema")
       schema.fieldNames.foreach(println)

@@ -2,7 +2,9 @@
 
 ## 0.10.0 (upcoming)
 
-## 0.9.0 (upcoming)
+* Adapted to Spark 1.5
+
+## 0.9.0 (October 2015)
 
 * Mapping config for client
 * Refactor documentation

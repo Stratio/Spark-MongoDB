@@ -23,20 +23,15 @@
     <artifactId>spark-mongodb-parent</artifactId>
     <version>0.10.0-SNAPSHOT</version>
     <packaging>pom</packaging>
-    <name>spark-mongodb</name>
+    <name>Stratio Spark Mongodb Datasource</name>
     <description>A Spark SQL library for MongoDB</description>
     <url>http://github.com/Stratio/spark-mongodb</url>
     <inceptionYear>2015</inceptionYear>
 
-    <organization>
-        <name>Stratio</name>
-        <url>http://stratio.com</url>
-    </organization>
-
     <parent>
         <groupId>com.stratio</groupId>
         <artifactId>parent</artifactId>
-        <version>0.4.0</version>
+        <version>0.5.0</version>
     </parent>
 
     <modules>
@@ -49,7 +44,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <scala.test.version>2.2.5</scala.test.version>
         <scala.mock.version>3.2.1</scala.mock.version>
-        <spark.version>1.4.0</spark.version>
+        <spark.version>1.5.1</spark.version>
         <casbah.version>2.8.0</casbah.version>
     </properties>
 
@@ -163,37 +158,6 @@
             <plugin>
                 <groupId>com.mycila</groupId>
                 <artifactId>license-maven-plugin</artifactId>
-                <version>2.11</version>
-                <configuration>
-                    <useDefaultExcludes>true</useDefaultExcludes>
-                    <header>com/mycila/maven/plugin/license/templates/APACHE-2.txt</header>
-                    <properties>
-                        <owner>${project.organization.name}</owner>
-                        <email>${project.organization.url}</email>
-                        <failOnMissingHeader>true</failOnMissingHeader>
-                    </properties>
-                    <excludes>
-                        <exclude>**/.*/**</exclude>
-                        <exclude>**/src/site/sphinx/_themes/stratio/**</exclude>
-                        <exclude>**/*.rst</exclude>
-                        <exclude>**/*.conf</exclude>
-                    </excludes>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>format</id>
-                        <goals>
-                            <goal>format</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>check</id>
-                        <goals>
-                            <goal>check</goal>
-                        </goals>
-                        <phase>process-resources</phase>
-                    </execution>
-                </executions>
             </plugin>
         </plugins>
     </build>
