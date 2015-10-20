@@ -97,6 +97,8 @@ trait JsonSupport {
   private def toDate(value: Any): Date = {
     value match {
       case value: java.util.Date => new Date(value.getTime)
+        // TODO Parse string to date when a String type arrives
+        // case value: java.lang.String => ???
     }
   }
 
