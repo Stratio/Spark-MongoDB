@@ -15,7 +15,7 @@
  */
 package com.stratio.datasource.mongodb.schema
 
-import java.sql.Timestamp
+import java.sql.{Date, Timestamp}
 
 import org.apache.spark.sql.types._
 
@@ -45,6 +45,7 @@ trait JsonSupport {
         case DoubleType => toDouble(value)
         case DecimalType() => toDecimal(value)
         case BooleanType => value.asInstanceOf[Boolean]
+        case DateType => toDate(value)
         case TimestampType => toTimestamp(value)
         case NullType => null
         case _ =>
@@ -90,6 +91,12 @@ trait JsonSupport {
   private def toTimestamp(value: Any): Timestamp = {
     value match {
       case value: java.util.Date => new Timestamp(value.getTime)
+    }
+  }
+
+  private def toDate(value: Any): Date = {
+    value match {
+      case value: java.util.Date => new Date(value.getTime)
     }
   }
 
