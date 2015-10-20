@@ -47,7 +47,7 @@ with ScalaBinaryVersion {
     .set(MongodbConfig.Host, List(host + ":" + mongoPort))
     .set(MongodbConfig.Database, database)
     .set(MongodbConfig.Collection, collection)
-    .set(MongodbConfig.SamplingRatio, 1.0)
+    .set(MongodbConfig.SamplingRatio, "1.0")
     .build()
 
   behavior of "A reader"
