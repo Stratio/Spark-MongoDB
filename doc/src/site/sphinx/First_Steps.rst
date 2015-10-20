@@ -12,7 +12,7 @@ You can link against this library by putting the following lines in your program
 
 ::
 
- <groupId>com.stratio</groupId>
+ <groupId>com.stratio.datasource</groupId>
  <artifactId>spark-mongodb_2.10</artifactId>
  <version>LATEST_VERSION</version>
 
