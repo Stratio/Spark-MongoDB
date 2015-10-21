@@ -55,7 +55,7 @@ with PrunedFilteredScan with InsertableRelation {
   @transient private lazy val lazySchema =
     MongodbSchema(
       new MongodbRDD(sqlContext, config, rddPartitioner),
-      config.get[String](MongodbConfig.SamplingRatio).fold(MongodbConfig.DefaultSamplingRatio)(_.toDouble)).schema()
+      config.get[Any](MongodbConfig.SamplingRatio).fold(MongodbConfig.DefaultSamplingRatio)(_.toString.toDouble)).schema()
 
   override val schema: StructType = schemaProvided.getOrElse(lazySchema)
 
