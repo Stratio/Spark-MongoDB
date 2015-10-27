@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.10.0 (upcoming)
+## 0.10.0 (October 2015)
 
 * Adapted to Spark 1.5
 
