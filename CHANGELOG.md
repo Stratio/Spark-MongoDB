@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.9.0 (upcoming)
+## 0.9.0 (October 2015)
 
 * Mapping config for client
 * Refactor documentation
