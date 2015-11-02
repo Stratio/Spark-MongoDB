@@ -20,7 +20,7 @@ import com.stratio.datasource.schema.RowConverter
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.catalyst.expressions.GenericRow
-import org.apache.spark.sql.types.{ArrayType, DataType, StructField, StructType}
+import org.apache.spark.sql.types.{ArrayType, DataType, StructField, StructType, MapType}
 
 import scala.collection.mutable.ArrayBuffer
 
@@ -29,8 +29,8 @@ import scala.collection.mutable.ArrayBuffer
  * from DBObject to Row and vice versa
  */
 object MongodbRowConverter extends RowConverter[DBObject]
-  with JsonSupport
-  with Serializable {
+with JsonSupport
+with Serializable {
 
   /**
    *
@@ -63,8 +63,8 @@ object MongodbRowConverter extends RowConverter[DBObject]
    * @return The converted row
    */
   def recordAsRow(
-    json: Map[String, AnyRef],
-    schema: StructType): Row = {
+                   json: Map[String, AnyRef],
+                   schema: StructType): Row = {
     val values: Seq[Any] = schema.fields.map {
       case StructField(name, dataType, _, _) =>
         json.get(name).flatMap(v => Option(v)).map(
@@ -127,6 +127,8 @@ object MongodbRowConverter extends RowConverter[DBObject]
           toSQL(dbList,dataType)
         case (_,struct: StructType) =>
           recordAsRow(dbObjectToMap(value.asInstanceOf[DBObject]), struct)
+        case (_ , map: MapType) => dbObjectToMap(value.asInstanceOf[DBObject])
+          .map(element => (toSQL(element._1, map.keyType), toSQL(element._2, map.valueType)))
         case _ =>
           //Assure value is mapped to schema constrained type.
           enforceCorrectType(value, dataType)
