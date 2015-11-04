@@ -38,7 +38,7 @@ trait JsonSupport {
   protected def enforceCorrectType(value: Any, desiredType: DataType): Any =
     Option(value).map{ _ => desiredType match {
       case StringType => toString(value)
-      case _ if value == null || value == "" => null // guard the non string type
+      case _ if value == "" => null // guard the non string type
       case ByteType => toByte(value)
       case BinaryType => toBinary(value)
       case ShortType => toShort(value)
