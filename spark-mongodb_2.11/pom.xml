@@ -31,6 +31,10 @@
         <scala.version>2.11.6</scala.version>
         <scala.binary.version>2.11</scala.binary.version>
         <sonar.projectBaseDir>spark-mongodb</sonar.projectBaseDir>
+        <scala.test.version>2.2.5</scala.test.version>
+        <scala.mock.version>3.2.1</scala.mock.version>
+        <spark.version>1.5.1</spark.version>
+        <casbah.version>2.8.0</casbah.version>
     </properties>
     <dependencies>
         <dependency>
