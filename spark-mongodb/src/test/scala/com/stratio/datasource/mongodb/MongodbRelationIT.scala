@@ -16,7 +16,7 @@
 package com.stratio.datasource.mongodb
 
 import com.mongodb.WriteConcern
-import com.stratio.datasource.ScalaBinaryVersion
+import com.stratio.datasource.MongodbTestConstants
 import org.apache.spark.sql.mongodb.{TemporaryTestSQLContext, TestSQLContext}
 import org.apache.spark.sql.types._
 import org.junit.runner.RunWith
@@ -26,7 +26,7 @@ import org.scalatest.{FlatSpec, Matchers}
 @RunWith(classOf[JUnitRunner])
 class MongodbRelationIT extends FlatSpec
 with Matchers
-with ScalaBinaryVersion{
+with MongodbTestConstants{
 
   private val host: String = "localhost"
   private val port: Int = 12345

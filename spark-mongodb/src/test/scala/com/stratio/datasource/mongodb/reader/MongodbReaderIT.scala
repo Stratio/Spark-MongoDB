@@ -21,7 +21,7 @@ import java.util.Locale
 
 import com.mongodb.util.JSON
 import com.mongodb.{BasicDBObject, DBObject}
-import com.stratio.datasource.ScalaBinaryVersion
+import com.stratio.datasource.MongodbTestConstants
 import com.stratio.datasource.mongodb._
 import com.stratio.datasource.mongodb.partitioner.MongodbPartition
 import com.stratio.datasource.partitioner.PartitionRange
@@ -37,15 +37,14 @@ class MongodbReaderIT extends FlatSpec
 with Matchers
 with MongoEmbedDatabase
 with TestBsonData
-with ScalaBinaryVersion {
+with MongodbTestConstants {
 
   private val host: String = "localhost"
-  private val database: String = "testDb"
   private val collection: String = "testCol"
 
   val testConfig = MongodbConfigBuilder()
     .set(MongodbConfig.Host, List(host + ":" + mongoPort))
-    .set(MongodbConfig.Database, database)
+    .set(MongodbConfig.Database, db)
     .set(MongodbConfig.Collection, collection)
     .set(MongodbConfig.SamplingRatio, "1.0")
     .build()

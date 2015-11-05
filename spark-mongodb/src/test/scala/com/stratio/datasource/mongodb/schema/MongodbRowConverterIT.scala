@@ -17,7 +17,7 @@ package com.stratio.datasource.mongodb.schema
 
 import com.mongodb.DBObject
 import com.mongodb.util.JSON
-import com.stratio.datasource.ScalaBinaryVersion
+import com.stratio.datasource.MongodbTestConstants
 import com.stratio.datasource.mongodb.partitioner.MongodbPartitioner
 import com.stratio.datasource.mongodb.rdd.MongodbRDD
 import com.stratio.datasource.mongodb.schema.MongodbRowConverter._
@@ -37,15 +37,14 @@ class MongodbRowConverterIT extends FlatSpec
 with Matchers
 with MongoEmbedDatabase
 with TestBsonData
-with ScalaBinaryVersion {
+with MongodbTestConstants {
 
   private val host: String = "localhost"
-  private val database: String = "testDb"
   private val collection: String = "testCol"
 
   val testConfig = MongodbConfigBuilder()
     .set(MongodbConfig.Host,List(host + ":" + mongoPort))
-    .set(MongodbConfig.Database,database)
+    .set(MongodbConfig.Database,db)
     .set(MongodbConfig.Collection,collection)
     .set(MongodbConfig.SamplingRatio,1.0)
     .build()

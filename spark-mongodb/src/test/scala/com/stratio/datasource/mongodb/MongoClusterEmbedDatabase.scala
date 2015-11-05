@@ -17,7 +17,7 @@ package com.stratio.datasource.mongodb
 
 import com.mongodb.casbah.commons.MongoDBObject
 import com.mongodb.{ServerAddress, DBCollection, MongoClient, DBObject}
-import com.stratio.datasource.ScalaBinaryVersion
+import com.stratio.datasource.MongodbTestConstants
 import de.flapdoodle.embed.mongo.config._
 import de.flapdoodle.embed.mongo.distribution.Version
 import de.flapdoodle.embed.mongo.tests.MongosSystemForTestFactory
@@ -32,7 +32,7 @@ import scala.collection.JavaConverters._
  * - A list of config. servers
  * - A list of replica sets (Mongods)
  */
-trait MongoClusterEmbedDatabase extends ScalaBinaryVersion {
+trait MongoClusterEmbedDatabase extends MongodbTestConstants {
 
   //  Current system
 

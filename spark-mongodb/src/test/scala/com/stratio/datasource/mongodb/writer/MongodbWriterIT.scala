@@ -18,7 +18,7 @@ package com.stratio.datasource.mongodb.writer
 import com.mongodb._
 import com.mongodb.casbah.commons.MongoDBObject
 import com.mongodb.util.JSON
-import com.stratio.datasource.ScalaBinaryVersion
+import com.stratio.datasource.MongodbTestConstants
 import com.stratio.datasource.mongodb.{MongoEmbedDatabase, TestBsonData, MongodbConfig, MongodbConfigBuilder}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
@@ -29,10 +29,9 @@ class MongodbWriterIT extends FlatSpec
 with Matchers
 with MongoEmbedDatabase
 with TestBsonData
-with ScalaBinaryVersion{
+with MongodbTestConstants{
 
   private val host: String = "localhost"
-  private val database: String = "testDb"
   private val collection: String = "testCol"
   private val writeConcern: WriteConcern = WriteConcern.NORMAL
   private val idField: String = "att2"
@@ -43,7 +42,7 @@ with ScalaBinaryVersion{
 
   val testConfig = MongodbConfigBuilder()
     .set(MongodbConfig.Host, List(host + ":" + mongoPort))
-    .set(MongodbConfig.Database, database)
+    .set(MongodbConfig.Database, db)
     .set(MongodbConfig.Collection, collection)
     .set(MongodbConfig.SamplingRatio, 1.0)
     .set(MongodbConfig.WriteConcern, writeConcern)
@@ -51,7 +50,7 @@ with ScalaBinaryVersion{
 
   val testConfigWithPk = MongodbConfigBuilder()
     .set(MongodbConfig.Host, List(host + ":" + mongoPort))
-    .set(MongodbConfig.Database, database)
+    .set(MongodbConfig.Database, db)
     .set(MongodbConfig.Collection, collection)
     .set(MongodbConfig.SamplingRatio, 1.0)
     .set(MongodbConfig.WriteConcern, writeConcern)
@@ -60,7 +59,7 @@ with ScalaBinaryVersion{
 
   val testConfigWithLanguage = MongodbConfigBuilder()
     .set(MongodbConfig.Host, List(host + ":" + mongoPort))
-    .set(MongodbConfig.Database, database)
+    .set(MongodbConfig.Database, db)
     .set(MongodbConfig.Collection, collection)
     .set(MongodbConfig.SamplingRatio, 1.0)
     .set(MongodbConfig.WriteConcern, writeConcern)
@@ -69,7 +68,7 @@ with ScalaBinaryVersion{
 
   val testConfigWithWrongPk = MongodbConfigBuilder()
     .set(MongodbConfig.Host, List(host + ":" + mongoPort))
-    .set(MongodbConfig.Database, database)
+    .set(MongodbConfig.Database, db)
     .set(MongodbConfig.Collection, collection)
     .set(MongodbConfig.SamplingRatio, 1.0)
     .set(MongodbConfig.WriteConcern, writeConcern)
@@ -78,7 +77,7 @@ with ScalaBinaryVersion{
 
   val testConfigWithUpdateFields = MongodbConfigBuilder()
     .set(MongodbConfig.Host, List(host + ":" + mongoPort))
-    .set(MongodbConfig.Database, database)
+    .set(MongodbConfig.Database, db)
     .set(MongodbConfig.Collection, collection)
     .set(MongodbConfig.SamplingRatio, 1.0)
     .set(MongodbConfig.WriteConcern, writeConcern)
@@ -132,7 +131,7 @@ with ScalaBinaryVersion{
 
       val mongodbClient = new MongoClient(host, mongoPort)
 
-      val dbCollection = mongodbClient.getDB(database).getCollection(collection)
+      val dbCollection = mongodbClient.getDB(db).getCollection(collection)
 
       val dbCursor = dbCollection.find()
 
@@ -155,7 +154,7 @@ with ScalaBinaryVersion{
 
       val mongodbClient = new MongoClient(host, mongoPort)
 
-      val dbCollection = mongodbClient.getDB(database).getCollection(collection)
+      val dbCollection = mongodbClient.getDB(db).getCollection(collection)
 
       val dbCursor = dbCollection.find()
 
@@ -178,7 +177,7 @@ with ScalaBinaryVersion{
 
       val mongodbClient = new MongoClient(host, mongoPort)
 
-      val dbCollection = mongodbClient.getDB(database).getCollection(collection)
+      val dbCollection = mongodbClient.getDB(db).getCollection(collection)
 
       val dbCursor = dbCollection.find()
 
@@ -202,7 +201,7 @@ with ScalaBinaryVersion{
 
       val mongodbClient = new MongoClient(host, mongoPort)
 
-      val dbCollection = mongodbClient.getDB(database).getCollection(collection)
+      val dbCollection = mongodbClient.getDB(db).getCollection(collection)
 
       val dbCursor = dbCollection.find()
 
@@ -226,7 +225,7 @@ with ScalaBinaryVersion{
 
       val mongodbClient = new MongoClient(host, mongoPort)
 
-      val dbCollection = mongodbClient.getDB(database).getCollection(collection)
+      val dbCollection = mongodbClient.getDB(db).getCollection(collection)
 
       val dbCursor = dbCollection.find()
 
@@ -252,7 +251,7 @@ with ScalaBinaryVersion{
 
       val mongodbClient = new MongoClient(host, mongoPort)
 
-      val dbCollection = mongodbClient.getDB(database).getCollection(collection)
+      val dbCollection = mongodbClient.getDB(db).getCollection(collection)
 
       val dbCursor = dbCollection.find(MongoDBObject("att3" -> "holo"))
 

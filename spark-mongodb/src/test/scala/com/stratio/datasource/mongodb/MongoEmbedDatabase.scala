@@ -16,7 +16,7 @@
 package com.stratio.datasource.mongodb
 
 import com.mongodb.{DBCollection, DBObject, MongoClient}
-import com.stratio.datasource.ScalaBinaryVersion
+import com.stratio.datasource.MongodbTestConstants
 import de.flapdoodle.embed.mongo.config.{MongodConfigBuilder, Net, RuntimeConfigBuilder}
 import de.flapdoodle.embed.mongo.distribution.{IFeatureAwareVersion, Version}
 import de.flapdoodle.embed.mongo.{Command, MongodExecutable, MongodProcess, MongodStarter}
@@ -24,7 +24,7 @@ import de.flapdoodle.embed.process.config.IRuntimeConfig
 import de.flapdoodle.embed.process.config.io.ProcessOutput
 import de.flapdoodle.embed.process.runtime.Network
 
-trait MongoEmbedDatabase extends ScalaBinaryVersion {
+trait MongoEmbedDatabase extends MongodbTestConstants {
   private val runtimeConfig = new RuntimeConfigBuilder()
     .defaults(Command.MongoD)
     .processOutput(ProcessOutput.getDefaultInstanceSilent)
@@ -66,7 +66,7 @@ trait MongoEmbedDatabase extends ScalaBinaryVersion {
     import scala.collection.JavaConverters._
 
     val mongo: MongoClient = new MongoClient("localhost", port)
-    val col: DBCollection = mongo.getDB("testDb").getCollection("testCol")
+    val col: DBCollection = mongo.getDB(db).getCollection("testCol")
     col.insert(dataset.asJava)
   }
 }
