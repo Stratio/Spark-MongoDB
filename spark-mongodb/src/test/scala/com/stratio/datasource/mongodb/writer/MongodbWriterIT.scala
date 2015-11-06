@@ -253,29 +253,21 @@ with MongodbTestConstants{
 
       val dbCollection = mongodbClient.getDB(db).getCollection(collection)
 
-      mongodbClient.getDB(db).getName should be (db)
-
       val dbCursor = dbCollection.find(MongoDBObject("att3" -> "holo"))
 
       import scala.collection.JavaConversions._
 
-      dbCursor.iterator().foreach(println)
-
-      dbCursor.iterator().toList.forall { case obj: BasicDBObject =>
-        obj.getInt("att1") == 1
-      } should be (true)
+      dbCursor.iterator().toList.foreach{ case obj: BasicDBObject =>
+        obj.getInt("att1") should be (1)
+      }
 
       mongodbBatchWriter.saveWithPk(dbUpdateIterator)
 
-      mongodbClient.getDB(db).getName should be (db)
-
       val dbCursor2 = dbCollection.find(MongoDBObject("att3" -> "holo"))
 
-      dbCursor2.iterator().foreach(println)
-
-      dbCursor2.iterator().toList.forall { case obj: BasicDBObject =>
-        obj.getInt("att1") == 2
-      } should be (true)
+      dbCursor2.iterator().toList.foreach { case obj: BasicDBObject =>
+        obj.getInt("att1") should be (2)
+      }
 
     }
   }
