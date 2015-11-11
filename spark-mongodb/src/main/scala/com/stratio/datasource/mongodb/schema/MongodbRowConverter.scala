@@ -22,6 +22,7 @@ import org.apache.spark.sql.Row
 import org.apache.spark.sql.catalyst.expressions.GenericRow
 import org.apache.spark.sql.types.{ArrayType, DataType, StructField, StructType, MapType}
 
+import scala.collection.immutable.ListMap
 import scala.collection.mutable.ArrayBuffer
 
 /**
@@ -80,11 +81,21 @@ with Serializable {
    * @return The converted DBObject
    */
   def rowAsDBObject(row: Row, schema: StructType): DBObject = {
-    val attMap: Map[String, Any] = schema.fields.zipWithIndex.map {
+    val attMap = toListMap(schema.fields.zipWithIndex.map {
       case (att, idx) => (att.name, toDBObject(row(idx),att.dataType))
-    }.toMap
+    })
     attMap
   }
+
+  def toListMap( value: Array[(String, Any)]): ListMap[String, Any] = {
+    var map = ListMap.empty[String, Any]
+
+    for (x <- value)
+      map = map + ((x._1, x._2))
+
+    map
+  }
+
 
   /**
    * It converts some Row attribute value into
