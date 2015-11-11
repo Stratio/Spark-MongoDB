@@ -81,21 +81,11 @@ with Serializable {
    * @return The converted DBObject
    */
   def rowAsDBObject(row: Row, schema: StructType): DBObject = {
-    val attMap = toListMap(schema.fields.zipWithIndex.map {
+    val attMap = ListMap(schema.fields.zipWithIndex.map {
       case (att, idx) => (att.name, toDBObject(row(idx),att.dataType))
-    })
+    }:_*)
     attMap
   }
-
-  def toListMap( value: Array[(String, Any)]): ListMap[String, Any] = {
-    var map = ListMap.empty[String, Any]
-
-    for (x <- value)
-      map = map + ((x._1, x._2))
-
-    map
-  }
-
 
   /**
    * It converts some Row attribute value into
