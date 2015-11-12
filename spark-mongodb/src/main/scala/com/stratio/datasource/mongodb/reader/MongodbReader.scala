@@ -152,12 +152,7 @@ class MongodbReader(
     case _ => value
   }
 
-  private def idAsObjectId: Boolean =
-    if (config.getOrElse[String](MongodbConfig.IdAsObjectId, MongodbConfig.DefaultIdAsObjectId).equalsIgnoreCase("true"))
-      true
-    else
-      false
-
+  private lazy val idAsObjectId: Boolean = config.getOrElse[String](MongodbConfig.IdAsObjectId, MongodbConfig.DefaultIdAsObjectId).equalsIgnoreCase("true")
 
   /**
    *
