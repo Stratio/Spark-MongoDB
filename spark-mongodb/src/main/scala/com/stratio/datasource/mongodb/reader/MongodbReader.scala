@@ -106,17 +106,17 @@ class MongodbReader(
 
       sFilters.foreach {
         case EqualTo(attribute, value) =>
-          queryBuilder.put(attribute).is(value)
+          queryBuilder.put(attribute).is(checkObjectID(attribute, value))
         case GreaterThan(attribute, value) =>
-          queryBuilder.put(attribute).greaterThan(value)
+          queryBuilder.put(attribute).greaterThan(checkObjectID(attribute, value))
         case GreaterThanOrEqual(attribute, value) =>
-          queryBuilder.put(attribute).greaterThanEquals(value)
+          queryBuilder.put(attribute).greaterThanEquals(checkObjectID(attribute, value))
         case In(attribute, values) =>
-          queryBuilder.put(attribute).in(values)
+          queryBuilder.put(attribute).in(values.map(value => checkObjectID(attribute, value)))
         case LessThan(attribute, value) =>
-          queryBuilder.put(attribute).lessThan(value)
+          queryBuilder.put(attribute).lessThan(checkObjectID(attribute, value))
         case LessThanOrEqual(attribute, value) =>
-          queryBuilder.put(attribute).lessThanEquals(value)
+          queryBuilder.put(attribute).lessThanEquals(checkObjectID(attribute, value))
         case IsNull(attribute) =>
           queryBuilder.put(attribute).is(null)
         case IsNotNull(attribute) =>
@@ -138,6 +138,23 @@ class MongodbReader(
     }
 
     filtersToDBObject(filters)
+  }
+
+  /**
+   * Check if the field is "_id" and if the user wants to filter by this field
+   *
+   * @param attribute Name of the file
+   * @param value Value for the attribute
+   * @return The value in the correct data type
+   */
+  private def checkObjectID(attribute: String, value: Any) : Any = {
+    if(attribute.compareTo("_id") == 0)
+      if( config.getOrElse[String](MongodbConfig.ObjectID, MongodbConfig.DefaultObjectID).compareTo(MongodbConfig.DefaultObjectID) == 0)
+        new ObjectId(value.toString)
+      else
+        value.toString
+    else
+      value
   }
 
   /**
