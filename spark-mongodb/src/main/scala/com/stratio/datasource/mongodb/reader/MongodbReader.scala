@@ -141,21 +141,23 @@ class MongodbReader(
   }
 
   /**
-   * Check if the field is "_id" and if the user wants to filter by this field
+   * Check if the field is "_id" and if the user wants to filter by this field as an ObjectId
    *
    * @param attribute Name of the file
    * @param value Value for the attribute
    * @return The value in the correct data type
    */
-  private def checkObjectID(attribute: String, value: Any) : Any = {
-    if(attribute.compareTo("_id") == 0)
-      if( config.getOrElse[String](MongodbConfig.ObjectID, MongodbConfig.DefaultObjectID).compareTo(MongodbConfig.DefaultObjectID) == 0)
-        new ObjectId(value.toString)
-      else
-        value.toString
-    else
-      value
+  private def checkObjectID(attribute: String, value: Any) : Any = attribute  match {
+    case "_id" if idAsObjectId => new ObjectId(value.toString)
+    case _ => value
   }
+
+  private def idAsObjectId: Boolean =
+    if (config.getOrElse[String](MongodbConfig.IdAsObjectId, MongodbConfig.DefaultIdAsObjectId).equalsIgnoreCase("true"))
+      true
+    else
+      false
+
 
   /**
    *
