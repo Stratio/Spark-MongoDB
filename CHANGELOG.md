@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.9.1 (November 2015)
+
+* Bug fixed
+
 ## 0.9.0 (October 2015)
 
 * Mapping config for client
