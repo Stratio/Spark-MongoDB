@@ -25,7 +25,7 @@
     <parent>
         <artifactId>spark-mongodb-parent</artifactId>
         <groupId>com.stratio.datasource</groupId>
-        <version>0.9.1-RC1</version>
+        <version>0.9.1-RC2-SNAPSHOT</version>
     </parent>
     <properties>
         <scala.version>2.11.6</scala.version>
