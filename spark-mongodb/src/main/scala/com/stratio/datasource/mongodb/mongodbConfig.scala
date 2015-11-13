@@ -60,7 +60,6 @@ object MongodbConfig {
   val SamplingRatio = "schema_samplingRatio"
   val SplitSize = "splitSize"
   val SplitKey = "splitKey"
-  val IdField = "_idField"
   val UpdateFields = "updateFields"
   val Language = "language"
 

@@ -35,9 +35,7 @@ with ScalaBinaryVersion{
   private val database: String = "testDb"
   private val collection: String = "testCol"
   private val writeConcern: WriteConcern = WriteConcern.NORMAL
-  private val idField: String = "att2"
-  private val updateField: String = "att3"
-  private val wrongIdField: String = "non-existentColumn"
+  private val updateField: Array[String] = Array("att3")
   private val language: String = "english"
 
 
@@ -55,7 +53,6 @@ with ScalaBinaryVersion{
     .set(MongodbConfig.Collection, collection)
     .set(MongodbConfig.SamplingRatio, 1.0)
     .set(MongodbConfig.WriteConcern, writeConcern)
-    .set(MongodbConfig.IdField, idField)
     .build()
 
   val testConfigWithLanguage = MongodbConfigBuilder()
@@ -73,7 +70,6 @@ with ScalaBinaryVersion{
     .set(MongodbConfig.Collection, collection)
     .set(MongodbConfig.SamplingRatio, 1.0)
     .set(MongodbConfig.WriteConcern, writeConcern)
-    .set(MongodbConfig.IdField, wrongIdField)
     .build()
 
   val testConfigWithUpdateFields = MongodbConfigBuilder()
@@ -166,30 +162,6 @@ with ScalaBinaryVersion{
     }
   }
 
-  it should "manage the primary key rightly, it has to read the same value " +
-    "from the primary key as from the _id column" + scalaBinaryVersion in {
-    withEmbedMongoFixture(List()) { mongodbProc =>
-
-      val mongodbBatchWriter = new MongodbBatchWriter(testConfigWithPk)
-
-      val dbOIterator = List(dbObject).iterator
-
-      mongodbBatchWriter.saveWithPk(dbOIterator)
-
-      val mongodbClient = new MongoClient(host, mongoPort)
-
-      val dbCollection = mongodbClient.getDB(database).getCollection(collection)
-
-      val dbCursor = dbCollection.find()
-
-      import scala.collection.JavaConversions._
-
-      dbCursor.iterator().toList.forall { case obj: BasicDBObject =>
-        obj.get("_id") == obj.get("att2")
-      } should be (true)
-    }
-  }
-
   it should "manage the incorrect primary key, created in a column that" +
     " doesn't exist, rightly" + scalaBinaryVersion in {
     withEmbedMongoFixture(List()) { mongodbProc =>
@@ -242,7 +214,7 @@ with ScalaBinaryVersion{
     "configuration" + scalaBinaryVersion in {
     withEmbedMongoFixture(List()) { mongodbProc =>
 
-      val mongodbBatchWriter = new MongodbBatchWriter(testConfigWithPk)
+      val mongodbBatchWriter = new MongodbBatchWriter(testConfigWithUpdateFields)
 
       val dbOIterator = listDbObject.iterator
 
