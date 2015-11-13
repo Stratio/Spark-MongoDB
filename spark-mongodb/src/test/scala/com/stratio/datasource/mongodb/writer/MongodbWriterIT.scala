@@ -13,6 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/**
+  * Copyright (C) 2015 Stratio (http://stratio.com)
+  *
+  * Licensed under the Apache License, Version 2.0 (the "License");
+  * you may not use this file except in compliance with the License.
+  * You may obtain a copy of the License at
+  *
+  *         http://www.apache.org/licenses/LICENSE-2.0
+  *
+  * Unless required by applicable law or agreed to in writing, software
+  * distributed under the License is distributed on an "AS IS" BASIS,
+  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+  */
 package com.stratio.datasource.mongodb.writer
 
 import com.mongodb._
@@ -35,7 +50,7 @@ with MongodbTestConstants{
   private val collection: String = "testCol"
   private val writeConcern: WriteConcern = WriteConcern.NORMAL
   private val idField: String = "att2"
-  private val updateField: String = "att3"
+  private val updateField: Array[String] = Array("att3")
   private val wrongIdField: String = "non-existentColumn"
   private val language: String = "english"
 
@@ -94,7 +109,7 @@ with MongodbTestConstants{
 
   val listDbObject = List(
     JSON.parse(
-    """{ "att5" : [ 1 , 2 , 3] ,
+      """{ "att5" : [ 1 , 2 , 3] ,
           "att4" :  null  ,
           "att3" : "hi" ,
           "att6" : { "att61" : 1 , "att62" :  null } ,
@@ -237,11 +252,11 @@ with MongodbTestConstants{
     }
   }
 
-  it should "manage the search fields and the update query, it has to read the same value from the search fields in " +
+  it should "manage the update fields and the update query, it has to read the same value from the fields in " +
     "configuration" + scalaBinaryVersion in {
     withEmbedMongoFixture(List()) { mongodbProc =>
 
-      val mongodbBatchWriter = new MongodbBatchWriter(testConfigWithPk)
+      val mongodbBatchWriter = new MongodbBatchWriter(testConfigWithUpdateFields)
 
       val dbOIterator = listDbObject.iterator
 
