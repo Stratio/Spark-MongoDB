@@ -210,7 +210,7 @@ with ScalaBinaryVersion{
     }
   }
 
-  it should "manage the search fields and the update query, it has to read the same value from the search fields in " +
+  it should "manage the update fields and the update query, it has to read the same value from the fields in " +
     "configuration" + scalaBinaryVersion in {
     withEmbedMongoFixture(List()) { mongodbProc =>
 
@@ -230,17 +230,17 @@ with ScalaBinaryVersion{
 
       import scala.collection.JavaConversions._
 
-      dbCursor.iterator().toList.forall { case obj: BasicDBObject =>
-        obj.getInt("att1") == 1
-      } should be (true)
+      dbCursor.iterator().toList.foreach{ case obj: BasicDBObject =>
+        obj.getInt("att1") should be (1)
+      }
 
       mongodbBatchWriter.saveWithPk(dbUpdateIterator)
 
       val dbCursor2 = dbCollection.find(MongoDBObject("att3" -> "holo"))
 
-      dbCursor2.iterator().toList.forall { case obj: BasicDBObject =>
-        obj.getInt("att1") == 2
-      } should be (true)
+      dbCursor2.iterator().toList.foreach { case obj: BasicDBObject =>
+        obj.getInt("att1") should be (2)
+      }
 
     }
   }
