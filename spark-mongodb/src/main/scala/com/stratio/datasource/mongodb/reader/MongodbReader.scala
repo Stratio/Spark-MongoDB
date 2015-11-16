@@ -24,7 +24,7 @@ import com.stratio.datasource.mongodb.partitioner.MongodbPartition
 import org.apache.spark.Partition
 import org.apache.spark.sql.sources._
 import org.apache.spark.sql.types.UTF8String
-import scala.util.{Failure, Success, Try}
+import scala.util.Try
 import java.util.regex.Pattern
 
 /**
@@ -77,7 +77,6 @@ class MongodbReader(
           case MongodbCredentials(user,database,password) =>
             MongoCredential.createCredential(user,database,password)},
         config.get[MongodbSSLOptions](MongodbConfig.SSLOptions), config.properties.filterKeys(_.contains(MongodbConfig.ListMongoClientOptions))))
-
 
       val emptyFilter = MongoDBObject(List())
       val filter = Try(queryPartition(filters)).getOrElse(emptyFilter)
