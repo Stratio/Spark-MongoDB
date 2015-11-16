@@ -2,7 +2,7 @@
 
 ## 0.9.1 (November 2015)
 
-* Bug fixed
+* Partial NOT filter working
 
 ## 0.9.0 (October 2015)
 
