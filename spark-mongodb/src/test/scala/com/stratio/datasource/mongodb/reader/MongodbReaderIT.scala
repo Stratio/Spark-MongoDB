@@ -202,4 +202,17 @@ with MongodbTestConstants {
     }
 
   }
+
+    it should "retrieve data correctly using a NOT filter" + scalaBinaryVersion in {
+    withEmbedMongoFixture(primitiveFieldAndType5rows) { mongodbProc =>
+
+      val mongoDF = TemporaryTestSQLContext.fromMongoDB(testConfig)
+      mongoDF.registerTempTable("testTable")
+      val result = TemporaryTestSQLContext.sql("SELECT integer FROM testTable WHERE integer NOT BETWEEN 11 AND 15").collect()
+      result.head(0) should be (10)
+
+    }
+
+  }
+
 }
