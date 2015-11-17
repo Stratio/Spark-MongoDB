@@ -74,10 +74,8 @@ abstract class MongodbWriter(config: Config) extends Serializable {
    * @param it DBObject iterator.
    */
   def saveWithPk (it: Iterator[DBObject]): Unit = {
-    val idFieldConfig = config.get[String](MongodbConfig.IdField)
     val languageConfig = config.get[String](MongodbConfig.Language)
     val itModified = it.map { case obj: BasicDBObject => {
-      if(idFieldConfig.isDefined) obj.append("_id", obj.get(idFieldConfig.get))
       if(languageConfig.isDefined) obj.append("language", languageConfig.get)
       obj
     }}

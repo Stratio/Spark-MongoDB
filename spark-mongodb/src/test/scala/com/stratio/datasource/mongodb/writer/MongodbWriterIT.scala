@@ -69,7 +69,6 @@ with MongodbTestConstants{
     .set(MongodbConfig.Collection, collection)
     .set(MongodbConfig.SamplingRatio, 1.0)
     .set(MongodbConfig.WriteConcern, writeConcern)
-    .set(MongodbConfig.IdField, idField)
     .build()
 
   val testConfigWithLanguage = MongodbConfigBuilder()
@@ -87,7 +86,6 @@ with MongodbTestConstants{
     .set(MongodbConfig.Collection, collection)
     .set(MongodbConfig.SamplingRatio, 1.0)
     .set(MongodbConfig.WriteConcern, writeConcern)
-    .set(MongodbConfig.IdField, wrongIdField)
     .build()
 
   val testConfigWithUpdateFields = MongodbConfigBuilder()
@@ -177,30 +175,6 @@ with MongodbTestConstants{
 
       dbCursor.iterator().toList should equal(List(dbObject))
 
-    }
-  }
-
-  it should "manage the primary key rightly, it has to read the same value " +
-    "from the primary key as from the _id column" + scalaBinaryVersion in {
-    withEmbedMongoFixture(List()) { mongodbProc =>
-
-      val mongodbBatchWriter = new MongodbBatchWriter(testConfigWithPk)
-
-      val dbOIterator = List(dbObject).iterator
-
-      mongodbBatchWriter.saveWithPk(dbOIterator)
-
-      val mongodbClient = new MongoClient(host, mongoPort)
-
-      val dbCollection = mongodbClient.getDB(db).getCollection(collection)
-
-      val dbCursor = dbCollection.find()
-
-      import scala.collection.JavaConversions._
-
-      dbCursor.iterator().toList.forall { case obj: BasicDBObject =>
-        obj.get("_id") == obj.get("att2")
-      } should be (true)
     }
   }
 
