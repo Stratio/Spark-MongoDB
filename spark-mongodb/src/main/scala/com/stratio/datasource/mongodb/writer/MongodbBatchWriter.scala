@@ -20,12 +20,12 @@ import com.stratio.datasource.Config
 import com.stratio.datasource.mongodb.MongodbConfig
 
 /**
- * A batch writer implementation for mongodb writer.
- * The used semantics for storing objects is 'replace'.
- *
- * @param config Configuration parameters (host,database,collection,...)
- * @param batchSize Group size to be inserted via bulk operation
- */
+  * A batch writer implementation for mongodb writer.
+  * The used semantics for storing objects is 'replace'.
+  *
+  * @param config Configuration parameters (host,database,collection,...)
+  * @param batchSize Group size to be inserted via bulk operation
+  */
 class MongodbBatchWriter(
                           config: Config,
                           batchSize: Int = 100) extends MongodbWriter(config) {
@@ -34,31 +34,26 @@ class MongodbBatchWriter(
 
   def save(it: Iterator[DBObject]): Unit = {
     val pkConfig: Option[Array[String]] = config.get[Array[String]](MongodbConfig.UpdateFields)
-    val idFieldConfig: Option[String] = config.get[String](MongodbConfig.IdField)
     it.grouped(batchSize).foreach { group =>
       val bulkOperation = dbCollection.initializeUnorderedBulkOperation
       group.foreach { element =>
-        if (idFieldConfig.isDefined || pkConfig.isDefined) {
-          val query = getUpdateQuery(element, pkConfig, idFieldConfig)
-          if (query.isEmpty) bulkOperation.insert(element) else bulkOperation.find(query).upsert().replaceOne(element)
-        } else bulkOperation.insert(element)
+        val query = getUpdateQuery(element, pkConfig)
+        if (query.isEmpty) bulkOperation.insert(element)
+        else bulkOperation.find(query).upsert().replaceOne(element)
       }
       bulkOperation.execute(config.getOrElse[WriteConcern](MongodbConfig.WriteConcern, MongodbConfig.DefaultWriteConcern))
     }
   }
 
   private def getUpdateQuery(element: DBObject,
-                             pkConfig: Option[Array[String]],
-                             idFieldConfig: Option[String]): Map[String, AnyRef] = {
-    val idValue: Map[String, AnyRef] =
-      if (idFieldConfig.isDefined && element.contains(IdKey)) Map(IdKey -> element.get(IdKey))
-      else Map()
-    if(idValue.isEmpty) {
+                             pkConfig: Option[Array[String]]): Map[String, AnyRef] = {
+    if(element.contains(IdKey)) Map(IdKey -> element.get(IdKey))
+    else {
       val pkValues: Map[String, AnyRef] =
         if (pkConfig.isDefined)
           pkConfig.get.flatMap(field => if (element.contains(field)) Some(field -> element.get(field)) else None).toMap
         else Map()
       pkValues
-    } else idValue
+    }
   }
 }
