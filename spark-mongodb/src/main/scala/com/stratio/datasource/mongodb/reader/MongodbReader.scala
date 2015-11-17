@@ -78,10 +78,13 @@ class MongodbReader(
             MongoCredential.createCredential(user,database,password)},
         config.get[MongodbSSLOptions](MongodbConfig.SSLOptions), config.properties.filterKeys(_.contains(MongodbConfig.ListMongoClientOptions))))
 
+      val emptyFilter = MongoDBObject(List())
+      val filter = Try(queryPartition(filters)).getOrElse(emptyFilter)
+
       dbCursor = (for {
         client <- mongoClient
         collection <- Option(client(config(MongodbConfig.Database))(config(MongodbConfig.Collection)))
-        dbCursor <- Option(collection.find(queryPartition(filters), selectFields(requiredColumns)))
+        dbCursor <- Option(collection.find(filter, selectFields(requiredColumns)))
       } yield {
           mongoPartition.partitionRange.minKey.foreach(min => dbCursor.addSpecial("$min", min))
           mongoPartition.partitionRange.maxKey.foreach(max => dbCursor.addSpecial("$max", max))
@@ -138,7 +141,6 @@ class MongodbReader(
 
       queryBuilder.get
     }
-
     filtersToDBObject(filters)
   }
 
