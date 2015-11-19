@@ -10,7 +10,7 @@ If you are using this Data Source, feel free to briefly share your experience by
 | spark-MongoDB | Apache Spark  | MongoDB  | 
 | ------------- | ------------- | -------- | 
 | 0.10.x        | 1.5.x         | 3.0.x    | 
-| 0.8.2-0.9.2   | 1.4.0         | 3.0.x    | 
+| 0.8.2 - 0.9.2 | 1.4.0         | 3.0.x    | 
 | 0.8.1         | 1.3.0         | 3.0.x    | 
 | 0.8.0         | 1.2.1         | 3.0.x    | 
 
