@@ -104,8 +104,8 @@ class MongodbReader(
   private def queryPartition(
                               filters: Array[Filter]): DBObject = {
 
-    def filtersToDBObject( sFilters: Array[Filter] ): DBObject = {
-      val queryBuilder: QueryBuilder = QueryBuilder.start
+    def filtersToDBObject( sFilters: Array[Filter], queryBuilderNotFilter: Option[QueryBuilder] = None ): DBObject = {
+      val queryBuilder: QueryBuilder = queryBuilderNotFilter.getOrElse(QueryBuilder.start)
 
       sFilters.foreach {
         case EqualTo(attribute, value) =>
@@ -134,7 +134,9 @@ class MongodbReader(
           queryBuilder.put(attribute).regex(Pattern.compile("^.*" + value + "$"))
         case StringContains(attribute, value) =>
           queryBuilder.put(attribute).regex(Pattern.compile(".*" + value + ".*"))
-        // TODO Not filter
+        case Not(filter) =>
+          filtersToDBObject(Array(filter), Some(QueryBuilder.start().not()))
+
       }
 
       queryBuilder.get
