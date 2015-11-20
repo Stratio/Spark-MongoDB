@@ -104,8 +104,10 @@ class MongodbReader(
   private def queryPartition(
                               filters: Array[Filter]): DBObject = {
 
-    def filtersToDBObject( sFilters: Array[Filter], queryBuilderNotFilter: Option[QueryBuilder] = None ): DBObject = {
-      val queryBuilder: QueryBuilder = queryBuilderNotFilter.getOrElse(QueryBuilder.start)
+    def filtersToDBObject( sFilters: Array[Filter], parentFilterIsNot: Boolean = false ): DBObject = {
+      val queryBuilder: QueryBuilder = QueryBuilder.start
+
+      if (parentFilterIsNot) queryBuilder.not()
 
       sFilters.foreach {
         case EqualTo(attribute, value) =>
@@ -124,24 +126,21 @@ class MongodbReader(
           queryBuilder.put(attribute).is(null)
         case IsNotNull(attribute) =>
           queryBuilder.put(attribute).notEquals(null)
-        case And(leftFilter, rightFilter) =>
+        case And(leftFilter, rightFilter) if !parentFilterIsNot =>
           queryBuilder.and(filtersToDBObject(Array(leftFilter)), filtersToDBObject(Array(rightFilter)))
-        case Or(leftFilter, rightFilter) =>
+        case Or(leftFilter, rightFilter)  if !parentFilterIsNot =>
           queryBuilder.or(filtersToDBObject(Array(leftFilter)), filtersToDBObject(Array(rightFilter)))
-        case StringStartsWith(attribute, value) =>
+        case StringStartsWith(attribute, value) if !parentFilterIsNot =>
           queryBuilder.put(attribute).regex(Pattern.compile("^" + value + ".*$"))
-        case StringEndsWith(attribute, value) =>
+        case StringEndsWith(attribute, value) if !parentFilterIsNot =>
           queryBuilder.put(attribute).regex(Pattern.compile("^.*" + value + "$"))
-        case StringContains(attribute, value) =>
+        case StringContains(attribute, value) if !parentFilterIsNot =>
           queryBuilder.put(attribute).regex(Pattern.compile(".*" + value + ".*"))
         case Not(filter) =>
-          filtersToDBObject(Array(filter), Some(QueryBuilder.start().not()))
-
+          filtersToDBObject(Array(filter), true)
       }
-
       queryBuilder.get
     }
-
     filtersToDBObject(filters)
   }
 
