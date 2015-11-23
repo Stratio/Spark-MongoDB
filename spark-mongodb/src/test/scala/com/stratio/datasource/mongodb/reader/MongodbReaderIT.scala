@@ -25,6 +25,7 @@ import com.stratio.datasource.MongodbTestConstants
 import com.stratio.datasource.mongodb._
 import com.stratio.datasource.mongodb.partitioner.MongodbPartition
 import com.stratio.datasource.partitioner.PartitionRange
+import org.apache.spark.sql.Row
 import org.apache.spark.sql.mongodb.{TemporaryTestSQLContext, TestSQLContext}
 import org.apache.spark.sql.sources.{EqualTo, Filter}
 import org.apache.spark.sql.types._
@@ -200,7 +201,6 @@ with MongodbTestConstants {
 
       }
     }
-
   }
 
     it should "retrieve data correctly using a NOT filter" + scalaBinaryVersion in {
@@ -208,11 +208,23 @@ with MongodbTestConstants {
 
       val mongoDF = TemporaryTestSQLContext.fromMongoDB(testConfig)
       mongoDF.registerTempTable("testTable")
-      val result = TemporaryTestSQLContext.sql("SELECT integer FROM testTable WHERE integer NOT BETWEEN 11 AND 15").collect()
-      result.head(0) should be (10)
+
+      val resultNotBetween = TemporaryTestSQLContext.sql("SELECT integer FROM testTable WHERE integer NOT BETWEEN 11 AND 15").collect()
+      resultNotBetween.head(0) should be (10)
+
+      val resultEqualToAndNotBetween = TemporaryTestSQLContext.sql("SELECT integer FROM testTable WHERE integer = 11 AND integer NOT BETWEEN 12 AND 15").collect()
+      resultEqualToAndNotBetween.head(0) should be (11)
+
+      val resultNotLike = TemporaryTestSQLContext.sql("SELECT string FROM testTable WHERE string NOT LIKE '%third%'").collect()
+
+      val notLike = Array(Row("this is a simple string."),
+        Row("this is another simple string."),
+        Row("this is the forth simple string."),
+        Row("this is the fifth simple string."))
+
+      resultNotLike should be (notLike)
 
     }
-
   }
 
 }
