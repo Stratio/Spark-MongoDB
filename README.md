@@ -5,7 +5,12 @@ from/into MongoDB collections.
 
 If you are using this Data Source, feel free to briefly share your experience by Pull Request this [file](https://github.com/Stratio/spark-mongodb/blob/master/doc/src/site/sphinx/PoweredBy.rst).
 
-## Latest compatible versions##
+
+## Requirements##
+
+This library requires Apache Spark, Scala 2.10 or Scala 2.11, Casbah 2.8.X
+
+#### Latest compatible versions####
 
 | spark-MongoDB | Apache Spark  | MongoDB  | 
 | ------------- | ------------- | -------- | 
@@ -16,8 +21,6 @@ If you are using this Data Source, feel free to briefly share your experience by
 
 
 ## How to use Spark-MongoDB##
-
-Requirements of this project can be found in [about] (<https://github.com/Stratio/spark-mongodb/blob/master/doc/src/site/sphinx/about.rst>).
 
 There also exists a [First Steps] (<https://github.com/Stratio/spark-mongodb/blob/master/doc/src/site/sphinx/First_Steps.rst>) document where we show some simple examples.
 
