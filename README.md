@@ -24,6 +24,13 @@ This library requires Apache Spark, Scala 2.10 or Scala 2.11, Casbah 2.8.X
 
 There also exists a [First Steps] (<https://github.com/Stratio/spark-mongodb/blob/master/doc/src/site/sphinx/First_Steps.rst>) document where we show some simple examples.
 
+- [Using the library](https://github.com/Stratio/spark-mongodb/blob/master/doc/src/site/sphinx/First_Steps.rst#using-the-library)
+- [Configuration parameters](https://github.com/Stratio/spark-mongodb/blob/master/doc/src/site/sphinx/First_Steps.rst#configuration-parameters)
+- [Examples](https://github.com/Stratio/spark-mongodb/blob/master/doc/src/site/sphinx/First_Steps.rst#examples)
+    - [Scala API](https://github.com/Stratio/spark-mongodb/blob/master/doc/src/site/sphinx/First_Steps.rst#scala-api)
+    - [Python API](https://github.com/Stratio/spark-mongodb/blob/master/doc/src/site/sphinx/First_Steps.rst#python-api)
+    - [R API](https://github.com/Stratio/spark-mongodb/blob/master/doc/src/site/sphinx/First_Steps.rst#r-api)
+
 
 
 # License #
