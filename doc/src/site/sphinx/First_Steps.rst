@@ -3,6 +3,21 @@ First steps
 
 We are going to introduce how to use our MongoDB datasource for Apache Spark.
 
+Table of Contents
+*****************
+
+-  `Using the library <#using-the-library>`__
+
+-  `Configuration parameters <#configuration-parameters>`__
+
+-  `Examples <#examples>`__
+
+   -  `Scala API <#scala-api>`__
+   -  `Python API <#python-api>`__
+   -  `R API <#r-api>`__
+
+
+
 Using the library
 =================
 
@@ -125,7 +140,7 @@ To save a DataFrame in MongoDB you should use the saveToMongodb() function as fo
  import com.mongodb.casbah.{WriteConcern => MongodbWriteConcern}
  import com.stratio.datasource.mongodb._
  import MongodbConfig._
- val saveConfig = MongodbConfigBuilder(Map(Host -> List("localhost:27017"), Database -> "highschool", Collection -> "students", SamplingRatio -> 1.0, WriteConcern -> MongodbWriteConcern.Normal, SplitKey -> "_id", SplitSize -> 8, SplitKey -> "_id"))
+ val saveConfig = MongodbConfigBuilder(Map(Host -> List("localhost:27017"), Database -> "highschool", Collection -> "students", SamplingRatio -> 1.0, WriteConcern -> MongodbWriteConcern.Normal, SplitSize -> 8, SplitKey -> "_id"))
  dataFrame.saveToMongodb(saveConfig.build)
 
 
