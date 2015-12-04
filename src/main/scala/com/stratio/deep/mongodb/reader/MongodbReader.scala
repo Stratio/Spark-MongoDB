@@ -25,7 +25,9 @@ import com.stratio.deep.mongodb.MongodbConfig
 import com.stratio.deep.mongodb.partitioner.MongodbPartition
 import org.apache.spark.Partition
 import org.apache.spark.sql.sources._
+import org.bson.types.ObjectId
 import scala.util.Try
+import java.util.regex.Pattern
 
 /**
  *
@@ -98,26 +100,65 @@ class MongodbReader(
    * @return the dB object
    */
   private def queryPartition(
-    filters: Array[Filter]): DBObject = {
+                              filters: Array[Filter]): DBObject = {
 
-    val queryBuilder: QueryBuilder = QueryBuilder.start
+    def filtersToDBObject( sFilters: Array[Filter] ): DBObject = {
+      val queryBuilder: QueryBuilder = QueryBuilder.start
 
-    filters.foreach {
-      case EqualTo(attribute, value) =>
-        queryBuilder.put(attribute).is(value)
-      case GreaterThan(attribute, value) =>
-        queryBuilder.put(attribute).greaterThan(value)
-      case GreaterThanOrEqual(attribute, value) =>
-        queryBuilder.put(attribute).greaterThanEquals(value)
-      case In(attribute, values) =>
-        queryBuilder.put(attribute).in(values)
-      case LessThan(attribute, value) =>
-        queryBuilder.put(attribute).lessThan(value)
-      case LessThanOrEqual(attribute, value) =>
-        queryBuilder.put(attribute).lessThanEquals(value)
+      sFilters.foreach {
+        case EqualTo(attribute, value) =>
+          queryBuilder.put(attribute).is(getValue(attribute, value))
+        case GreaterThan(attribute, value) =>
+          queryBuilder.put(attribute).greaterThan(getValue(attribute, value))
+        case GreaterThanOrEqual(attribute, value) =>
+          queryBuilder.put(attribute).greaterThanEquals(getValue(attribute, value))
+        case In(attribute, values) =>
+          queryBuilder.put(attribute).in(values)
+        case LessThan(attribute, value) =>
+          queryBuilder.put(attribute).lessThan(getValue(attribute, value))
+        case LessThanOrEqual(attribute, value) =>
+          queryBuilder.put(attribute).lessThanEquals(getValue(attribute, value))
+        case IsNull(attribute) =>
+          queryBuilder.put(attribute).is(null)
+        case IsNotNull(attribute) =>
+          queryBuilder.put(attribute).notEquals(null)
+        case And(leftFilter, rightFilter) =>
+          queryBuilder.and(filtersToDBObject(Array(leftFilter)), filtersToDBObject(Array(rightFilter)))
+        case Or(leftFilter, rightFilter) =>
+          queryBuilder.or(filtersToDBObject(Array(leftFilter)), filtersToDBObject(Array(rightFilter)))
+        case StringStartsWith(attribute, value) =>
+          queryBuilder.put(attribute).regex(Pattern.compile("^" + value + ".*$"))
+        case StringEndsWith(attribute, value) =>
+          queryBuilder.put(attribute).regex(Pattern.compile("^.*" + value + "$"))
+        case StringContains(attribute, value) =>
+          queryBuilder.put(attribute).regex(Pattern.compile(".*" + value + ".*"))
+        // TODO Not filter
+      }
+
+      queryBuilder.get
     }
-    queryBuilder.get
 
+    filtersToDBObject(filters)
+  }
+
+  private val OBJECT_ID_REGEX = "ObjectId\\([\"'](\\w*)[\"']\\)".r
+
+  //Hack to parse ObjectId fields
+  private def getValue(attribute: String, value: Any): Any = {
+    return attribute match {
+      case "_id" => {
+        value match {
+          case s: String => {
+            value match {
+              case OBJECT_ID_REGEX(s) => new ObjectId(s)
+              case _ => value
+            }
+          };
+          case _ => value
+        }
+      }
+      case _ => value
+    }
   }
 
   /**
@@ -134,6 +175,8 @@ class MongodbReader(
       })
 
 }
+
+class TimestampField (val value: String)
 
 case class MongodbReadException(
   msg: String,

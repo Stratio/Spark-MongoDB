@@ -23,7 +23,7 @@ import com.stratio.deep.schema.DeepRowConverter
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.catalyst.expressions.GenericRow
-import org.apache.spark.sql.types.{ArrayType, DataType, StructField, StructType}
+import org.apache.spark.sql.types.{ArrayType, DataType, MapType, StructField, StructType}
 
 import scala.collection.mutable.ArrayBuffer
 
@@ -56,12 +56,20 @@ object MongodbRowConverter extends DeepRowConverter[DBObject]
   def recordAsRow(
     json: Map[String, AnyRef],
     schema: StructType): Row = {
-    val values: Seq[Any] = schema.fields.map {
-      case StructField(name, dataType, _, _) =>
-        json.get(name).flatMap(v => Option(v)).map(
-          toSQL(_, dataType)).orNull
+    try {
+      val values: Seq[Any] = schema.fields.map {
+        case StructField(name, dataType, _, _) =>
+          json.get(name).flatMap(v => Option(v)).map(
+            toSQL(_, dataType)).orNull
+      }
+
+      return Row.fromSeq(values)
     }
-    Row.fromSeq(values)
+    catch {
+      case e: Throwable => Console.err.println("Error while converting to SQL: %s => %s. ".format(json, schema), e)
+
+      return null
+    }
   }
 
   /**
@@ -93,6 +101,11 @@ object MongodbRowConverter extends DeepRowConverter[DBObject]
             case obj => toDBObject(obj,elementType)
           }.toList
           list
+        case (MapType(keyType, valueType, _),map: Map[Any@unchecked, Any@unchecked]) =>
+          map.map{
+           obj => (toDBObject(obj._1, keyType), toDBObject(obj._2,valueType))
+          }.toMap
+          map
         case (struct: StructType,value: GenericRow) =>
           rowAsDBObject(value,struct)
         case _ => v
@@ -112,11 +125,14 @@ object MongodbRowConverter extends DeepRowConverter[DBObject]
       dataType match {
         case ArrayType(elementType, _) =>
           value.asInstanceOf[BasicDBList].map(toSQL(_, elementType))
+        case MapType(keyType, valueType, _) =>
+          value.asInstanceOf[BasicDBObject].map(x => (toSQL(x._1, keyType), toSQL(x._2, valueType)))
         case struct: StructType =>
           recordAsRow(dbObjectToMap(value.asInstanceOf[DBObject]), struct)
         case _ =>
           //Assure value is mapped to schema constrained type.
-          enforceCorrectType(value, dataType)
+
+            enforceCorrectType(value, dataType)
       }
     }.orNull
   }

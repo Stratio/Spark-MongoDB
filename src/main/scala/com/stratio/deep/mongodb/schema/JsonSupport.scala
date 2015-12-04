@@ -19,6 +19,8 @@
 package com.stratio.deep.mongodb.schema
 
 import org.apache.spark.sql.types._
+import java.sql.Timestamp
+import org.bson.types.ObjectId
 
 /**
  * Json - Scala object transformation support.
@@ -46,6 +48,7 @@ trait JsonSupport {
         case DoubleType => toDouble(value)
         case DecimalType() => toDecimal(value)
         case BooleanType => value.asInstanceOf[Boolean]
+        case TimestampType => toTimestamp(value)
         case NullType => null
         case _ =>
           sys.error(s"Unsupported datatype conversion [${value.getClass}},$desiredType]")
@@ -87,6 +90,12 @@ trait JsonSupport {
     }
   }
 
+  private def toTimestamp(value: Any): Timestamp = {
+    value match {
+      case value: java.util.Date => new Timestamp(value.getTime)
+    }
+  }
+
   private def toJsonArrayString(seq: Seq[Any]): String = {
     val builder = new StringBuilder
     builder.append("[")
@@ -122,6 +131,7 @@ trait JsonSupport {
     value match {
       case value: Map[_, _] => toJsonObjectString(value.asInstanceOf[Map[String, Any]])
       case value: Seq[_] => toJsonArrayString(value)
+      case value: ObjectId => "ObjectId('%s')".format(value.toHexString())
       case v => Option(v).map(_.toString).orNull
     }
   }
