@@ -22,6 +22,12 @@
 <artifactId>spark-mongodb</artifactId>
 <version>0.8.1.1-SNAPSHOT</version>
 <packaging>jar</packaging>
+    <parent>
+        <groupId>com.stratio</groupId>
+        <artifactId>parent</artifactId>
+        <version>0.5.0</version>
+    </parent>
+    
 <name>spark-mongodb</name>
 <description>A Spark SQl library for MongoDB</description>
 <url>http://github.com/Stratio/spark-mongodb</url>
