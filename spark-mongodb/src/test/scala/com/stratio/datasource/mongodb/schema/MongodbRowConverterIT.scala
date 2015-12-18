@@ -30,6 +30,7 @@ import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.{FlatSpec, Matchers}
 
+import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 
 @RunWith(classOf[JUnitRunner])
@@ -80,7 +81,15 @@ with MongodbTestConstants {
       new StructField("att8", new StructType(
       Array(StructField("att81", IntegerType, false), StructField("att82",
         new ArrayType(StructType(Array(StructField("att821", IntegerType, false),StructField("att822", StringType, false))), false)
-        ,false))), false)
+        ,false))), false),
+    //  Subdocument with List of a document with wrapped array
+    new GenericRow(List(1, new mutable.WrappedArray.ofRef[AnyRef](Array(
+        new GenericRow(List(2,"b").toArray)
+      ))).toArray) ->
+      new StructField("att9", new StructType(
+        Array(StructField("att91", IntegerType, false), StructField("att92",
+          new ArrayType(StructType(Array(StructField("att921", IntegerType, false),StructField("att922", StringType, false))), false)
+          ,false))), false)
   )
 
   val rowSchema = new StructType(valueWithType.map(_._2).toArray)
@@ -95,7 +104,8 @@ with MongodbTestConstants {
           "att2" : 2.0 ,
           "att1" : 1,
           "att7" : {"att71": 1, "att72":{"att721":1, "att722":"b"}},
-          "att8" : {"att81": 1, "att82":[{"att821":2, "att822":"b"}]}
+          "att8" : {"att81": 1, "att82":[{"att821":2, "att822":"b"}]},
+          "att9" : {"att91": 1, "att92":[{"att921":2, "att922":"b"}]}
           }
           """).asInstanceOf[DBObject]
 

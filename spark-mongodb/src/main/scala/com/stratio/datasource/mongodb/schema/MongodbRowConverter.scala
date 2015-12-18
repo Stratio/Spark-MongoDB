@@ -97,7 +97,7 @@ with Serializable {
   def toDBObject(value: Any, dataType: DataType): Any = {
     Option(value).map{v =>
       (dataType,v) match {
-        case (ArrayType(elementType, _),array: ArrayBuffer[Any@unchecked]) =>
+        case (ArrayType(elementType, _),array: Seq[Any@unchecked]) =>
           val list: List[Any] = array.map{
             case obj => toDBObject(obj,elementType)
           }.toList
