@@ -19,7 +19,7 @@ import com.mongodb.casbah.Imports._
 import com.stratio.datasource.schema.RowConverter
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.Row
-import org.apache.spark.sql.catalyst.expressions.GenericRow
+import org.apache.spark.sql.catalyst.expressions.{GenericRow, GenericRowWithSchema}
 import org.apache.spark.sql.types.{ArrayType, DataType, StructField, StructType}
 
 import scala.collection.mutable.ArrayBuffer
@@ -70,7 +70,7 @@ object MongodbRowConverter extends RowConverter[DBObject]
         json.get(name).flatMap(v => Option(v)).map(
           toSQL(_, dataType)).orNull
     }
-    Row.fromSeq(values)
+    new GenericRowWithSchema(values.toArray, schema)
   }
 
   /**
