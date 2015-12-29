@@ -229,7 +229,7 @@ Then:
 
 ::
 
- from pyspark.sql import SQLContext
+ from pyspark.sql import sqlContext
  sqlContext.sql("CREATE TEMPORARY TABLE students_table USING com.stratio.datasource.mongodb OPTIONS (host 'host:port', database 'highschool', collection 'students')")
  sqlContext.sql("SELECT * FROM students_table").collect()
 
