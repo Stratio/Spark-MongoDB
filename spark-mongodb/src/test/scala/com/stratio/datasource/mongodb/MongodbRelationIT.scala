@@ -17,16 +17,19 @@ package com.stratio.datasource.mongodb
 
 import com.mongodb.WriteConcern
 import com.stratio.datasource.MongodbTestConstants
+import com.stratio.datasource.mongodb.client.MongodbClientFactory
+import com.stratio.datasource.mongodb.config.{MongodbCredentials, MongodbConfig, MongodbConfigBuilder}
 import org.apache.spark.sql.mongodb.{TemporaryTestSQLContext, TestSQLContext}
 import org.apache.spark.sql.types._
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 @RunWith(classOf[JUnitRunner])
 class MongodbRelationIT extends FlatSpec
 with Matchers
-with MongodbTestConstants{
+with BeforeAndAfter
+with MongodbTestConstants {
 
   private val host: String = "localhost"
   private val port: Int = 12345
@@ -116,4 +119,9 @@ with MongodbTestConstants{
     mongodbrelation.equals(mongodbrelation3) shouldEqual false
     mongodbrelation.equals(mongodbrelation4) shouldEqual false
   }
+
+  after {
+    MongodbClientFactory.closeAll(false)
+  }
+
 }

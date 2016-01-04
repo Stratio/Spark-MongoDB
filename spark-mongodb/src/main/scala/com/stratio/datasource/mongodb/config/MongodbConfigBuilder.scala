@@ -13,20 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.stratio.datasource.mongodb.writer
 
-import com.mongodb.casbah.Imports._
-import com.stratio.datasource.mongodb.config.MongodbConfig
-import com.stratio.datasource.util.Config
+package com.stratio.datasource.mongodb.config
+
+import com.stratio.datasource.util.{Config, ConfigBuilder}
+import Config._
 
 /**
- * A simple mongodb writer.
- *
- * @param config Configuration parameters (host,database,collection,...)
+ * A specialized Mongo configuration builder.
+ * It focuses on mongodb config parameters
+ * such as host,database,collection, samplingRatio (for schema infer)
+ * @param props Initial properties map
  */
-class MongodbSimpleWriter(config: Config) extends MongodbWriter(config) {
 
-  override def save(it: Iterator[DBObject]): Unit =
-    it.foreach(dbo => dbCollection.save(dbo, writeConcern))
+case class MongodbConfigBuilder(props: Map[Property, Any] = Map()) extends {
 
+  override val properties = Map() ++ props
+
+} with ConfigBuilder[MongodbConfigBuilder](properties) {
+
+  val requiredProperties: List[Property] = MongodbConfig.required
+
+  def apply(props: Map[Property, Any]) = MongodbConfigBuilder(props)
 }

@@ -13,9 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.stratio.datasource
+package com.stratio.datasource.mongodb.config
 
-import com.stratio.datasource.Config.Property
+import com.stratio.datasource.util.{Config, ConfigBuilder}
+import com.stratio.datasource.MongodbTestConstants
+import Config.Property
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.{FlatSpec, Matchers}

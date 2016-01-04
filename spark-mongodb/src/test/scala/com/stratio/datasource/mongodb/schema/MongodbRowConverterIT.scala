@@ -18,6 +18,8 @@ package com.stratio.datasource.mongodb.schema
 import com.mongodb.DBObject
 import com.mongodb.util.JSON
 import com.stratio.datasource.MongodbTestConstants
+import com.stratio.datasource.mongodb.client.MongodbClientFactory
+import com.stratio.datasource.mongodb.config.{MongodbConfig, MongodbConfigBuilder}
 import com.stratio.datasource.mongodb.partitioner.MongodbPartitioner
 import com.stratio.datasource.mongodb.rdd.MongodbRDD
 import com.stratio.datasource.mongodb.schema.MongodbRowConverter._
@@ -28,7 +30,7 @@ import org.apache.spark.sql.mongodb.{TemporaryTestSQLContext, TestSQLContext}
 import org.apache.spark.sql.types._
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
@@ -38,7 +40,8 @@ class MongodbRowConverterIT extends FlatSpec
 with Matchers
 with MongoEmbedDatabase
 with TestBsonData
-with MongodbTestConstants {
+with MongodbTestConstants
+with BeforeAndAfter {
 
   private val host: String = "localhost"
   private val collection: String = "testCol"
@@ -131,6 +134,10 @@ with MongodbTestConstants {
         .asRow(schema,mongodbRDD)
         .collect().toList should equal(List(collected))
     }
+  }
+
+  after {
+    MongodbClientFactory.closeAll(false)
   }
 
 }

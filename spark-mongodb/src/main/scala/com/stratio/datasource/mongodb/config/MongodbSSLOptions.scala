@@ -13,9 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.stratio.datasource.mongodb
 
-case class MongodbCredentials(
-  user: String,
-  database: String,
-  password: Array[Char])
+package com.stratio.datasource.mongodb.config
+
+import scala.language.implicitConversions
+
+/**
+ * Case class with the SSL options.
+ */
+case class MongodbSSLOptions(keyStore: Option[String] = None,
+                              keyStorePassword: Option[String] = None,
+                              trustStore: String,
+                              trustStorePassword: Option[String] = None)
+
+object MongodbSSLOptions {
+
+  implicit def stringToOption(parameter: String): Option[String] = Some(parameter)
+}

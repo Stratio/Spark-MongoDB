@@ -13,20 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.stratio.datasource.mongodb.writer
-
-import com.mongodb.casbah.Imports._
-import com.stratio.datasource.mongodb.config.MongodbConfig
-import com.stratio.datasource.util.Config
+package com.stratio.datasource.mongodb.client
 
 /**
- * A simple mongodb writer.
- *
- * @param config Configuration parameters (host,database,collection,...)
+ * Different statuses for one mongoDbClient connection
  */
-class MongodbSimpleWriter(config: Config) extends MongodbWriter(config) {
+object ConnectionStatus extends Enumeration {
 
-  override def save(it: Iterator[DBObject]): Unit =
-    it.foreach(dbo => dbCollection.save(dbo, writeConcern))
+  type ConnectionStatus = Value
 
+  val Busy, Free = Value
 }

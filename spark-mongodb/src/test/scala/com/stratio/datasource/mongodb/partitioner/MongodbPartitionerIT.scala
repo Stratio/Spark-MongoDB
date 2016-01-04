@@ -19,6 +19,8 @@ import com.mongodb.DBObject
 import com.mongodb.util.JSON
 import com.stratio.datasource.MongodbTestConstants
 import com.stratio.datasource.mongodb._
+import com.stratio.datasource.mongodb.client.MongodbClientFactory
+import com.stratio.datasource.mongodb.config.{MongodbConfig, MongodbConfigBuilder}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.{BeforeAndAfter, Matchers, FlatSpec}
@@ -82,5 +84,8 @@ with MongodbTestConstants {
     }.map(_._2)
   }
 
+  after {
+    MongodbClientFactory.closeAll(false)
+  }
 
 }

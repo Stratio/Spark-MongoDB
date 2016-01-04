@@ -13,20 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.stratio.datasource.mongodb.writer
 
-import com.mongodb.casbah.Imports._
-import com.stratio.datasource.mongodb.config.MongodbConfig
+package com.stratio.datasource.mongodb
+
 import com.stratio.datasource.util.Config
+import org.apache.spark.sql.{DataFrame, SQLContext}
+import org.apache.spark.sql.types.StructType
+
+import scala.language.implicitConversions
 
 /**
- * A simple mongodb writer.
- *
- * @param config Configuration parameters (host,database,collection,...)
+ * @param sqlContext Spark SQLContext
  */
-class MongodbSimpleWriter(config: Config) extends MongodbWriter(config) {
+class MongodbContext(sqlContext: SQLContext) {
 
-  override def save(it: Iterator[DBObject]): Unit =
-    it.foreach(dbo => dbCollection.save(dbo, writeConcern))
+  /**
+   * It retrieves a bunch of MongoDB objects
+   * given a MongDB configuration object.
+   * @param config MongoDB configuration object
+   * @return A dataFrame
+   */
+  def fromMongoDB(config: Config,schema:Option[StructType]=None): DataFrame =
+    sqlContext.baseRelationToDataFrame(
+      new MongodbRelation(config, schema)(sqlContext))
 
 }
