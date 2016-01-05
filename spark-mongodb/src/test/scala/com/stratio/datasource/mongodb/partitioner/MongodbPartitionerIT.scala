@@ -23,7 +23,7 @@ import com.stratio.datasource.mongodb.client.MongodbClientFactory
 import com.stratio.datasource.mongodb.config.{MongodbConfig, MongodbConfigBuilder}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
-import org.scalatest.{BeforeAndAfter, Matchers, FlatSpec}
+import org.scalatest.{BeforeAndAfterAll, BeforeAndAfter, Matchers, FlatSpec}
 
 @RunWith(classOf[JUnitRunner])
 class MongodbPartitionerIT extends FlatSpec
@@ -31,7 +31,8 @@ with BeforeAndAfter
 with Matchers
 with MongoClusterEmbedDatabase
 with TestBsonData
-with MongodbTestConstants {
+with MongodbTestConstants
+with BeforeAndAfterAll {
 
   val configServerPorts = List(mongoPort+10)
   val database = "database-1"
@@ -84,7 +85,7 @@ with MongodbTestConstants {
     }.map(_._2)
   }
 
-  after {
+  override def afterAll {
     MongodbClientFactory.closeAll(false)
   }
 

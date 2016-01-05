@@ -33,7 +33,7 @@ import org.apache.spark.sql.sources.{EqualTo, Filter}
 import org.apache.spark.sql.types._
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
+import org.scalatest.{BeforeAndAfterAll, BeforeAndAfter, FlatSpec, Matchers}
 
 @RunWith(classOf[JUnitRunner])
 class MongodbReaderIT extends FlatSpec
@@ -41,7 +41,7 @@ with Matchers
 with MongoEmbedDatabase
 with TestBsonData
 with MongodbTestConstants
-with BeforeAndAfter{
+with BeforeAndAfterAll {
 
   private val host: String = "localhost"
   private val collection: String = "testCol"
@@ -233,7 +233,7 @@ with BeforeAndAfter{
   }
 
 
-  after {
+  override def afterAll {
     MongodbClientFactory.closeAll(false)
   }
 
