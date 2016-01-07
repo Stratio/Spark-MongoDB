@@ -72,7 +72,7 @@ object MongodbRowConverter extends RowConverter[DBObject]
         val colName = mdata.getString("colname")
         val idx = mdata.getLong("idx").toInt
         json.get(colName).flatMap(v => Option(v)).map(toSQL(_, ArrayType(et, true))).collect {
-          case elemsList: ArrayBuffer[_] if((0 until elemsList.size) contains idx) => elemsList(idx)
+          case elemsList: Seq[_] if((0 until elemsList.size) contains idx) => elemsList(idx)
         } orNull
       case StructField(name, dataType, _, _) =>
         json.get(name).flatMap(v => Option(v)).map(
