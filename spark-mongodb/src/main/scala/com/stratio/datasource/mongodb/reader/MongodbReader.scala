@@ -107,6 +107,8 @@ class MongodbReader(
       sFilters.foreach {
         case EqualTo(attribute, value) =>
           queryBuilder.put(attribute).is(value)
+        case EqualNullSafe(attribute, value) =>
+          queryBuilder.put(attribute).is(value)
         case GreaterThan(attribute, value) =>
           queryBuilder.put(attribute).greaterThan(value)
         case GreaterThanOrEqual(attribute, value) =>
