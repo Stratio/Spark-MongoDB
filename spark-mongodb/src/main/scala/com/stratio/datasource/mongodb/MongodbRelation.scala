@@ -122,9 +122,13 @@ object MongodbRelation {
    */
   def pruneSchema(
     schema: StructType,
-    requiredColumns: Array[String]): StructType =
+    requiredColumns: Array[String]): StructType = {
+
+    val name2sfield: Map[String, StructField] = schema.fields.map(f => f.name -> f).toMap
     StructType(
-      requiredColumns.flatMap(column =>
-        schema.fields.find(_.name == column)))
+      requiredColumns.flatMap(name2sfield.get(_))
+    )
+
+  }
 
 }
