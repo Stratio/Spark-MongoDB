@@ -19,8 +19,8 @@ import com.mongodb.casbah.Imports._
 import com.stratio.datasource.schema.RowConverter
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.Row
-import org.apache.spark.sql.catalyst.expressions.{GenericRow, GenericRowWithSchema}
-import org.apache.spark.sql.types.{ArrayType, DataType, StructField, StructType}
+import org.apache.spark.sql.catalyst.expressions.{GenericRowWithSchema, GenericRow}
+import org.apache.spark.sql.types._
 
 import scala.collection.mutable.ArrayBuffer
 
@@ -65,13 +65,22 @@ object MongodbRowConverter extends RowConverter[DBObject]
   def recordAsRow(
     json: Map[String, AnyRef],
     schema: StructType): Row = {
+
     val values: Seq[Any] = schema.fields.map {
+      case StructField(name, et, _, mdata)
+        if(mdata.contains("idx") && mdata.contains("colname")) =>
+        val colName = mdata.getString("colname")
+        val idx = mdata.getLong("idx").toInt
+        json.get(colName).flatMap(v => Option(v)).map(toSQL(_, ArrayType(et, true))).collect {
+          case elemsList: ArrayBuffer[_] if((0 until elemsList.size) contains idx) => elemsList(idx)
+        } orNull
       case StructField(name, dataType, _, _) =>
         json.get(name).flatMap(v => Option(v)).map(
           toSQL(_, dataType)).orNull
     }
     new GenericRowWithSchema(values.toArray, schema)
   }
+
 
   /**
    * Given a schema, it converts a Row into a DBObject

@@ -123,8 +123,34 @@ object MongodbRelation {
   def pruneSchema(
     schema: StructType,
     requiredColumns: Array[String]): StructType =
+    pruneSchema(schema, requiredColumns.map(_ -> None): Array[(String, Option[Int])])
+
+
+  /**
+    * Prune whole schema in order to fit with
+    * required columns taking in consideration nested columns (array elements) in Spark SQL statement.
+    * @param schema Whole field projection schema.
+    * @param requiredColumnsWithIndex Required fields in statement including index within field for random accesses.
+    * @return A new pruned schema
+    */
+  private[this] def pruneSchema(
+                                          schema: StructType,
+                                          requiredColumnsWithIndex: Array[(String, Option[Int])]): StructType = {
+    val name2sfield: Map[String, StructField] = schema.fields.map(f => f.name -> f).toMap
     StructType(
-      requiredColumns.flatMap(column =>
-        schema.fields.find(_.name == column)))
+      requiredColumnsWithIndex.flatMap {
+        case (colname, None) => name2sfield.get(colname)
+        case (colname, Some(idx)) => name2sfield.get(colname) collect {
+          case field @ StructField(name, ArrayType(et,_), nullable, _) =>
+            val mdataBuilder = new MetadataBuilder
+            //Non-functional area
+            mdataBuilder.putLong("idx", idx.toLong)
+            mdataBuilder.putString("colname", name)
+            //End of non-functional area
+            StructField(s"$name[$idx]", et, true, mdataBuilder.build())
+        }
+      }
+    )
+  }
 
 }
