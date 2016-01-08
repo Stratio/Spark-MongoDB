@@ -1,5 +1,5 @@
 ============
-Powered By
+Powered by
 ============
 
 If you are using this Data Source, feel free to briefly share your experience by Pull Request.
@@ -9,8 +9,8 @@ If you are using this Data Source, feel free to briefly share your experience by
 Companies
 ***************
 
-* `Stratio Connectors <http://stratio.com>`_ : Description of use case.
-
+- `Stratio platform <http://www.stratio.com/>`_:
+      - `Crossdata <https://github.com/Stratio/crossdata>`_: Crossdata uses spark-mongodb datasource as a piece of the MongoDB connector.
 
 
 
