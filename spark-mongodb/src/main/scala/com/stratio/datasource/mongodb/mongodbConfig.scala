@@ -56,11 +56,11 @@ object MongodbConfig {
   val ThreadsAllowedToBlockForConnectionMultiplier = "threadsAllowedToBlockForConnectionMultiplier"
   val WriteConcern = "writeConcern"
   val Credentials = "credentials"
+  val IdAsObjectId = "idasobjectid"
 
   val SamplingRatio = "schema_samplingRatio"
   val SplitSize = "splitSize"
   val SplitKey = "splitKey"
-  val IdField = "_idField"
   val UpdateFields = "updateFields"
   val Language = "language"
 
@@ -90,6 +90,7 @@ object MongodbConfig {
   val DefaultThreadsAllowedToBlockForConnectionMultiplier= DefaultMongoClientOptions.getThreadsAllowedToBlockForConnectionMultiplier
   val DefaultWriteConcern = DefaultMongoClientOptions.getWriteConcern
   val DefaultCredentials = List[MongodbCredentials]()
+  val DefaultIdAsObjectId = "true"
 
   // Default datasource specific values
   val DefaultSamplingRatio = 1.0

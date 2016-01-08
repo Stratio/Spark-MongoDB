@@ -13,12 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/**
+  * Copyright (C) 2015 Stratio (http://stratio.com)
+  *
+  * Licensed under the Apache License, Version 2.0 (the "License");
+  * you may not use this file except in compliance with the License.
+  * You may obtain a copy of the License at
+  *
+  *         http://www.apache.org/licenses/LICENSE-2.0
+  *
+  * Unless required by applicable law or agreed to in writing, software
+  * distributed under the License is distributed on an "AS IS" BASIS,
+  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+  */
 package com.stratio.datasource.mongodb.writer
 
 import com.mongodb._
 import com.mongodb.casbah.commons.MongoDBObject
 import com.mongodb.util.JSON
-import com.stratio.datasource.ScalaBinaryVersion
+import com.stratio.datasource.MongodbTestConstants
 import com.stratio.datasource.mongodb.{MongoEmbedDatabase, TestBsonData, MongodbConfig, MongodbConfigBuilder}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
@@ -29,21 +44,20 @@ class MongodbWriterIT extends FlatSpec
 with Matchers
 with MongoEmbedDatabase
 with TestBsonData
-with ScalaBinaryVersion{
+with MongodbTestConstants{
 
   private val host: String = "localhost"
-  private val database: String = "testDb"
   private val collection: String = "testCol"
   private val writeConcern: WriteConcern = WriteConcern.NORMAL
   private val idField: String = "att2"
-  private val updateField: String = "att3"
+  private val updateField: Array[String] = Array("att3")
   private val wrongIdField: String = "non-existentColumn"
   private val language: String = "english"
 
 
   val testConfig = MongodbConfigBuilder()
     .set(MongodbConfig.Host, List(host + ":" + mongoPort))
-    .set(MongodbConfig.Database, database)
+    .set(MongodbConfig.Database, db)
     .set(MongodbConfig.Collection, collection)
     .set(MongodbConfig.SamplingRatio, 1.0)
     .set(MongodbConfig.WriteConcern, writeConcern)
@@ -51,16 +65,15 @@ with ScalaBinaryVersion{
 
   val testConfigWithPk = MongodbConfigBuilder()
     .set(MongodbConfig.Host, List(host + ":" + mongoPort))
-    .set(MongodbConfig.Database, database)
+    .set(MongodbConfig.Database, db)
     .set(MongodbConfig.Collection, collection)
     .set(MongodbConfig.SamplingRatio, 1.0)
     .set(MongodbConfig.WriteConcern, writeConcern)
-    .set(MongodbConfig.IdField, idField)
     .build()
 
   val testConfigWithLanguage = MongodbConfigBuilder()
     .set(MongodbConfig.Host, List(host + ":" + mongoPort))
-    .set(MongodbConfig.Database, database)
+    .set(MongodbConfig.Database, db)
     .set(MongodbConfig.Collection, collection)
     .set(MongodbConfig.SamplingRatio, 1.0)
     .set(MongodbConfig.WriteConcern, writeConcern)
@@ -69,16 +82,15 @@ with ScalaBinaryVersion{
 
   val testConfigWithWrongPk = MongodbConfigBuilder()
     .set(MongodbConfig.Host, List(host + ":" + mongoPort))
-    .set(MongodbConfig.Database, database)
+    .set(MongodbConfig.Database, db)
     .set(MongodbConfig.Collection, collection)
     .set(MongodbConfig.SamplingRatio, 1.0)
     .set(MongodbConfig.WriteConcern, writeConcern)
-    .set(MongodbConfig.IdField, wrongIdField)
     .build()
 
   val testConfigWithUpdateFields = MongodbConfigBuilder()
     .set(MongodbConfig.Host, List(host + ":" + mongoPort))
-    .set(MongodbConfig.Database, database)
+    .set(MongodbConfig.Database, db)
     .set(MongodbConfig.Collection, collection)
     .set(MongodbConfig.SamplingRatio, 1.0)
     .set(MongodbConfig.WriteConcern, writeConcern)
@@ -95,7 +107,7 @@ with ScalaBinaryVersion{
 
   val listDbObject = List(
     JSON.parse(
-    """{ "att5" : [ 1 , 2 , 3] ,
+      """{ "att5" : [ 1 , 2 , 3] ,
           "att4" :  null  ,
           "att3" : "hi" ,
           "att6" : { "att61" : 1 , "att62" :  null } ,
@@ -132,7 +144,7 @@ with ScalaBinaryVersion{
 
       val mongodbClient = new MongoClient(host, mongoPort)
 
-      val dbCollection = mongodbClient.getDB(database).getCollection(collection)
+      val dbCollection = mongodbClient.getDB(db).getCollection(collection)
 
       val dbCursor = dbCollection.find()
 
@@ -155,7 +167,7 @@ with ScalaBinaryVersion{
 
       val mongodbClient = new MongoClient(host, mongoPort)
 
-      val dbCollection = mongodbClient.getDB(database).getCollection(collection)
+      val dbCollection = mongodbClient.getDB(db).getCollection(collection)
 
       val dbCursor = dbCollection.find()
 
@@ -163,30 +175,6 @@ with ScalaBinaryVersion{
 
       dbCursor.iterator().toList should equal(List(dbObject))
 
-    }
-  }
-
-  it should "manage the primary key rightly, it has to read the same value " +
-    "from the primary key as from the _id column" + scalaBinaryVersion in {
-    withEmbedMongoFixture(List()) { mongodbProc =>
-
-      val mongodbBatchWriter = new MongodbBatchWriter(testConfigWithPk)
-
-      val dbOIterator = List(dbObject).iterator
-
-      mongodbBatchWriter.saveWithPk(dbOIterator)
-
-      val mongodbClient = new MongoClient(host, mongoPort)
-
-      val dbCollection = mongodbClient.getDB(database).getCollection(collection)
-
-      val dbCursor = dbCollection.find()
-
-      import scala.collection.JavaConversions._
-
-      dbCursor.iterator().toList.forall { case obj: BasicDBObject =>
-        obj.get("_id") == obj.get("att2")
-      } should be (true)
     }
   }
 
@@ -202,7 +190,7 @@ with ScalaBinaryVersion{
 
       val mongodbClient = new MongoClient(host, mongoPort)
 
-      val dbCollection = mongodbClient.getDB(database).getCollection(collection)
+      val dbCollection = mongodbClient.getDB(db).getCollection(collection)
 
       val dbCursor = dbCollection.find()
 
@@ -226,7 +214,7 @@ with ScalaBinaryVersion{
 
       val mongodbClient = new MongoClient(host, mongoPort)
 
-      val dbCollection = mongodbClient.getDB(database).getCollection(collection)
+      val dbCollection = mongodbClient.getDB(db).getCollection(collection)
 
       val dbCursor = dbCollection.find()
 
@@ -238,11 +226,11 @@ with ScalaBinaryVersion{
     }
   }
 
-  it should "manage the search fields and the update query, it has to read the same value from the search fields in " +
+  it should "manage the update fields and the update query, it has to read the same value from the fields in " +
     "configuration" + scalaBinaryVersion in {
     withEmbedMongoFixture(List()) { mongodbProc =>
 
-      val mongodbBatchWriter = new MongodbBatchWriter(testConfigWithPk)
+      val mongodbBatchWriter = new MongodbBatchWriter(testConfigWithUpdateFields)
 
       val dbOIterator = listDbObject.iterator
 
@@ -252,23 +240,23 @@ with ScalaBinaryVersion{
 
       val mongodbClient = new MongoClient(host, mongoPort)
 
-      val dbCollection = mongodbClient.getDB(database).getCollection(collection)
+      val dbCollection = mongodbClient.getDB(db).getCollection(collection)
 
       val dbCursor = dbCollection.find(MongoDBObject("att3" -> "holo"))
 
       import scala.collection.JavaConversions._
 
-      dbCursor.iterator().toList.forall { case obj: BasicDBObject =>
-        obj.getInt("att1") == 1
-      } should be (true)
+      dbCursor.iterator().toList.foreach{ case obj: BasicDBObject =>
+        obj.getInt("att1") should be (1)
+      }
 
       mongodbBatchWriter.saveWithPk(dbUpdateIterator)
 
       val dbCursor2 = dbCollection.find(MongoDBObject("att3" -> "holo"))
 
-      dbCursor2.iterator().toList.forall { case obj: BasicDBObject =>
-        obj.getInt("att1") == 2
-      } should be (true)
+      dbCursor2.iterator().toList.foreach { case obj: BasicDBObject =>
+        obj.getInt("att1") should be (2)
+      }
 
     }
   }

@@ -22,6 +22,7 @@ import org.apache.spark.sql.Row
 import org.apache.spark.sql.catalyst.expressions.{GenericRowWithSchema, GenericRow}
 import org.apache.spark.sql.types._
 
+import scala.collection.immutable.ListMap
 import scala.collection.mutable.ArrayBuffer
 
 /**
@@ -81,7 +82,6 @@ object MongodbRowConverter extends RowConverter[DBObject]
     new GenericRowWithSchema(values.toArray, schema)
   }
 
-
   /**
    * Given a schema, it converts a Row into a DBObject
    * @param row Row to be converted
@@ -89,9 +89,9 @@ object MongodbRowConverter extends RowConverter[DBObject]
    * @return The converted DBObject
    */
   def rowAsDBObject(row: Row, schema: StructType): DBObject = {
-    val attMap: Map[String, Any] = schema.fields.zipWithIndex.map {
+    val attMap = ListMap(schema.fields.zipWithIndex.map {
       case (att, idx) => (att.name, toDBObject(row(idx),att.dataType))
-    }.toMap
+    }:_*)
     attMap
   }
 
@@ -105,7 +105,7 @@ object MongodbRowConverter extends RowConverter[DBObject]
   def toDBObject(value: Any, dataType: DataType): Any = {
     Option(value).map{v =>
       (dataType,v) match {
-        case (ArrayType(elementType, _),array: ArrayBuffer[Any@unchecked]) =>
+        case (ArrayType(elementType, _),array: Seq[Any@unchecked]) =>
           val list: List[Any] = array.map{
             case obj => toDBObject(obj,elementType)
           }.toList
@@ -136,6 +136,8 @@ object MongodbRowConverter extends RowConverter[DBObject]
           toSQL(dbList,dataType)
         case (_,struct: StructType) =>
           recordAsRow(dbObjectToMap(value.asInstanceOf[DBObject]), struct)
+        case (_ , map: MapType) => dbObjectToMap(value.asInstanceOf[DBObject])
+          .map(element => (toSQL(element._1, map.keyType), toSQL(element._2, map.valueType)))
         case _ =>
           //Assure value is mapped to schema constrained type.
           enforceCorrectType(value, dataType)

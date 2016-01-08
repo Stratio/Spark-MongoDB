@@ -33,25 +33,48 @@ trait JsonSupport {
    * @param desiredType Destiny type
    * @return Converted value
    */
-  protected def enforceCorrectType(value: Any, desiredType: DataType): Any ={
-    if (value == null) {
-      null
-    } else {
-      desiredType match {
-        case StringType => toString(value)
-        case _ if value == null || value == "" => null // guard the non string type
-        case IntegerType => toInt(value)
-        case LongType => toLong(value)
-        case DoubleType => toDouble(value)
-        case DecimalType() => toDecimal(value)
-        case BooleanType => value.asInstanceOf[Boolean]
-        case DateType => toDate(value)
-        case TimestampType => toTimestamp(value)
-        case NullType => null
-        case _ =>
-          sys.error(s"Unsupported datatype conversion [${value.getClass}},$desiredType]")
-          value
-      }
+
+
+  protected def enforceCorrectType(value: Any, desiredType: DataType): Any =
+    Option(value).map{ _ => desiredType match {
+      case StringType => toString(value)
+      case _ if value == "" => null // guard the non string type
+      case ByteType => toByte(value)
+      case BinaryType => toBinary(value)
+      case ShortType => toShort(value)
+      case IntegerType => toInt(value)
+      case LongType => toLong(value)
+      case DoubleType => toDouble(value)
+      case DecimalType() => toDecimal(value)
+      case FloatType => toFloat(value)
+      case BooleanType => value.asInstanceOf[Boolean]
+      case DateType => toDate(value)
+      case TimestampType => toTimestamp(value)
+      case NullType => null
+      case _ =>
+        sys.error(s"Unsupported datatype conversion [Value: ${value}] of ${value.getClass}] to ${desiredType}]")
+        value
+    }
+    }.getOrElse(null)
+
+  private def toBinary(value: Any): Array[Byte] = {
+    value match {
+      case value: org.bson.types.Binary => value.getData
+      case value: Array[Byte] => value
+    }
+  }
+
+  private def toByte(value: Any): Byte = {
+    value match {
+      case value: java.lang.Integer => value.byteValue()
+      case value: java.lang.Long => value.byteValue()
+    }
+  }
+
+  private def toShort(value: Any): Short = {
+    value match {
+      case value: java.lang.Integer => value.toShort
+      case value: java.lang.Long => value.toShort
     }
   }
 
@@ -79,13 +102,21 @@ trait JsonSupport {
     }
   }
 
-  private def toDecimal(value: Any): Decimal = {
+  private def toDecimal(value: Any): java.math.BigDecimal = {
     value match {
-      case value: java.lang.Integer => Decimal(value)
-      case value: java.lang.Long => Decimal(value)
-      case value: java.math.BigInteger => Decimal(new java.math.BigDecimal(value))
-      case value: java.lang.Double => Decimal(value)
-      case value: java.math.BigDecimal => Decimal(value)
+      case value: java.lang.Integer => new java.math.BigDecimal(value)
+      case value: java.lang.Long => new java.math.BigDecimal(value)
+      case value: java.lang.Double => new java.math.BigDecimal(value)
+      case value: java.math.BigInteger => new java.math.BigDecimal(value)
+      case value: java.math.BigDecimal => value
+    }
+  }
+
+  private def toFloat(value: Any): Float = {
+    value match {
+      case value: java.lang.Integer => value.toFloat
+      case value: java.lang.Long => value.toFloat
+      case value: java.lang.Double => value.toFloat
     }
   }
 
@@ -98,8 +129,8 @@ trait JsonSupport {
   private def toDate(value: Any): Date = {
     value match {
       case value: java.util.Date => new Date(value.getTime)
-        // TODO Parse string to date when a String type arrives
-        // case value: java.lang.String => ???
+      // TODO Parse string to date when a String type arrives
+      // case value: java.lang.String => ???
     }
   }
 

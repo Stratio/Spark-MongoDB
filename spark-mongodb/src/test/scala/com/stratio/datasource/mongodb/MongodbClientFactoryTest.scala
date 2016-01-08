@@ -17,13 +17,13 @@ package com.stratio.datasource.mongodb
 
 import com.mongodb.casbah.MongoClient
 import com.mongodb.{MongoCredential, ServerAddress}
-import com.stratio.datasource.ScalaBinaryVersion
+import com.stratio.datasource.MongodbTestConstants
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.{Matchers, FlatSpec}
 
 @RunWith(classOf[JUnitRunner])
-class MongodbClientFactoryTest extends FlatSpec with Matchers with ScalaBinaryVersion{
+class MongodbClientFactoryTest extends FlatSpec with Matchers with MongodbTestConstants{
 
   type Client = MongoClient
 

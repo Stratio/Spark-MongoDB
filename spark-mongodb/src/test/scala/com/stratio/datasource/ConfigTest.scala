@@ -24,7 +24,7 @@ import org.scalatest.{FlatSpec, Matchers}
 class ConfigTest extends FlatSpec
 with Matchers
 with ConfigHelpers
-with ScalaBinaryVersion{
+with MongodbTestConstants{
 
   behavior of "ConfigBuilder"
 

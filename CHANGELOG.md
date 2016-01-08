@@ -1,8 +1,22 @@
 # Changelog
 
-## 0.10.0 (upcoming)
+## 0.10.1 (November 2015)
+
+* Allow filter by _id like an ObjectId or another type
+* Correct out datatypes
+* Support for more types
+
+## 0.10.0 (October 2015)
 
 * Adapted to Spark 1.5
+
+## 0.9.2 (November 2015)
+ 		 
+* Partial NOT filter working
+
+## 0.9.1 (November 2015)
+
+* Refactor update _id on writer(_idField property not necessary)
 
 ## 0.9.0 (October 2015)
 

@@ -18,9 +18,10 @@ package com.stratio.datasource
 
 import scala.io.Source
 
-trait ScalaBinaryVersion {
+trait MongodbTestConstants {
 
   val scalaBinaryVersionFromFile = Source.fromInputStream(getClass.getResourceAsStream("/scala.version")).mkString
   val mongoPort: Int = if(scalaBinaryVersionFromFile == "2.10") 21027 else 21127
+  val db: String = if(scalaBinaryVersionFromFile == "2.10") "testDB210" else "testDB211"
   val scalaBinaryVersion: String =  s" [Scala $scalaBinaryVersionFromFile]"
 }

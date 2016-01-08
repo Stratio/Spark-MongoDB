@@ -17,7 +17,7 @@ package com.stratio.datasource.mongodb.partitioner
 
 import com.mongodb.DBObject
 import com.mongodb.util.JSON
-import com.stratio.datasource.ScalaBinaryVersion
+import com.stratio.datasource.MongodbTestConstants
 import com.stratio.datasource.mongodb._
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
@@ -29,7 +29,7 @@ with BeforeAndAfter
 with Matchers
 with MongoClusterEmbedDatabase
 with TestBsonData
-with ScalaBinaryVersion {
+with MongodbTestConstants {
 
   val configServerPorts = List(mongoPort+10)
   val database = "database-1"

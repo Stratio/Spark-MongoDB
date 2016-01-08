@@ -21,10 +21,11 @@ import java.util.Locale
 
 import com.mongodb.util.JSON
 import com.mongodb.{BasicDBObject, DBObject}
-import com.stratio.datasource.ScalaBinaryVersion
+import com.stratio.datasource.MongodbTestConstants
 import com.stratio.datasource.mongodb._
 import com.stratio.datasource.mongodb.partitioner.MongodbPartition
 import com.stratio.datasource.partitioner.PartitionRange
+import org.apache.spark.sql.Row
 import org.apache.spark.sql.mongodb.{TemporaryTestSQLContext, TestSQLContext}
 import org.apache.spark.sql.sources.{EqualTo, Filter}
 import org.apache.spark.sql.types._
@@ -37,15 +38,14 @@ class MongodbReaderIT extends FlatSpec
 with Matchers
 with MongoEmbedDatabase
 with TestBsonData
-with ScalaBinaryVersion {
+with MongodbTestConstants {
 
   private val host: String = "localhost"
-  private val database: String = "testDb"
   private val collection: String = "testCol"
 
   val testConfig = MongodbConfigBuilder()
     .set(MongodbConfig.Host, List(host + ":" + mongoPort))
-    .set(MongodbConfig.Database, database)
+    .set(MongodbConfig.Database, db)
     .set(MongodbConfig.Collection, collection)
     .set(MongodbConfig.SamplingRatio, "1.0")
     .build()
@@ -201,6 +201,30 @@ with ScalaBinaryVersion {
 
       }
     }
-
   }
+
+    it should "retrieve data correctly using a NOT filter" + scalaBinaryVersion in {
+    withEmbedMongoFixture(primitiveFieldAndType5rows) { mongodbProc =>
+
+      val mongoDF = TemporaryTestSQLContext.fromMongoDB(testConfig)
+      mongoDF.registerTempTable("testTable")
+
+      val resultNotBetween = TemporaryTestSQLContext.sql("SELECT integer FROM testTable WHERE integer NOT BETWEEN 11 AND 15").collect()
+      resultNotBetween.head(0) should be (10)
+
+      val resultEqualToAndNotBetween = TemporaryTestSQLContext.sql("SELECT integer FROM testTable WHERE integer = 11 AND integer NOT BETWEEN 12 AND 15").collect()
+      resultEqualToAndNotBetween.head(0) should be (11)
+
+      val resultNotLike = TemporaryTestSQLContext.sql("SELECT string FROM testTable WHERE string NOT LIKE '%third%'").collect()
+
+      val notLike = Array(Row("this is a simple string."),
+        Row("this is another simple string."),
+        Row("this is the forth simple string."),
+        Row("this is the fifth simple string."))
+
+      resultNotLike should be (notLike)
+
+    }
+  }
+
 }
