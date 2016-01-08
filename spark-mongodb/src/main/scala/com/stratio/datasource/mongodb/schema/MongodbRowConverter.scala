@@ -19,8 +19,8 @@ import com.mongodb.casbah.Imports._
 import com.stratio.datasource.schema.RowConverter
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.Row
-import org.apache.spark.sql.catalyst.expressions.GenericRow
-import org.apache.spark.sql.types.{ArrayType, DataType, StructField, StructType, MapType}
+import org.apache.spark.sql.catalyst.expressions.{GenericRowWithSchema, GenericRow}
+import org.apache.spark.sql.types._
 
 import scala.collection.immutable.ListMap
 import scala.collection.mutable.ArrayBuffer
@@ -30,8 +30,8 @@ import scala.collection.mutable.ArrayBuffer
  * from DBObject to Row and vice versa
  */
 object MongodbRowConverter extends RowConverter[DBObject]
-with JsonSupport
-with Serializable {
+  with JsonSupport
+  with Serializable {
 
   /**
    *
@@ -64,14 +64,22 @@ with Serializable {
    * @return The converted row
    */
   def recordAsRow(
-                   json: Map[String, AnyRef],
-                   schema: StructType): Row = {
+    json: Map[String, AnyRef],
+    schema: StructType): Row = {
+
     val values: Seq[Any] = schema.fields.map {
+      case StructField(name, et, _, mdata)
+        if(mdata.contains("idx") && mdata.contains("colname")) =>
+        val colName = mdata.getString("colname")
+        val idx = mdata.getLong("idx").toInt
+        json.get(colName).flatMap(v => Option(v)).map(toSQL(_, ArrayType(et, true))).collect {
+          case elemsList: Seq[_] if((0 until elemsList.size) contains idx) => elemsList(idx)
+        } orNull
       case StructField(name, dataType, _, _) =>
         json.get(name).flatMap(v => Option(v)).map(
           toSQL(_, dataType)).orNull
     }
-    Row.fromSeq(values)
+    new GenericRowWithSchema(values.toArray, schema)
   }
 
   /**

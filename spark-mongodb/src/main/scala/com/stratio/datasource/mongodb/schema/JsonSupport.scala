@@ -90,6 +90,7 @@ trait JsonSupport {
     value match {
       case value: java.lang.Integer => value.asInstanceOf[Int].toLong
       case value: java.lang.Long => value.asInstanceOf[Long]
+      case value: java.lang.Double => value.asInstanceOf[Double].toLong
     }
   }
 

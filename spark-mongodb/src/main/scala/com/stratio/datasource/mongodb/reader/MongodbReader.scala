@@ -139,8 +139,10 @@ class MongodbReader(
         case Not(filter) =>
           filtersToDBObject(Array(filter), true)
       }
+
       queryBuilder.get
     }
+
     filtersToDBObject(filters)
   }
 
