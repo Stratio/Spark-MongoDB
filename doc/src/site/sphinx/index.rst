@@ -6,4 +6,5 @@ Contents:
 
    about.rst
    First_Steps.rst
+   faqs.rst
    PoweredBy.rst
