@@ -38,6 +38,7 @@ There also exists a [First Steps] (<https://github.com/Stratio/spark-mongodb/blo
 - [Examples](https://github.com/Stratio/spark-mongodb/blob/master/doc/src/site/sphinx/First_Steps.rst#examples)
     - [Scala API](https://github.com/Stratio/spark-mongodb/blob/master/doc/src/site/sphinx/First_Steps.rst#scala-api)
     - [Python API](https://github.com/Stratio/spark-mongodb/blob/master/doc/src/site/sphinx/First_Steps.rst#python-api)
+    - [Java API](https://github.com/Stratio/spark-mongodb/blob/master/doc/src/site/sphinx/First_Steps.rst#java-api)
     - [R API](https://github.com/Stratio/spark-mongodb/blob/master/doc/src/site/sphinx/First_Steps.rst#r-api)
 - [Faqs](https://github.com/Stratio/spark-mongodb/blob/master/doc/src/site/sphinx/faqs.rst)
 

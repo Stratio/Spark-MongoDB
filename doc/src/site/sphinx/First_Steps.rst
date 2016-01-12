@@ -234,6 +234,29 @@ Then:
  sqlContext.sql("CREATE TEMPORARY TABLE students_table USING com.stratio.datasource.mongodb OPTIONS (host 'host:port', database 'highschool', collection 'students')")
  sqlContext.sql("SELECT * FROM students_table").collect()
 
+Java API
+--------
+
+You need to add spark-mongodb and spark-sql dependencies to the java project.
+::
+
+public class SparkMongodbJavaExample {
+
+    public static void main(String[] args) {
+
+        JavaSparkContext sc = new JavaSparkContext("local[2]", "test spark-mongodb java");
+        SQLContext sqlContext = new org.apache.spark.sql.SQLContext(sc);
+        Map options = new HashMap();
+        options.put("host", "localhost:27017");
+        options.put("database", "highschoolCredentials");
+        options.put("collection", "students");
+        options.put("credentials", "user,highschoolCredentials,password");
+
+        DataFrame df = sqlContext.read().format("com.stratio.datasource.mongodb").options(options).load();
+        df.registerTempTable("students");
+        sqlContext.sql("SELECT * FROM students");
+        df.show();        }
+}
 
 R API
 -----
