@@ -20,7 +20,7 @@
 
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.stratio.datasource</groupId>
-    <artifactId>spark-mongodb-parent</artifactId>
+    <artifactId>spark-mongodb-parent_2.10</artifactId>
     <version>0.11.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Stratio Spark Mongodb Datasource</name>
@@ -36,11 +36,14 @@
 
     <modules>
         <module>doc</module>
-        <module>spark-mongodb_2.10</module>
-        <module>spark-mongodb_2.11</module>
+        <module>spark-mongodb</module>
     </modules>
 
     <properties>
+        <scala_2.10.version>2.10.4</scala_2.10.version>
+        <scala_2.11.version>2.11.7</scala_2.11.version>
+        <scala.version>${scala_2.10.version}</scala.version>
+        <scala.binary.version>2.10</scala.binary.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
@@ -157,4 +160,18 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>scala-2.11</id>
+            <properties>
+                <scala.version>2.11.7</scala.version>
+                <scala.binary.version>2.11</scala.binary.version>
+            </properties>
+            <build>
+                <directory>target-${scala.binary.version}</directory>
+            </build>
+        </profile>
+    </profiles>
+
 </project>
