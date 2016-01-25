@@ -19,6 +19,7 @@ package com.stratio.datasource.mongodb.partitioner
 import com.mongodb.casbah.Imports._
 import com.mongodb.{MongoCredential, ServerAddress}
 import com.stratio.datasource.mongodb.client.MongodbClientFactory
+import com.stratio.datasource.mongodb.client.MongodbClientFactory.Client
 import com.stratio.datasource.mongodb.config.{MongodbSSLOptions, MongodbCredentials, MongodbConfig}
 import com.stratio.datasource.mongodb.partitioner.MongodbPartitioner._
 import com.stratio.datasource.partitioner.{PartitionRange, Partitioner}
@@ -56,21 +57,24 @@ class MongodbPartitioner(config: Config) extends Partitioner[MongodbPartition] {
 
   private val cursorBatchSize = config.getOrElse[Int](MongodbConfig.CursorBatchSize, MongodbConfig.DefaultCursorBatchSize)
 
-  override def computePartitions(): Array[MongodbPartition] =
-    if (isShardedCollection)
-      computeShardedChunkPartitions()
+  override def computePartitions(): Array[MongodbPartition] = {
+    val mongoClient = MongodbClientFactory.getClient(hosts, credentials, ssloptions, clientOptions)._2
+
+    val result = if (isShardedCollection(mongoClient))
+      computeShardedChunkPartitions(mongoClient)
     else
-      computeNotShardedPartitions()
+      computeNotShardedPartitions(mongoClient)
+
+    result
+  }
 
   /**
    * @return Whether this is a sharded collection or not
    */
-  protected def isShardedCollection: Boolean = {
-    val mongoClient = MongodbClientFactory.getClient(hosts, credentials, ssloptions, clientOptions)
+  protected def isShardedCollection(mongoClient: Client): Boolean = {
+
     val collection = mongoClient(databaseName)(collectionName)
     val isSharded = collection.stats.ok && collection.stats.getBoolean("sharded", false)
-
-    MongodbClientFactory.setFreeConnection(mongoClient, connectionsTime)
 
     isSharded
   }
@@ -78,13 +82,12 @@ class MongodbPartitioner(config: Config) extends Partitioner[MongodbPartition] {
   /**
    * @return MongoDB partitions as sharded chunks.
    */
-  protected def computeShardedChunkPartitions(): Array[MongodbPartition] = {
-    val mongoClient = MongodbClientFactory.getClient(hosts, credentials, ssloptions, clientOptions)
+  protected def computeShardedChunkPartitions(mongoClient: Client): Array[MongodbPartition] = {
 
     val partitions = Try {
       val chunksCollection = mongoClient(ConfigDatabase)(ChunksCollection)
       val dbCursor = chunksCollection.find(MongoDBObject("ns" -> collectionFullName))
-      val shards = describeShardsMap()
+      val shards = describeShardsMap(mongoClient)
       val partitions = dbCursor.zipWithIndex.map {
         case (chunk: DBObject, i: Int) =>
           val lowerBound = chunk.getAs[DBObject]("min")
@@ -110,17 +113,14 @@ class MongodbPartitioner(config: Config) extends Partitioner[MongodbPartition] {
         Array(MongodbPartition(0, serverAddressList, PartitionRange(None, None)))
     }.get
 
-    MongodbClientFactory.setFreeConnection(mongoClient, connectionsTime)
-
     partitions
   }
 
   /**
    * @return Array of not-sharded MongoDB partitions.
    */
-  protected def computeNotShardedPartitions(): Array[MongodbPartition] = {
-    val mongoClient = MongodbClientFactory.getClient(hosts, credentials, ssloptions, clientOptions)
-    val ranges = splitRanges()
+  protected def computeNotShardedPartitions(mongoClient: Client): Array[MongodbPartition] = {
+    val ranges = splitRanges(mongoClient)
     val serverAddressList: Seq[String] = mongoClient.allAddress.map {
       server => server.getHost + ":" + server.getPort
     }.toSeq
@@ -131,15 +131,13 @@ class MongodbPartitioner(config: Config) extends Partitioner[MongodbPartition] {
           PartitionRange(previous, current))
     }.toArray
 
-    MongodbClientFactory.setFreeConnection(mongoClient, connectionsTime)
-
     partitions
   }
 
   /**
    * @return A sequence of minimum and maximum DBObject in range.
    */
-  protected def splitRanges(): Seq[(Option[DBObject], Option[DBObject])] = {
+  protected def splitRanges(mongoClient: Client): Seq[(Option[DBObject], Option[DBObject])] = {
 
     val cmd: MongoDBObject = MongoDBObject(
       "splitVector" -> collectionFullName,
@@ -147,7 +145,6 @@ class MongodbPartitioner(config: Config) extends Partitioner[MongodbPartition] {
       "force" -> false,
       "maxChunkSize" -> config.getOrElse(MongodbConfig.SplitSize, MongodbConfig.DefaultSplitSize)
     )
-    val mongoClient = MongodbClientFactory.getClient(hosts, credentials, ssloptions, clientOptions)
     val ranges = Try {
       val data = mongoClient("admin").command(cmd)
       val splitKeys = data.as[List[DBObject]]("splitKeys").map(Option(_))
@@ -161,17 +158,17 @@ class MongodbPartitioner(config: Config) extends Partitioner[MongodbPartition] {
           .find(MongoDBObject("_id" -> stats.getString("primary"))).batchSize(cursorBatchSize)
         val shard = shards.next()
         val shardHost: String = shard.as[String]("host").replace(shard.get("_id") + "/", "")
-        val shardClient = MongodbClientFactory.getClient(shardHost)
+        val (shardClientKey, shardClient) = MongodbClientFactory.getClient(shardHost)
         val data = shardClient.getDB("admin").command(cmd)
         val splitKeys = data.as[List[DBObject]]("splitKeys").map(Option(_))
         val ranges = (None +: splitKeys) zip (splitKeys :+ None)
 
         shards.close()
 
+        MongodbClientFactory.setFreeConnectionByKey(shardClientKey, connectionsTime)
+
         ranges.toSeq
     }.getOrElse(Seq((None, None)))
-
-    MongodbClientFactory.setFreeConnection(mongoClient, connectionsTime)
 
     ranges
   }
@@ -179,8 +176,7 @@ class MongodbPartitioner(config: Config) extends Partitioner[MongodbPartition] {
   /**
    * @return Map of shards.
    */
-  protected def describeShardsMap(): Map[String, Seq[String]] = {
-    val mongoClient = MongodbClientFactory.getClient(hosts, credentials, ssloptions, clientOptions)
+  protected def describeShardsMap(mongoClient: Client): Map[String, Seq[String]] = {
     val shardsCollection = mongoClient(ConfigDatabase)(ShardsCollection)
     val shardsFind = shardsCollection.find()
     val shards = shardsFind.map { shard =>
@@ -190,7 +186,6 @@ class MongodbPartitioner(config: Config) extends Partitioner[MongodbPartition] {
     }.toMap
 
     shardsFind.close()
-    MongodbClientFactory.setFreeConnection(mongoClient, connectionsTime)
 
     shards
   }

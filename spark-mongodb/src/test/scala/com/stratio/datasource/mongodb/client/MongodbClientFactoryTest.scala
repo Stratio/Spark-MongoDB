@@ -28,9 +28,9 @@ class MongodbClientFactoryTest extends FlatSpec with Matchers with MongodbTestCo
 
   type Client = MongoClient
 
-  val hostClient = MongodbClientFactory.getClient("127.0.0.1")
+  val hostClient = MongodbClientFactory.getClient("127.0.0.1")._2
 
-  val hostPortCredentialsClient = MongodbClientFactory.getClient("127.0.0.1", 27017, "user", "database", "password")
+  val hostPortCredentialsClient = MongodbClientFactory.getClient("127.0.0.1", 27017, "user", "database", "password")._2
 
   val fullClient = MongodbClientFactory.getClient(
     List(new ServerAddress("127.0.0.1:27017")),
@@ -44,7 +44,7 @@ class MongodbClientFactoryTest extends FlatSpec with Matchers with MongodbTestCo
         "connectionsPerHost" -> "20",
         "threadsAllowedToBlockForConnectionMultiplier" -> "5"
       )
-  )
+  )._2
 
   val gracefully = true
 
@@ -61,29 +61,29 @@ class MongodbClientFactoryTest extends FlatSpec with Matchers with MongodbTestCo
   }
 
   it should "Valid clients size when getting the same client " in {
-    val sameHostClient = MongodbClientFactory.getClient("127.0.0.1")
+    val sameHostClient = MongodbClientFactory.getClient("127.0.0.1")._2
 
     MongodbClientFactory.mongoClient.size should be (1)
 
-    val otherHostClient = MongodbClientFactory.getClient("127.0.0.1")
+    val otherHostClient = MongodbClientFactory.getClient("127.0.0.1")._2
 
     MongodbClientFactory.mongoClient.size should be (2)
   }
 
   it should "Valid clients size when getting the same client and set free " in {
-    val sameHostClient = MongodbClientFactory.getClient("127.0.0.1")
+    val sameHostClient = MongodbClientFactory.getClient("127.0.0.1")._2
 
     MongodbClientFactory.mongoClient.size should be (1)
 
     MongodbClientFactory.setFreeConnection(sameHostClient)
 
-    val otherHostClient = MongodbClientFactory.getClient("127.0.0.1")
+    val otherHostClient = MongodbClientFactory.getClient("127.0.0.1")._2
 
     MongodbClientFactory.mongoClient.size should be (1)
   }
 
   it should "Valid clients size when closing one client gracefully " in {
-    val sameHostClient = MongodbClientFactory.getClient("127.0.0.1")
+    val sameHostClient = MongodbClientFactory.getClient("127.0.0.1")._2
 
     MongodbClientFactory.mongoClient.size should be (1)
 
@@ -93,7 +93,7 @@ class MongodbClientFactoryTest extends FlatSpec with Matchers with MongodbTestCo
   }
 
   it should "Valid clients size when closing one client not gracefully " in {
-    val sameHostClient = MongodbClientFactory.getClient("127.0.0.1")
+    val sameHostClient = MongodbClientFactory.getClient("127.0.0.1")._2
 
     MongodbClientFactory.mongoClient.size should be (1)
 
@@ -103,8 +103,8 @@ class MongodbClientFactoryTest extends FlatSpec with Matchers with MongodbTestCo
   }
 
   it should "Valid clients size when closing all clients gracefully " in {
-    val sameHostClient = MongodbClientFactory.getClient("127.0.0.1")
-    val otherHostClient = MongodbClientFactory.getClient("127.0.0.1")
+    val sameHostClient = MongodbClientFactory.getClient("127.0.0.1")._2
+    val otherHostClient = MongodbClientFactory.getClient("127.0.0.1")._2
 
     MongodbClientFactory.mongoClient.size should be (2)
 
@@ -120,8 +120,8 @@ class MongodbClientFactoryTest extends FlatSpec with Matchers with MongodbTestCo
   }
 
   it should "Valid clients size when closing all clients not gracefully " in {
-    val sameHostClient = MongodbClientFactory.getClient("127.0.0.1")
-    val otherHostClient = MongodbClientFactory.getClient("127.0.0.1")
+    val sameHostClient = MongodbClientFactory.getClient("127.0.0.1")._2
+    val otherHostClient = MongodbClientFactory.getClient("127.0.0.1")._2
     val gracefully = false
 
     MongodbClientFactory.mongoClient.size should be (2)

@@ -41,6 +41,8 @@ class MongodbReader(config: Config,
 
   private var mongoClient: Option[MongodbClientFactory.Client] = None
 
+  private var mongoClientKey: Option[String] = None
+
   private var dbCursor: Option[MongoCursorBase] = None
 
   private val batchSize = config.getOrElse[Int](MongodbConfig.CursorBatchSize, MongodbConfig.DefaultCursorBatchSize)
@@ -54,8 +56,14 @@ class MongodbReader(config: Config,
     }
 
     mongoClient.fold(ifEmpty = ()) { client =>
-      MongodbClientFactory.setFreeConnection(client, connectionsTime)
-      MongodbClientFactory.close(client)
+      mongoClientKey.fold({
+        MongodbClientFactory.setFreeConnection(client, connectionsTime)
+        MongodbClientFactory.close(client)
+      }) {key =>
+        MongodbClientFactory.setFreeConnectionByKey(key, connectionsTime)
+        MongodbClientFactory.closeByKey(key)
+      }
+
       mongoClient = None
     }
   }
@@ -83,7 +91,9 @@ class MongodbReader(config: Config,
       val sslOptions = config.get[MongodbSSLOptions](MongodbConfig.SSLOptions)
       val clientOptions = config.properties.filterKeys(_.contains(MongodbConfig.ListMongoClientOptions))
 
-      mongoClient = Option(MongodbClientFactory.getClient(hosts, credentials, sslOptions, clientOptions))
+      val (clientKey, client) = MongodbClientFactory.getClient(hosts, credentials, sslOptions, clientOptions)
+      mongoClient = Option(client)
+      mongoClientKey = Option(clientKey)
 
       val emptyFilter = MongoDBObject(List())
       val filter = Try(queryPartition(filters)).getOrElse(emptyFilter)

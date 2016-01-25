@@ -80,7 +80,7 @@ object MongodbConfig {
   val DefaultSamplingRatio = 1.0
   val DefaultSplitSize = 10
   val DefaultSplitKey = "_id"
-  val DefaultConnectionsTime = 180000L
+  val DefaultConnectionsTime = 120000L
   val DefaultCursorBatchSize = 101
   val DefaultBulkBatchSize = 1000
   val DefaultIdAsObjectId = "true"

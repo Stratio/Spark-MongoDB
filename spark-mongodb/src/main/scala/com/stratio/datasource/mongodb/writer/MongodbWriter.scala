@@ -56,7 +56,8 @@ abstract class MongodbWriter(config: Config) extends Serializable {
 
   private val connectionsTime = config.get[String](MongodbConfig.ConnectionsTime).map(_.toLong)
 
-  protected val mongoClient: Client = MongodbClientFactory.getClient(hosts, credentials, sslOptions, clientOptions)
+  protected val (clientKey, mongoClient) =
+    MongodbClientFactory.getClient(hosts, credentials, sslOptions, clientOptions)
 
   /**
    * A MongoDB collection created from the specified database and collection.

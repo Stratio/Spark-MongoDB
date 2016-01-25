@@ -81,7 +81,7 @@ object MongodbClientFactory {
    * @param host Ip or Dns to connect
    * @return Client connection
    */
-  def getClient(host: String): Client = {
+  def getClient(host: String): (String, Client) = {
     synchronized {
       val hostPort = new ServerAddress(host)
       val connKey = connectionKey(0, List(hostPort))
@@ -96,7 +96,7 @@ object MongodbClientFactory {
         timeOut = System.currentTimeMillis() + DefaultConnectionsTime,
         status = ConnectionStatus.Busy))
 
-      connection.client
+      (finalKey, connection.client)
     }
   }
 
@@ -109,7 +109,7 @@ object MongodbClientFactory {
    * @param password Password for credentials
    * @return Client connection
    */
-  def getClient(host: String, port: Int, user: String, database: String, password: String): Client = {
+  def getClient(host: String, port: Int, user: String, database: String, password: String): (String, Client) = {
     synchronized {
       val credentials = List(MongoCredential.createCredential(user, database, password.toCharArray))
       val hostPort = new ServerAddress(host, port)
@@ -126,7 +126,7 @@ object MongodbClientFactory {
         timeOut = System.currentTimeMillis() + DefaultConnectionsTime,
         status = ConnectionStatus.Busy))
 
-      connection.client
+      (finalKey, connection.client)
     }
   }
 
@@ -141,7 +141,7 @@ object MongodbClientFactory {
   def getClient(hostPort: List[ServerAddress],
                 credentials: List[MongoCredential] = List(),
                 optionSSLOptions: Option[MongodbSSLOptions] = None,
-                clientOptions: Map[String, Any] = Map()): Client = {
+                clientOptions: Map[String, Any] = Map()): (String, Client) = {
     synchronized {
       val connKey = connectionKey(0, hostPort, credentials, clientOptions)
       val (finalKey, connection) = mongoClient.get(connKey) match {
@@ -156,7 +156,7 @@ object MongodbClientFactory {
           extractValue[String](clientOptions, ConnectionsTime).map(_.toLong).getOrElse(DefaultConnectionsTime),
         status = ConnectionStatus.Busy))
 
-      connection.client
+      (finalKey, connection.client)
     }
   }
 
@@ -202,7 +202,6 @@ object MongodbClientFactory {
         saveConnection(s"$index${splittedKey.drop(1).mkString(KeySeparator)}", mongoDbConnection)
       case None => (key, mongoDbConnection)
     }
-
   }
 
   /**
@@ -237,16 +236,18 @@ object MongodbClientFactory {
    * @param gracefully Close the connections if is free
    */
   def closeAll(gracefully : Boolean = true, attempts : Int = CloseAttempts): Unit = {
+    synchronized {
       mongoClient.foreach { case (key, connection) =>
-        if(!gracefully || connection.status == ConnectionStatus.Free) {
+        if (!gracefully || connection.status == ConnectionStatus.Free) {
           connection.client.close()
           mongoClient.remove(key)
         }
       }
-      if(mongoClient.nonEmpty && attempts > 0){
+      if (mongoClient.nonEmpty && attempts > 0) {
         Thread.sleep(CloseSleepTime)
         closeAll(gracefully, attempts - 1)
       }
+    }
   }
 
   /**
@@ -255,13 +256,15 @@ object MongodbClientFactory {
    * @param gracefully Close the connection if is free
    */
   def close(client: Client, gracefully: Boolean = true): Unit = {
-    mongoClient.find { case (key, clientSearch) => clientSearch.client == client }
-      .foreach { case (key, clientFound) =>
-        if(!gracefully || clientFound.status == ConnectionStatus.Free) {
-          clientFound.client.close()
-          mongoClient.remove(key)
+    synchronized {
+      mongoClient.find { case (key, clientSearch) => clientSearch.client == client }
+        .foreach { case (key, clientFound) =>
+          if (!gracefully || clientFound.status == ConnectionStatus.Free) {
+            clientFound.client.close()
+            mongoClient.remove(key)
+          }
         }
-      }
+    }
   }
 
   /**
@@ -270,12 +273,14 @@ object MongodbClientFactory {
    * @param gracefully Close the connection if is free
    */
   def closeByKey(clientKey: String, gracefully: Boolean = true): Unit = {
-    mongoClient.get(clientKey).foreach(clientFound => {
-      if(!gracefully || clientFound.status == ConnectionStatus.Free) {
-        clientFound.client.close()
-        mongoClient.remove(clientKey)
-      }
-    })
+    synchronized {
+      mongoClient.get(clientKey).foreach(clientFound => {
+        if (!gracefully || clientFound.status == ConnectionStatus.Free) {
+          clientFound.client.close()
+          mongoClient.remove(clientKey)
+        }
+      })
+    }
   }
 
   /**
@@ -283,11 +288,13 @@ object MongodbClientFactory {
    * @param client client value for connect to MongoDb
    */
   def setFreeConnection(client: Client, extendedTime : Option[Long] = None): Unit = {
-    mongoClient.find { case (key, clientSearch) => clientSearch.client == client }
-      .foreach { case (key, clientFound) =>
-        mongoClient.update(key, clientFound.copy(status = ConnectionStatus.Free,
-          timeOut = System.currentTimeMillis() + extendedTime.getOrElse(DefaultConnectionsTime)))
-      }
+    synchronized {
+      mongoClient.find { case (key, clientSearch) => clientSearch.client == client }
+        .foreach { case (key, clientFound) =>
+          mongoClient.update(key, clientFound.copy(status = ConnectionStatus.Free,
+            timeOut = System.currentTimeMillis() + extendedTime.getOrElse(DefaultConnectionsTime)))
+        }
+    }
   }
 
   /**
@@ -295,10 +302,12 @@ object MongodbClientFactory {
    * @param clientKey key pre calculated with the connection options
    */
   def setFreeConnectionByKey(clientKey: String, extendedTime : Option[Long] = None): Unit = {
-    mongoClient.get(clientKey).foreach(clientFound => {
-      mongoClient.update(clientKey, clientFound.copy(status = ConnectionStatus.Free,
-        timeOut = System.currentTimeMillis() + extendedTime.getOrElse(DefaultConnectionsTime)))
-    })
+    synchronized {
+      mongoClient.get(clientKey).foreach(clientFound => {
+        mongoClient.update(clientKey, clientFound.copy(status = ConnectionStatus.Free,
+          timeOut = System.currentTimeMillis() + extendedTime.getOrElse(DefaultConnectionsTime)))
+      })
+    }
   }
 
   private def extractValue[T](options: Map[String, Any], key: String): Option[T] = options.get(key).map(_.asInstanceOf[T])
