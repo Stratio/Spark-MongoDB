@@ -16,8 +16,8 @@
 package com.stratio.datasource.mongodb.rdd
 
 import com.mongodb.casbah.Imports._
-import com.stratio.datasource.Config
 import com.stratio.datasource.mongodb.partitioner.{MongodbPartition, MongodbPartitioner}
+import com.stratio.datasource.util.Config
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.sources.Filter

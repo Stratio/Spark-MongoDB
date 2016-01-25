@@ -23,6 +23,8 @@ import com.mongodb.util.JSON
 import com.mongodb.{BasicDBObject, DBObject}
 import com.stratio.datasource.MongodbTestConstants
 import com.stratio.datasource.mongodb._
+import com.stratio.datasource.mongodb.client.MongodbClientFactory
+import com.stratio.datasource.mongodb.config.{MongodbConfig, MongodbConfigBuilder}
 import com.stratio.datasource.mongodb.partitioner.MongodbPartition
 import com.stratio.datasource.partitioner.PartitionRange
 import org.apache.spark.sql.Row
@@ -31,14 +33,15 @@ import org.apache.spark.sql.sources.{EqualTo, Filter}
 import org.apache.spark.sql.types._
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.{BeforeAndAfterAll, BeforeAndAfter, FlatSpec, Matchers}
 
 @RunWith(classOf[JUnitRunner])
 class MongodbReaderIT extends FlatSpec
 with Matchers
 with MongoEmbedDatabase
 with TestBsonData
-with MongodbTestConstants {
+with MongodbTestConstants
+with BeforeAndAfterAll {
 
   private val host: String = "localhost"
   private val collection: String = "testCol"
@@ -52,13 +55,14 @@ with MongodbTestConstants {
 
   behavior of "A reader"
 
-  it should "throw IllegalStateException if next() operation is invoked after closing the Reader" + scalaBinaryVersion in {
+  it should "throw IllegalStateException if next() operation is invoked after closing the Reader" +
+    scalaBinaryVersion in {
     val mongodbReader = new MongodbReader(testConfig,Array(),Array())
     mongodbReader.init(
       MongodbPartition(0,
         testConfig[Seq[String]](MongodbConfig.Host),
         PartitionRange[DBObject](None, None)))
-    
+
     mongodbReader.close()
 
     a[IllegalStateException] should be thrownBy {
@@ -76,6 +80,7 @@ with MongodbTestConstants {
           PartitionRange[DBObject](None, None)))
 
       (1 until 20).map(_ => mongodbReader.hasNext).distinct.toList==List(true)
+
     }
   }
 
@@ -203,7 +208,7 @@ with MongodbTestConstants {
     }
   }
 
-    it should "retrieve data correctly using a NOT filter" + scalaBinaryVersion in {
+  it should "retrieve data correctly using a NOT filter" + scalaBinaryVersion in {
     withEmbedMongoFixture(primitiveFieldAndType5rows) { mongodbProc =>
 
       val mongoDF = TemporaryTestSQLContext.fromMongoDB(testConfig)
@@ -225,6 +230,11 @@ with MongodbTestConstants {
       resultNotLike should be (notLike)
 
     }
+  }
+
+
+  override def afterAll {
+    MongodbClientFactory.closeAll(false)
   }
 
 }

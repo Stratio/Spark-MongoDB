@@ -13,33 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.stratio.datasource.mongodb
 
-
-import com.stratio.datasource.Config
 import com.stratio.datasource.mongodb.schema.MongodbRowConverter
-import com.stratio.datasource.mongodb.writer.{MongodbBatchWriter, MongodbSimpleWriter}
-import org.apache.spark.sql.types.StructType
-import org.apache.spark.sql.{SQLContext, DataFrame}
+import com.stratio.datasource.mongodb.writer.{MongodbSimpleWriter, MongodbBatchWriter}
+import com.stratio.datasource.util.Config
+import org.apache.spark.sql.DataFrame
 
 import scala.language.implicitConversions
-
-/**
- * @param sqlContext Spark SQLContext
- */
-class MongodbContext(sqlContext: SQLContext) {
-
-  /**
-   * It retrieves a bunch of MongoDB objects
-   * given a MongDB configuration object.
-   * @param config MongoDB configuration object
-   * @return A dataFrame
-   */
-  def fromMongoDB(config: Config,schema:Option[StructType]=None): DataFrame =
-    sqlContext.baseRelationToDataFrame(
-      new MongodbRelation(config, schema)(sqlContext))
-
-}
 
 /**
  * @param dataFrame Spark SchemaRDD
@@ -59,21 +41,8 @@ class MongodbDataFrame(dataFrame: DataFrame) extends Serializable {
         else new MongodbSimpleWriter(config)
       writer.saveWithPk(it.map(row =>
         MongodbRowConverter.rowAsDBObject(row, schema)))
-      writer.close()
+      writer.freeConnection()
     })
   }
-
-}
-
-/**
- *  Helpers for getting / storing MongoDB data.
- */
-trait MongodbFunctions {
-
-  implicit def toMongodbContext(sqlContext: SQLContext): MongodbContext =
-    new MongodbContext(sqlContext)
-
-  implicit def toMongodbSchemaRDD(dataFrame: DataFrame): MongodbDataFrame =
-    new MongodbDataFrame(dataFrame)
 
 }

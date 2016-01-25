@@ -17,10 +17,11 @@ package com.stratio.datasource.mongodb.writer
 
 import com.mongodb.casbah.Imports._
 import com.mongodb.{MongoCredential, ServerAddress}
-import com.stratio.datasource.Config
-import com.stratio.datasource.mongodb.MongodbClientFactory.Client
-import com.stratio.datasource.mongodb.MongodbConfig._
-import com.stratio.datasource.mongodb.{MongodbClientFactory, MongodbConfig, MongodbCredentials, MongodbSSLOptions}
+import com.stratio.datasource.mongodb.client.MongodbClientFactory
+import MongodbClientFactory.Client
+import com.stratio.datasource.mongodb.config.{MongodbSSLOptions, MongodbCredentials, MongodbConfig}
+import MongodbConfig._
+import com.stratio.datasource.util.Config
 
 /**
  * Abstract Mongodb writer.
@@ -30,10 +31,6 @@ import com.stratio.datasource.mongodb.{MongodbClientFactory, MongodbConfig, Mong
  * @param config Configuration parameters (host,database,collection,...)
  */
 abstract class MongodbWriter(config: Config) extends Serializable {
-
-  /**
-   * A MongoDB client is created for each writer.
-   */
 
   @transient private val hosts: List[ServerAddress] =
     config[List[String]](MongodbConfig.Host)
@@ -45,20 +42,22 @@ abstract class MongodbWriter(config: Config) extends Serializable {
         MongoCredential.createCredential(user,database,password)
     }
 
-  @transient private val ssloptions: Option[MongodbSSLOptions] =
+  @transient private val sslOptions: Option[MongodbSSLOptions] =
     config.get[MongodbSSLOptions](MongodbConfig.SSLOptions)
 
+  @transient protected val writeConcern: WriteConcern = config.get[String](MongodbConfig.WriteConcern) match {
+    case Some(wConcern) => parseWriteConcern(wConcern)
+    case None => DefaultWriteConcern
+  }
 
   private val clientOptions = config.properties.filterKeys(_.contains(MongodbConfig.ListMongoClientOptions))
 
-  private val databaseName: String = config(MongodbConfig.Database)
+  private val languageConfig = config.get[String](MongodbConfig.Language)
 
-  private val collectionName: String = config(MongodbConfig.Collection)
+  private val connectionsTime = config.get[String](MongodbConfig.ConnectionsTime).map(_.toLong)
 
-  private val collectionFullName: String = s"$databaseName.$collectionName"
-
-  protected val mongoClient: Client = MongodbClientFactory.createClient(hosts, credentials, ssloptions, clientOptions)
-
+  protected val (clientKey, mongoClient) =
+    MongodbClientFactory.getClient(hosts, credentials, sslOptions, clientOptions)
 
   /**
    * A MongoDB collection created from the specified database and collection.
@@ -74,11 +73,13 @@ abstract class MongodbWriter(config: Config) extends Serializable {
    * @param it DBObject iterator.
    */
   def saveWithPk (it: Iterator[DBObject]): Unit = {
-    val languageConfig = config.get[String](MongodbConfig.Language)
-    val itModified = it.map { case obj: BasicDBObject => {
-      if(languageConfig.isDefined) obj.append("language", languageConfig.get)
-      obj
-    }}
+    val itModified = if(languageConfig.isDefined){
+      it.map { case obj: BasicDBObject => {
+        if(languageConfig.isDefined) obj.append("language", languageConfig.get)
+        obj
+      }}
+    } else it
+
     save(itModified)
   }
 
@@ -100,10 +101,10 @@ abstract class MongodbWriter(config: Config) extends Serializable {
   def isEmpty: Boolean = dbCollection.isEmpty
 
   /**
-   * Close current MongoDB client.
+   * Free current MongoDB client.
    */
-  def close(): Unit = {
-    mongoClient.close()
+  def freeConnection(): Unit = {
+    MongodbClientFactory.setFreeConnection(mongoClient, connectionsTime)
   }
 
 }

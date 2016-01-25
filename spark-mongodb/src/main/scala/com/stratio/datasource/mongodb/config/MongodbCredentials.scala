@@ -13,20 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.stratio.datasource.mongodb.writer
+package com.stratio.datasource.mongodb.config
 
-import com.mongodb.casbah.Imports._
-import com.stratio.datasource.mongodb.config.MongodbConfig
-import com.stratio.datasource.util.Config
-
-/**
- * A simple mongodb writer.
- *
- * @param config Configuration parameters (host,database,collection,...)
- */
-class MongodbSimpleWriter(config: Config) extends MongodbWriter(config) {
-
-  override def save(it: Iterator[DBObject]): Unit =
-    it.foreach(dbo => dbCollection.save(dbo, writeConcern))
-
-}
+case class MongodbCredentials(
+  user: String,
+  database: String,
+  password: Array[Char])

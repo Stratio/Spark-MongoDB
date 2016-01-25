@@ -16,8 +16,8 @@
 package com.stratio.datasource.mongodb.rdd
 
 import com.mongodb.casbah.Imports._
-import com.stratio.datasource.Config
 import com.stratio.datasource.mongodb.reader.MongodbReader
+import com.stratio.datasource.util.Config
 import org.apache.spark._
 import org.apache.spark.sql.sources.Filter
 
@@ -38,7 +38,6 @@ class MongodbRDDIterator(
   filters: Array[Filter])
   extends Iterator[DBObject] {
 
-  protected var finished = false
   private var closed = false
   private var initialized = false
 
@@ -51,7 +50,7 @@ class MongodbRDDIterator(
   taskContext.addTaskCompletionListener((context: TaskContext) => closeIfNeeded())
 
   override def hasNext: Boolean = {
-    !finished && reader.hasNext
+    !closed && reader.hasNext
   }
 
   override def next(): DBObject = {
@@ -63,14 +62,15 @@ class MongodbRDDIterator(
 
   def closeIfNeeded(): Unit = {
     if (!closed) {
-      close()
       closed = true
+      close()
     }
   }
 
   protected def close(): Unit = {
     if (initialized) {
       reader.close()
+      initialized = false
     }
   }
 
