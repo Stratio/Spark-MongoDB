@@ -174,7 +174,7 @@ object MongodbClientFactory {
 
       val builder = new MongoClientOptions.Builder()
         .readPreference(extractValue[String](clientOptions, ProviderReadPreference) match {
-          case Some(preference) => parseReadPreference(preference)
+          case Some(preference) => parseReadPreference(preference, extractValue[String](clientOptions, ReadPreferenceTags).getOrElse(DefaultReadPreferenceTags))
           case None => DefaultReadPreference
         })
         .connectTimeout(extractValue[String](clientOptions, ConnectTimeout).map(_.toInt).getOrElse(DefaultConnectTimeout))
