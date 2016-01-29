@@ -17,7 +17,8 @@
 package com.stratio.datasource.mongodb.config
 
 import com.mongodb.casbah.Imports._
-import com.mongodb.{MongoClientOptions => JavaMongoClientOptions}
+import com.mongodb.{MongoClientOptions => JavaMongoClientOptions, TagSet, Tag}
+import scala.collection.JavaConversions._
 import com.stratio.datasource.util.Config._
 
 /**
@@ -31,6 +32,7 @@ object MongodbConfig {
   val Collection = "collection"
   val SSLOptions = "sslOptions"
   val ReadPreference = "readPreference"
+  val ReadPreferenceTags = "readPreferenceTags"
   val ConnectTimeout = "connectTimeout"
   val ConnectionsPerHost = "connectionsPerHost"
   val MaxWaitTime = "maxWaitTime"
@@ -51,6 +53,7 @@ object MongodbConfig {
   // List of parameters for mongoClientOptions
   val ListMongoClientOptions = List(
     ReadPreference,
+    ReadPreferenceTags,
     ConnectionsPerHost,
     ConnectTimeout,
     MaxWaitTime,
@@ -68,6 +71,7 @@ object MongodbConfig {
   //  Default MongoDB values
   val DefaultMongoClientOptions = new JavaMongoClientOptions.Builder().build()
   val DefaultReadPreference = com.mongodb.casbah.ReadPreference.Nearest
+  val DefaultReadPreferenceTags = ""
   val DefaultConnectTimeout = DefaultMongoClientOptions.getConnectTimeout
   val DefaultConnectionsPerHost = DefaultMongoClientOptions.getConnectionsPerHost
   val DefaultMaxWaitTime = DefaultMongoClientOptions.getMaxWaitTime
@@ -130,16 +134,25 @@ object MongodbConfig {
   }
 
   /**
+   * Parse one key to the associated readPreferenceTags
+   * @param readPreferenceTags string key for identify the correct object
+   * @return TagSet object
+   */
+  def parseReadPreferenceTags(readPreferenceTags: String): TagSet = {
+    return new TagSet( readPreferenceTags.split(",").map(_.split(":")).filter(_.length == 2).map( kv => new Tag(kv(0),kv(1)) ).toList )
+  }
+
+  /**
    * Parse one key to the associated readPreference
    * @param readPreference string key for identify the correct object
    * @return readPreference object
    */
-  def parseReadPreference(readPreference: String): ReadPreference = {
+  def parseReadPreference(readPreference: String, readPreferenceTags: String): ReadPreference = {
     readPreference.toUpperCase match {
       case "PRIMARY" => com.mongodb.casbah.ReadPreference.Primary
-      case "SECONDARY" => com.mongodb.casbah.ReadPreference.Secondary
-      case "NEAREST" => com.mongodb.casbah.ReadPreference.Nearest
-      case "PRIMARYPREFERRED" => com.mongodb.casbah.ReadPreference.primaryPreferred
+      case "SECONDARY" => com.mongodb.casbah.ReadPreference.secondary(parseReadPreferenceTags(readPreferenceTags))
+      case "NEAREST" => com.mongodb.casbah.ReadPreference.nearest(parseReadPreferenceTags(readPreferenceTags))
+      case "PRIMARYPREFERRED" => com.mongodb.casbah.ReadPreference.primaryPreferred(parseReadPreferenceTags(readPreferenceTags))
       case "SECONDARYPREFERRED" => com.mongodb.casbah.ReadPreference.SecondaryPreferred
       case _ => com.mongodb.casbah.ReadPreference.Nearest
     }
