@@ -21,6 +21,7 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.catalyst.ScalaReflection
 import org.apache.spark.sql.catalyst.analysis.HiveTypeCoercion
 import org.apache.spark.sql.types._
+import org.apache.spark.unsafe.types.UTF8String
 
 /**
  * A custom RDD schema for MongoDB.
@@ -61,11 +62,29 @@ case class MongodbSchema[T <: RDD[DBObject]](
       StructType(fields)
 
     case elem =>
-      val elemType: PartialFunction[Any, DataType] =
-        ScalaReflection.typeOfObject.orElse {
+      val elemType: PartialFunction[Any, DataType] = {
+        def typeOfObject: PartialFunction[Any, DataType] = {
+          case obj: Boolean => BooleanType
+          case obj: Array[Byte] => BinaryType
+          case obj: String => StringType
+          case obj: UTF8String => StringType
+          case obj: Byte => ByteType
+          case obj: Short => ShortType
+          case obj: Int => IntegerType
+          case obj: Long => LongType
+          case obj: Float => FloatType
+          case obj: Double => DoubleType
+          case obj: java.sql.Date => DateType
+          case obj: java.math.BigDecimal => DecimalType.SYSTEM_DEFAULT
+          case obj: Decimal => DecimalType.SYSTEM_DEFAULT
+          case obj: java.sql.Timestamp => TimestampType
+          case null => NullType
+        }
+        typeOfObject.orElse {
           case date: java.util.Date => TimestampType
           case _ => StringType
         }
+      }
       elemType(elem)
 
   }
