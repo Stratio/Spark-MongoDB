@@ -88,7 +88,7 @@ with BeforeAndAfterAll {
 
   it should "prune schema to adapt it to required columns" + scalaBinaryVersion in {
 
-    MongodbRelation.pruneSchema(schema,Array()) should equal(
+    MongodbRelation.pruneSchema(schema,Array[String]()) should equal(
       new StructType(Array()))
 
     MongodbRelation.pruneSchema(schema,Array("fakeAtt")) should equal(

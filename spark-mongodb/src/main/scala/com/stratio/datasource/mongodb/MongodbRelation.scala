@@ -133,9 +133,10 @@ object MongodbRelation {
     * @param requiredColumnsWithIndex Required fields in statement including index within field for random accesses.
     * @return A new pruned schema
     */
-  private[this] def pruneSchema(
-                                          schema: StructType,
-                                          requiredColumnsWithIndex: Array[(String, Option[Int])]): StructType = {
+  def pruneSchema(
+                  schema: StructType,
+                  requiredColumnsWithIndex: Array[(String, Option[Int])]): StructType = {
+		  
     val name2sfield: Map[String, StructField] = schema.fields.map(f => f.name -> f).toMap
     StructType(
       requiredColumnsWithIndex.flatMap {
