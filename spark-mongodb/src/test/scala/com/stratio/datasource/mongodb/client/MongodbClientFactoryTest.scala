@@ -21,16 +21,20 @@ import com.stratio.datasource.MongodbTestConstants
 import com.stratio.datasource.mongodb.config.MongodbSSLOptions
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
+import org.scalatest.{BeforeAndAfterAll, BeforeAndAfter, FlatSpec, Matchers}
 
 @RunWith(classOf[JUnitRunner])
-class MongodbClientFactoryTest extends FlatSpec with Matchers with MongodbTestConstants with BeforeAndAfter {
+class MongodbClientFactoryTest extends FlatSpec
+with Matchers
+with MongodbTestConstants
+with BeforeAndAfter
+with BeforeAndAfterAll {
 
   type Client = MongoClient
 
-  val hostClient = MongodbClientFactory.getClient("127.0.0.1")._2
+  val hostClient = MongodbClientFactory.getClient("127.0.0.1").clientConnection
 
-  val hostPortCredentialsClient = MongodbClientFactory.getClient("127.0.0.1", 27017, "user", "database", "password")._2
+  val hostPortCredentialsClient = MongodbClientFactory.getClient("127.0.0.1", 27017, "user", "database", "password").clientConnection
 
   val fullClient = MongodbClientFactory.getClient(
     List(new ServerAddress("127.0.0.1:27017")),
@@ -44,7 +48,7 @@ class MongodbClientFactoryTest extends FlatSpec with Matchers with MongodbTestCo
         "connectionsPerHost" -> "20",
         "threadsAllowedToBlockForConnectionMultiplier" -> "5"
       )
-  )._2
+  ).clientConnection
 
   val gracefully = true
 
@@ -58,82 +62,90 @@ class MongodbClientFactoryTest extends FlatSpec with Matchers with MongodbTestCo
     hostClient shouldBe a [Client]
     hostPortCredentialsClient shouldBe a [Client]
     fullClient shouldBe a [Client]
+
+    MongodbClientFactory.closeAll(notGracefully)
   }
 
   it should "Valid clients size when getting the same client " in {
-    val sameHostClient = MongodbClientFactory.getClient("127.0.0.1")._2
+    val sameHostClient = MongodbClientFactory.getClient("127.0.0.1").clientConnection
 
-    MongodbClientFactory.mongoClient.size should be (1)
+    MongodbClientFactory.getClientPoolSize should be (1)
 
-    val otherHostClient = MongodbClientFactory.getClient("127.0.0.1")._2
+    val otherHostClient = MongodbClientFactory.getClient("127.0.0.1").clientConnection
 
-    MongodbClientFactory.mongoClient.size should be (2)
+    MongodbClientFactory.getClientPoolSize should be (2)
+
+    MongodbClientFactory.closeAll(notGracefully)
   }
 
   it should "Valid clients size when getting the same client and set free " in {
-    val sameHostClient = MongodbClientFactory.getClient("127.0.0.1")._2
+    val sameHostClient = MongodbClientFactory.getClient("127.0.0.1").clientConnection
 
-    MongodbClientFactory.mongoClient.size should be (1)
+    MongodbClientFactory.getClientPoolSize should be (1)
 
-    MongodbClientFactory.setFreeConnection(sameHostClient)
+    MongodbClientFactory.setFreeConnectionByClient(sameHostClient)
 
-    val otherHostClient = MongodbClientFactory.getClient("127.0.0.1")._2
+    val otherHostClient = MongodbClientFactory.getClient("127.0.0.1").clientConnection
 
-    MongodbClientFactory.mongoClient.size should be (1)
+    MongodbClientFactory.getClientPoolSize should be (1)
+
+    MongodbClientFactory.closeAll(notGracefully)
   }
 
   it should "Valid clients size when closing one client gracefully " in {
-    val sameHostClient = MongodbClientFactory.getClient("127.0.0.1")._2
+    val sameHostClient = MongodbClientFactory.getClient("127.0.0.1").clientConnection
 
-    MongodbClientFactory.mongoClient.size should be (1)
+    MongodbClientFactory.getClientPoolSize should be (1)
 
-    MongodbClientFactory.close(sameHostClient)
+    MongodbClientFactory.closeByClient(sameHostClient)
 
-    MongodbClientFactory.mongoClient.size should be (1)
+    MongodbClientFactory.getClientPoolSize should be (1)
+
+    MongodbClientFactory.closeAll(notGracefully)
   }
 
   it should "Valid clients size when closing one client not gracefully " in {
-    val sameHostClient = MongodbClientFactory.getClient("127.0.0.1")._2
+    val sameHostClient = MongodbClientFactory.getClient("127.0.0.1").clientConnection
 
-    MongodbClientFactory.mongoClient.size should be (1)
+    MongodbClientFactory.getClientPoolSize should be (1)
 
-    MongodbClientFactory.close(sameHostClient, notGracefully)
+    MongodbClientFactory.closeByClient(sameHostClient, notGracefully)
 
-    MongodbClientFactory.mongoClient.size should be (0)
+    MongodbClientFactory.getClientPoolSize should be (0)
+
+    MongodbClientFactory.closeAll(notGracefully)
   }
 
   it should "Valid clients size when closing all clients gracefully " in {
-    val sameHostClient = MongodbClientFactory.getClient("127.0.0.1")._2
-    val otherHostClient = MongodbClientFactory.getClient("127.0.0.1")._2
+    val sameHostClient = MongodbClientFactory.getClient("127.0.0.1").clientConnection
+    val otherHostClient = MongodbClientFactory.getClient("127.0.0.1").clientConnection
 
-    MongodbClientFactory.mongoClient.size should be (2)
-
-    MongodbClientFactory.closeAll(gracefully, 1)
-
-    MongodbClientFactory.mongoClient.size should be (2)
-
-    MongodbClientFactory.setFreeConnection(sameHostClient)
+    MongodbClientFactory.getClientPoolSize should be (2)
 
     MongodbClientFactory.closeAll(gracefully, 1)
 
-    MongodbClientFactory.mongoClient.size should be (1)
+    MongodbClientFactory.getClientPoolSize should be (2)
+
+    MongodbClientFactory.setFreeConnectionByClient(sameHostClient)
+
+    MongodbClientFactory.closeAll(gracefully, 1)
+
+    MongodbClientFactory.getClientPoolSize should be (1)
+
+    MongodbClientFactory.closeAll(notGracefully)
   }
 
   it should "Valid clients size when closing all clients not gracefully " in {
-    val sameHostClient = MongodbClientFactory.getClient("127.0.0.1")._2
-    val otherHostClient = MongodbClientFactory.getClient("127.0.0.1")._2
+    val sameHostClient = MongodbClientFactory.getClient("127.0.0.1").clientConnection
+    val otherHostClient = MongodbClientFactory.getClient("127.0.0.1").clientConnection
     val gracefully = false
 
-    MongodbClientFactory.mongoClient.size should be (2)
+    MongodbClientFactory.getClientPoolSize should be (2)
 
     MongodbClientFactory.closeAll(notGracefully)
 
-    MongodbClientFactory.mongoClient.size should be (0)
-  }
+    MongodbClientFactory.getClientPoolSize should be (0)
 
-
-  after {
     MongodbClientFactory.closeAll(notGracefully)
   }
-
 }
