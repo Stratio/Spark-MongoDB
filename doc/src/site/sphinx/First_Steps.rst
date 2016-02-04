@@ -148,6 +148,7 @@ To save a DataFrame in MongoDB you should use the saveToMongodb() function as fo
  import com.mongodb.casbah.{WriteConcern => MongodbWriteConcern}
  import com.stratio.datasource.mongodb._
  import com.stratio.datasource.mongodb.config._
+ import com.stratio.datasource.mongodb.config.MongodbConfig._
 
  val saveConfig = MongodbConfigBuilder(Map(Host -> List("localhost:27017"), Database -> "highschool", Collection ->"students", SamplingRatio -> 1.0, WriteConcern -> "normal", SplitSize -> 8, SplitKey -> "_id"))
  dataFrame.saveToMongodb(saveConfig.build)
@@ -162,7 +163,8 @@ In the example we can see how to use the fromMongoDB() function to read from Mon
  import com.stratio.datasource.mongodb._
  import com.stratio.datasource.mongodb.schema._
  import com.stratio.datasource.mongodb.writer._
-  import com.stratio.datasource.mongodb.config._
+ import com.stratio.datasource.mongodb.config._
+ import com.stratio.datasource.mongodb.config.MongodbConfig._
  import org.apache.spark.sql.SQLContext
  import com.stratio.datasource.util.Config._
 
