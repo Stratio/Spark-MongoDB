@@ -11,12 +11,12 @@ This library requires Apache Spark, Scala 2.10 or Scala 2.11, Casbah 2.8.X
 
 #### Latest compatible versions####
 
-| spark-MongoDB | Apache Spark  | MongoDB  | 
-| ------------- | ------------- | -------- | 
-| 0.10.x        | 1.5.x         | 3.0.x    | 
-| 0.8.2 - 0.9.2 | 1.4.0         | 3.0.x    | 
-| 0.8.1         | 1.3.0         | 3.0.x    | 
-| 0.8.0         | 1.2.1         | 3.0.x    | 
+| spark-MongoDB     | Apache Spark  | MongoDB  | 
+| ----------------- | ------------- | -------- | 
+| 0.10.x - 0.11.x   | 1.5.x         | 3.0.x    | 
+| 0.8.2 - 0.9.2     | 1.4.0         | 3.0.x    | 
+| 0.8.1             | 1.3.0         | 3.0.x    | 
+| 0.8.0             | 1.2.1         | 3.0.x    | 
 
 
 ## How to use Spark-MongoDB##

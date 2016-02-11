@@ -61,7 +61,7 @@ Jars option:
        ____              __
       / __/__  ___ _____/ /__
      _\ \/ _ \/ _ `/ __/  '_/
-    /___/ .__/\_,_/_/ /_/\_\   version 1.4.0
+    /___/ .__/\_,_/_/ /_/\_\   version 1.5.2
        /_/
  
  Using Scala version 2.10.4 (OpenJDK 64-Bit Server VM, Java 1.7.0_79)

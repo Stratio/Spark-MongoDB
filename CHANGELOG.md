@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.11.0 (February 2016)
+
+* Compatibility with spark 1.6
+* Refactor mongo clients  to improve performance
+
 ## 0.10.1 (November 2015)
 
 * Allow filter by _id like an ObjectId or another type
