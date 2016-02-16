@@ -61,7 +61,7 @@ Jars option:
        ____              __
       / __/__  ___ _____/ /__
      _\ \/ _ \/ _ `/ __/  '_/
-    /___/ .__/\_,_/_/ /_/\_\   version 1.4.0
+    /___/ .__/\_,_/_/ /_/\_\   version 1.5.2
        /_/
  
  Using Scala version 2.10.4 (OpenJDK 64-Bit Server VM, Java 1.7.0_79)
@@ -148,6 +148,7 @@ To save a DataFrame in MongoDB you should use the saveToMongodb() function as fo
  import com.mongodb.casbah.{WriteConcern => MongodbWriteConcern}
  import com.stratio.datasource.mongodb._
  import com.stratio.datasource.mongodb.config._
+ import com.stratio.datasource.mongodb.config.MongodbConfig._
 
  val saveConfig = MongodbConfigBuilder(Map(Host -> List("localhost:27017"), Database -> "highschool", Collection ->"students", SamplingRatio -> 1.0, WriteConcern -> "normal", SplitSize -> 8, SplitKey -> "_id"))
  dataFrame.saveToMongodb(saveConfig.build)
@@ -162,7 +163,8 @@ In the example we can see how to use the fromMongoDB() function to read from Mon
  import com.stratio.datasource.mongodb._
  import com.stratio.datasource.mongodb.schema._
  import com.stratio.datasource.mongodb.writer._
-  import com.stratio.datasource.mongodb.config._
+ import com.stratio.datasource.mongodb.config._
+ import com.stratio.datasource.mongodb.config.MongodbConfig._
  import org.apache.spark.sql.SQLContext
  import com.stratio.datasource.util.Config._
 
@@ -243,6 +245,29 @@ Then:
  sqlContext.sql("CREATE TEMPORARY TABLE students_table USING com.stratio.datasource.mongodb OPTIONS (host 'host:port', database 'highschool', collection 'students')")
  sqlContext.sql("SELECT * FROM students_table").collect()
 
+Java API
+--------
+
+You need to add spark-mongodb and spark-sql dependencies to the java project.
+::
+
+public class SparkMongodbJavaExample {
+
+    public static void main(String[] args) {
+
+        JavaSparkContext sc = new JavaSparkContext("local[2]", "test spark-mongodb java");
+        SQLContext sqlContext = new org.apache.spark.sql.SQLContext(sc);
+        Map options = new HashMap();
+        options.put("host", "localhost:27017");
+        options.put("database", "highschoolCredentials");
+        options.put("collection", "students");
+        options.put("credentials", "user,highschoolCredentials,password");
+
+        DataFrame df = sqlContext.read().format("com.stratio.datasource.mongodb").options(options).load();
+        df.registerTempTable("students");
+        sqlContext.sql("SELECT * FROM students");
+        df.show();        }
+}
 
 R API
 -----
