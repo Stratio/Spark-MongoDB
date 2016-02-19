@@ -41,12 +41,15 @@ object MongodbConfig {
   val SamplingRatio = "schema_samplingRatio"
   val SplitSize = "splitSize"
   val SplitKey = "splitKey"
+  val SplitKeyType = "splitKeyType"
+  val SplitKeyMin = "splitKeyMin"
+  val SplitKeyMax = "splitKeyMax"
   val UpdateFields = "updateFields"
   val Language = "language"
   val ConnectionsTime = "connectionsTime"
   val CursorBatchSize = "cursorBatchSize"
   val BulkBatchSize = "bulkBatchSize"
-  val IdAsObjectId = "idasobjectid"
+  val IdAsObjectId = "idAsObjectId"
 
   // List of parameters for mongoClientOptions
   val ListMongoClientOptions = List(
