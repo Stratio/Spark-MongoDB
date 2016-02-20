@@ -20,6 +20,7 @@ import java.util.regex.Pattern
 import com.mongodb.QueryBuilder
 import com.mongodb.casbah.Imports
 import com.mongodb.casbah.Imports._
+import com.stratio.datasource.mongodb.sources.Near
 import org.apache.spark.sql.sources._
 import com.stratio.datasource.util.Config
 import com.stratio.datasource.mongodb.config.MongodbConfig
@@ -86,6 +87,10 @@ class SourceFilters(
         queryBuilder.put(attribute).regex(Pattern.compile("^.*" + value + "$"))
       case StringContains(attribute, value) if !parentFilterIsNot =>
         queryBuilder.put(attribute).regex(Pattern.compile(".*" + value + ".*"))
+      case Near(attribute, x, y, None) =>
+        queryBuilder.put(attribute).near(x, y)
+      case Near(attribute, x, y, Some(max)) =>
+        queryBuilder.put(attribute).near(x, y, max)
       case Not(filter) =>
         new SourceFilters(Array(filter), true).filtersToDBObject()
     }
