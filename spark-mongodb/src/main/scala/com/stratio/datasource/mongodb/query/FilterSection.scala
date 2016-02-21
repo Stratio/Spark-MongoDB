@@ -40,11 +40,11 @@ trait FilterSection {
   def filtersToDBObject(): DBObject
 }
 
-object NoFilters extends FilterSection {
+case object NoFilters extends FilterSection {
   override def filtersToDBObject(): Imports.DBObject = QueryBuilder.start.get()
 }
 
-class SourceFilters(
+case class SourceFilters(
                      sFilters: Array[Filter],
                      parentFilterIsNot: Boolean = false
                    )(implicit config: Config) extends FilterSection {
@@ -73,13 +73,13 @@ class SourceFilters(
         queryBuilder.put(attribute).notEquals(null)
       case And(leftFilter, rightFilter) if !parentFilterIsNot =>
         queryBuilder.and(
-          new SourceFilters(Array(leftFilter)).filtersToDBObject(),
-          new SourceFilters(Array(rightFilter)).filtersToDBObject()
+          SourceFilters(Array(leftFilter)).filtersToDBObject(),
+          SourceFilters(Array(rightFilter)).filtersToDBObject()
         )
       case Or(leftFilter, rightFilter)  if !parentFilterIsNot =>
         queryBuilder.or(
-          new SourceFilters(Array(leftFilter)).filtersToDBObject(),
-          new SourceFilters(Array(rightFilter)).filtersToDBObject()
+          SourceFilters(Array(leftFilter)).filtersToDBObject(),
+          SourceFilters(Array(rightFilter)).filtersToDBObject()
         )
       case StringStartsWith(attribute, value) if !parentFilterIsNot =>
         queryBuilder.put(attribute).regex(Pattern.compile("^" + value + ".*$"))
@@ -92,7 +92,7 @@ class SourceFilters(
       case Near(attribute, x, y, Some(max)) =>
         queryBuilder.put(attribute).near(x, y, max)
       case Not(filter) =>
-        new SourceFilters(Array(filter), true).filtersToDBObject()
+        SourceFilters(Array(filter), true).filtersToDBObject()
     }
 
     queryBuilder.get
