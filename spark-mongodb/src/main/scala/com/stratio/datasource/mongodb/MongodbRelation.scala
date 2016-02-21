@@ -43,7 +43,7 @@ class MongodbRelation(private val config: Config,
                        @transient val sqlContext: SQLContext) extends BaseRelation
 with PrunedFilteredScan with InsertableRelation {
 
-  implicit val c: Config = config
+  implicit val _: Config = config
 
   import MongodbRelation._
 
