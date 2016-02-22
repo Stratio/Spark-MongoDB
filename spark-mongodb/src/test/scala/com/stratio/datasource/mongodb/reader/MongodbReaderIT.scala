@@ -26,6 +26,7 @@ import com.stratio.datasource.mongodb._
 import com.stratio.datasource.mongodb.client.MongodbClientFactory
 import com.stratio.datasource.mongodb.config.{MongodbConfig, MongodbConfigBuilder}
 import com.stratio.datasource.mongodb.partitioner.MongodbPartition
+import com.stratio.datasource.mongodb.query.FilterSection
 import com.stratio.datasource.partitioner.PartitionRange
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.mongodb.{TemporaryTestSQLContext, TestSQLContext}
@@ -46,7 +47,7 @@ with BeforeAndAfterAll {
   private val host: String = "localhost"
   private val collection: String = "testCol"
 
-  val testConfig = MongodbConfigBuilder()
+  implicit val testConfig = MongodbConfigBuilder()
     .set(MongodbConfig.Host, List(host + ":" + mongoPort))
     .set(MongodbConfig.Database, db)
     .set(MongodbConfig.Collection, collection)
@@ -57,7 +58,7 @@ with BeforeAndAfterAll {
 
   it should "throw IllegalStateException if next() operation is invoked after closing the Reader" +
     scalaBinaryVersion in {
-    val mongodbReader = new MongodbReader(testConfig,Array(),Array())
+    val mongodbReader = new MongodbReader(testConfig,Array(), FilterSection(Array()))
     mongodbReader.init(
       MongodbPartition(0,
         testConfig[Seq[String]](MongodbConfig.Host),
@@ -73,7 +74,7 @@ with BeforeAndAfterAll {
   it should "not advance the cursor position when calling hasNext() operation" + scalaBinaryVersion in {
     withEmbedMongoFixture(complexFieldAndType1) { mongodbProc =>
 
-      val mongodbReader = new MongodbReader(testConfig,Array(),Array())
+      val mongodbReader = new MongodbReader(testConfig,Array(),FilterSection(Array()))
       mongodbReader.init(
         MongodbPartition(0,
           testConfig[Seq[String]](MongodbConfig.Host),
@@ -87,7 +88,7 @@ with BeforeAndAfterAll {
   it should "advance the cursor position when calling next() operation" + scalaBinaryVersion in {
     withEmbedMongoFixture(complexFieldAndType1) { mongodbProc =>
 
-      val mongodbReader = new MongodbReader(testConfig,Array(),Array())
+      val mongodbReader = new MongodbReader(testConfig,Array(),FilterSection(Array()))
       mongodbReader.init(
         MongodbPartition(0,
           testConfig[Seq[String]](MongodbConfig.Host),
@@ -120,7 +121,7 @@ with BeforeAndAfterAll {
     withEmbedMongoFixture(primitiveFieldAndType) { mongodbProc =>
       //Test data preparation
       val requiredColumns = Array("_id","string", "integer")
-      val filters = Array[Filter](EqualTo("boolean", true))
+      val filters = FilterSection(Array[Filter](EqualTo("boolean", true)))
       val mongodbReader =
         new MongodbReader(testConfig, requiredColumns, filters)
 
@@ -156,7 +157,7 @@ with BeforeAndAfterAll {
 
       //Test data preparation
       val requiredColumns = Array("_id","string", "integer")
-      val filters = Array[Filter](EqualTo("boolean", true))
+      val filters = FilterSection(Array[Filter](EqualTo("boolean", true)))
       val mongodbReader =
         new MongodbReader(testConfig, requiredColumns, filters)
 

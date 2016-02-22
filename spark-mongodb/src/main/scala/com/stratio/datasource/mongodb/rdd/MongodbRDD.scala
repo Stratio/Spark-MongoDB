@@ -20,8 +20,9 @@ import com.stratio.datasource.mongodb.partitioner.{MongodbPartition, MongodbPart
 import com.stratio.datasource.util.Config
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SQLContext
-import org.apache.spark.sql.sources.Filter
 import org.apache.spark.{Partition, TaskContext}
+
+import com.stratio.datasource.mongodb.query.{NoFilters, FilterSection}
 
 /**
  * @param sc Spark SQLContext
@@ -34,7 +35,7 @@ class MongodbRDD(
   config: Config,
   partitioner: MongodbPartitioner,
   requiredColumns: Array[String] = Array(),
-  filters: Array[Filter] = Array())
+  filters: FilterSection = NoFilters)
   extends RDD[DBObject](sc.sparkContext, deps = Nil) {
 
   override def getPartitions: Array[Partition] =
