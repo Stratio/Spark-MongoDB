@@ -27,8 +27,17 @@ import com.stratio.datasource.mongodb.config.MongodbConfig
 
 object FilterSection {
 
+  /**
+    * Implicit conversion to pass from an array of [[Filter]] to [[FilterSection]] filter description object.
+    *
+    * @param sFilters
+    * @param config
+    * @return [[FilterSection]] built from `sFilters`
+    */
   implicit def srcFilArr2filSel(sFilters: Array[Filter])(implicit config: Config): FilterSection =
     new SourceFilters(sFilters)
+
+  //Factory methods
 
   def apply(sFilters: Array[Filter])(implicit config: Config): FilterSection =
     srcFilArr2filSel(sFilters)
@@ -36,14 +45,39 @@ object FilterSection {
   def apply(): FilterSection = NoFilters
 }
 
+/**
+  * Trait to be implemented to those classes describing the Filter section of a MongoDB query.
+  */
 trait FilterSection {
+  /**
+    * @return a [[DBObject]] describing the filters to apply to a partition.
+    */
   def filtersToDBObject(): DBObject
 }
 
+/**
+  * Filter described by a [[DBObject]] as it is used by Casbah (https://mongodb.github.io/casbah/)
+  * @param filterDesc
+  */
+case class RawFilter(filterDesc: DBObject) extends FilterSection {
+  override def filtersToDBObject(): Imports.DBObject = filterDesc
+}
+
+/**
+  * No filter to be applied
+  */
 case object NoFilters extends FilterSection {
   override def filtersToDBObject(): Imports.DBObject = QueryBuilder.start.get()
 }
 
+/**
+  * This [[FilterSection]] is described by an array of [[org.apache.spark.sql.sources.Filter]] where each
+  * element is a restriction.
+  *
+  * @param sFilters All filters to be applied (AND)
+  * @param parentFilterIsNot `true` iff the filter is negated: NOT (sFilters[0] AND ... AND sFilters[n-1])
+  * @param config Access configuration
+  */
 case class SourceFilters(
                      sFilters: Array[Filter],
                      parentFilterIsNot: Boolean = false
