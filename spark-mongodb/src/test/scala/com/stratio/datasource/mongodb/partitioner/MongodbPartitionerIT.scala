@@ -21,6 +21,7 @@ import com.stratio.datasource.MongodbTestConstants
 import com.stratio.datasource.mongodb._
 import com.stratio.datasource.mongodb.client.MongodbClientFactory
 import com.stratio.datasource.mongodb.config.{MongodbConfig, MongodbConfigBuilder}
+import com.stratio.datasource.mongodb.config.MongodbConfig._
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfter, Matchers, FlatSpec}
@@ -30,6 +31,7 @@ class MongodbPartitionerIT extends FlatSpec
 with BeforeAndAfter
 with Matchers
 with MongoClusterEmbedDatabase
+with MongoEmbedDatabase
 with TestBsonData
 with MongodbTestConstants
 with BeforeAndAfterAll {
@@ -46,7 +48,6 @@ with BeforeAndAfterAll {
     "replicaSet2" -> List(mongoPort+4, mongoPort+5, mongoPort+6))
 
   behavior of "MongodbPartitioner"
-
   it should "get proper partition ranges when connecting" + " to a sharded cluster" + scalaBinaryVersion in {
 
     val testConfig = MongodbConfigBuilder()
@@ -88,5 +89,39 @@ with BeforeAndAfterAll {
   override def afterAll {
     MongodbClientFactory.closeAll(false)
   }
+
+  it should "get proper partition ranges using splitVector with bounds" + scalaBinaryVersion in {
+
+    import com.mongodb.casbah.Imports.MongoDBObject
+    val dataSet = (1 to 15000).map(n=> MongoDBObject("name" -> s"name$n" , "id" -> n)).toList
+
+    withEmbedMongoFixture(dataSet) { mongoProc =>
+      val mongoClient = com.mongodb.casbah.MongoClient("localhost", mongoPort)
+
+      val coll = mongoClient(db)("testCol")
+      // to run splitVector index by the splitKey is needed
+      coll.createIndex(MongoDBObject("id" ->1))
+
+      val testConfig = MongodbConfigBuilder(Map(
+        Host -> List(s"localhost:$mongoPort"),
+        Database -> db,
+        Collection -> "testCol",
+        SamplingRatio -> 1.0,
+        SplitSize -> 1,
+        SplitKey -> "id",
+        SplitSize -> "1",
+        SplitKeyType -> "int",
+        SplitKeyMin -> "500",
+        SplitKeyMax -> "14000")
+      ).build()
+
+      val partitioner = new MongodbPartitioner(testConfig)
+      val partitions = partitioner.computePartitions().toList.size
+
+      //With the collection generated and this config, 3 partitions would be created
+      partitions should equal(3)
+    }
+  }
+
 
 }
