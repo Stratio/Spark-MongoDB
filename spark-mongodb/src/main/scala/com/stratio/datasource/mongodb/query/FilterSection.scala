@@ -20,7 +20,7 @@ import java.util.regex.Pattern
 import com.mongodb.QueryBuilder
 import com.mongodb.casbah.Imports
 import com.mongodb.casbah.Imports._
-import com.stratio.datasource.mongodb.sources.Near
+import com.stratio.datasource.mongodb.sources.{NearSphere, Near}
 import org.apache.spark.sql.sources._
 import com.stratio.datasource.util.Config
 import com.stratio.datasource.mongodb.config.MongodbConfig
@@ -91,6 +91,10 @@ case class SourceFilters(
         queryBuilder.put(attribute).near(x, y)
       case Near(attribute, x, y, Some(max)) =>
         queryBuilder.put(attribute).near(x, y, max)
+      case NearSphere(attribute, longitude, latitude, None) =>
+        queryBuilder.put(attribute).nearSphere(longitude, latitude)
+      case NearSphere(attribute, longitude, latitude, Some(maxDistance)) =>
+        queryBuilder.put(attribute).nearSphere(longitude, latitude, maxDistance)
       case Not(filter) =>
         SourceFilters(Array(filter), true).filtersToDBObject()
     }

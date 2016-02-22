@@ -17,10 +17,19 @@ package com.stratio.datasource.mongodb.sources
 
 import org.apache.spark.sql.sources.Filter
 
-trait GeoFilter extends Filter
+trait GeoFilter extends Filter {
+  val attribute: String
+  val maxDistance: Option[Double]
+}
 
 case class Near(
                  attribute: String,
                  x: Double, y: Double,
                  maxDistance: Option[Double] = None
                ) extends GeoFilter
+
+case class NearSphere(
+                       attribute: String,
+                       longitude: Double, latitude: Double,
+                       maxDistance: Option[Double] = None
+                     ) extends GeoFilter
