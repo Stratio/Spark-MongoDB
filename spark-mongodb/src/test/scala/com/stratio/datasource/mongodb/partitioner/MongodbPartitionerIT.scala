@@ -98,8 +98,9 @@ with BeforeAndAfterAll {
     withEmbedMongoFixture(dataSet) { mongoProc =>
       val mongoClient = com.mongodb.casbah.MongoClient("localhost", mongoPort)
 
-      val coll = mongoClient(db)("testCol")
-      // to run splitVector index by the splitKey is needed
+      val coll = mongoClient(db)("testCol"
+      )
+      // to run splitVector index by the splitKey field is needed
       coll.createIndex(MongoDBObject("id" ->1))
 
       val testConfig = MongodbConfigBuilder(Map(
@@ -118,7 +119,7 @@ with BeforeAndAfterAll {
       val partitioner = new MongodbPartitioner(testConfig)
       val partitions = partitioner.computePartitions().toList.size
 
-      //With the collection generated and this config, 3 partitions would be created
+      //With the dataSet for this test and this splitVector config, 3 partitions would be created
       partitions should equal(3)
     }
   }

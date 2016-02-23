@@ -139,6 +139,8 @@ Configuration parameters
 SplitKey parameters
 -------------------
 
+An index is needed in the splitKey field.
+
 All splitKey parameters are optionals.
 
     * splitKey: Field to split for.
