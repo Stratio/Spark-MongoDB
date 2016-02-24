@@ -203,7 +203,7 @@ class MongodbPartitioner(config: Config) extends Partitioner[MongodbPartition] {
         val shardClient = MongodbClientFactory.getClient(shardHost)
         val data = shardClient.clientConnection.getDB("admin").command(cmd)
         val splitKeys = data.as[List[DBObject]]("splitKeys").map(Option(_))
-        val ranges = (None +: splitKeys) zip (splitKeys :+ None)
+        val ranges = (splitKeyMin +: splitKeys) zip (splitKeys :+ splitKeyMax )
 
         shards.close()
 
