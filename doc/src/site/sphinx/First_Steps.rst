@@ -139,11 +139,12 @@ There are two ways to set up configuration:
 
 1. Using MongodbConfigBuilder, which should contains all the config with the right types.
 
-2. Using DataFrame API to read/write with a Map[String, String] or setting configuration from a SQL sentence as in:
-     "CREATE TEMPORARY TABLE tableName USING com.stratio.datasource.mongodb
-      OPTIONS (host 'host:port', database 'highschool', collection 'students')"
+2. Using DataFrame API to read/write with a Map[String, String] or setting configuration from a SQL sentence (in String to String format) as in:
 
-Second way is in String to String format.
+   ::
+
+      CREATE TEMPORARY TABLE tableName USING com.stratio.datasource.mongodb
+      OPTIONS (host 'host:port', database 'highschool', collection 'students')"
 
 
 Credentials
@@ -159,7 +160,6 @@ From MongodbConfigBuilder, you have to create a list of MongodbCredentials, here
     List(com.stratio.datasource.mongodb.MongodbCredentials(user, database, password.toCharArray))
     )).build
 
-::
 
 In other case, (String format) you have to use the format set in the table above.
 
@@ -169,7 +169,7 @@ In other case, (String format) you have to use the format set in the table above
 
         "user,database,password"
 
-    ::
+
 
     Two credentials:
 
@@ -177,7 +177,6 @@ In other case, (String format) you have to use the format set in the table above
 
         "user1,database1,password1;user2,database2,password2"
 
-    ::
 
 
 SplitKey parameters
@@ -187,23 +186,24 @@ An index is needed in the splitKey field.
 
 All splitKey parameters are optionals.
 
-    * splitKey: Field to split for.
+    splitKey: Field to split for.
 
-    * splitSize: Max size of each chunk in MB.
+    splitSize: Max size of each chunk in MB.
 
+If you want to use explicit boundaries to choose what data get from MongoDB, you will have to use these parameters:
 
-If you want to use explicit bounds you will have to use these parameters:
-
-    * splitKeyType: Data type of splitKey field. Next MongoDB types are supported:
+    - splitKeyType: Data type of splitKey field. Next MongoDB types are supported:
         - "isoDate"
         - "int"
         - "long"
         - "double"
         - "string"
 
-    * splitKeyMin: Min value of the split in string format.
+    - splitKeyMin: Min value of the split in string format.
 
-    * splitKeyMax: Max value of the split in string format.
+    - splitKeyMax: Max value of the split in string format.
+
+    **Note:** Only data between boundaries would be available
 
 
 Examples

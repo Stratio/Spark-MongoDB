@@ -159,18 +159,23 @@ class MongodbPartitioner(config: Config) extends Partitioner[MongodbPartition] {
 
     val customSplitIsDefined = requiredCustomSplitParams.forall(key => config.get(key).isDefined)
 
-    val splitBounds= if(customSplitIsDefined){
+    val (splitBounds , splitKeyMin , splitKeyMax) = if(customSplitIsDefined){
 
       val keyType = config[String](MongodbConfig.SplitKeyType)
-      val splitKeyMin = BoundWithCorrectType(config[String](MongodbConfig.SplitKeyMin), keyType)
-      val splitKeyMax = BoundWithCorrectType(config[String](MongodbConfig.SplitKeyMax), keyType)
+      val splitKeyMinValue = BoundWithCorrectType(config[String](MongodbConfig.SplitKeyMin), keyType)
+      val splitKeyMaxValue = BoundWithCorrectType(config[String](MongodbConfig.SplitKeyMax), keyType)
 
-      MongoDBObject(
-        "min" -> MongoDBObject(splitKey -> splitKeyMin),
-        "max" -> MongoDBObject(splitKey -> splitKeyMax)
+      val splitKeyMin = MongoDBObject(splitKey -> splitKeyMinValue)
+      val splitKeyMax = MongoDBObject(splitKey -> splitKeyMaxValue)
+
+      val bounds = MongoDBObject(
+        "min" -> splitKeyMin,
+        "max" -> splitKeyMax
       )
+
+      (bounds, Some(splitKeyMin), Some(splitKeyMax))
     }
-    else MongoDBObject.empty
+    else (MongoDBObject.empty, None, None)
 
     val maxChunkSize = config.get[String](MongodbConfig.SplitSize).map(_.toInt)
       .getOrElse(MongodbConfig.DefaultSplitSize)
@@ -185,7 +190,7 @@ class MongodbPartitioner(config: Config) extends Partitioner[MongodbPartition] {
     val ranges = Try {
       val data = mongoClient("admin").command(cmd)
       val splitKeys = data.as[List[DBObject]]("splitKeys").map(Option(_))
-      val ranges = (None +: splitKeys) zip (splitKeys :+ None)
+      val ranges = (splitKeyMin +: splitKeys) zip (splitKeys :+ splitKeyMax)
 
       ranges.toSeq
     }.recover {
