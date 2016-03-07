@@ -16,6 +16,7 @@
 package com.stratio.datasource.mongodb.rdd
 
 import com.mongodb.casbah.Imports._
+import com.stratio.datasource.mongodb.query.FilterSection
 import com.stratio.datasource.mongodb.reader.MongodbReader
 import com.stratio.datasource.util.Config
 import org.apache.spark._
@@ -35,7 +36,7 @@ class MongodbRDDIterator(
   partition: Partition,
   config: Config,
   requiredColumns: Array[String],
-  filters: Array[Filter])
+  filters: FilterSection)
   extends Iterator[DBObject] {
 
   private var closed = false
@@ -75,7 +76,7 @@ class MongodbRDDIterator(
   }
 
   def initReader() = {
-    val reader = new MongodbReader(config,requiredColumns,filters)
+    val reader = new MongodbReader(config, requiredColumns, filters)
     reader.init(partition)
     reader
   }
