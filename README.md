@@ -1,4 +1,6 @@
 # Spark-Mongodb
+
+[![Join the chat at https://gitter.im/Stratio/Spark-MongoDB](https://badges.gitter.im/Stratio/Spark-MongoDB.svg)](https://gitter.im/Stratio/Spark-MongoDB?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 Spark-Mongodb is a library that allows the user to read/write data with [Spark SQL](http://spark.apache.org/docs/latest/sql-programming-guide.html)
 from/into MongoDB collections.
 
