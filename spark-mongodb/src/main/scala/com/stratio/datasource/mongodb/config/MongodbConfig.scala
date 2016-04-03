@@ -84,8 +84,8 @@ object MongodbConfig {
   val DefaultSplitSize = 10
   val DefaultSplitKey = "_id"
   val DefaultConnectionsTime = 120000L
-  val DefaultCursorBatchSize = 101
-  val DefaultBulkBatchSize = 1000
+  val DefaultCursorBatchSize = "101"
+  val DefaultBulkBatchSize = "1000"
   val DefaultIdAsObjectId = "true"
 
   /**
@@ -105,7 +105,7 @@ object MongodbConfig {
     val optionalProperties: List[String] = List(Credentials,SSLOptions, UpdateFields)
 
     (properties /: optionalProperties){
-      /** We will assume credentials are provided like 'user,database,password;user,database,password;...' */
+      /** We will assume credentials are provided like 'user,database,password;...;user,database,password' */
       case (properties,Credentials) =>
         parameters.get(Credentials).map{ credentialInput =>
           val credentials = credentialInput.split(";").map(_.split(",")).toList
@@ -122,7 +122,7 @@ object MongodbConfig {
           properties + (SSLOptions -> ssloptions)
         } getOrElse properties
 
-      /** We will assume fields are provided like 'user,database,password...' */
+      /** We will assume fields are provided like 'field1,field2,...,fieldN' */
       case (properties, UpdateFields) => {
         parameters.get(UpdateFields).map{ updateInputs =>
           val updateFields = updateInputs.split(",")

@@ -102,7 +102,7 @@ trait Config extends Serializable {
   val properties: Map[Property, Any]
 
   /**  Returns the value associated with a key, or a default value if the key is not contained in the configuration object.
-
+   *   Generic is required in order to get the correct type of the property, in any case for a type conversion.
    *   @param   key Desired property.
    *   @param   default Value in case no binding for `key` is found in the map.
    *   @tparam  T Result type of the default computation.
