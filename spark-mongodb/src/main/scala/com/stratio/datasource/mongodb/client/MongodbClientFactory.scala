@@ -26,6 +26,7 @@ import com.mongodb.casbah.Imports._
 import com.mongodb.casbah.MongoClient
 import com.stratio.datasource.mongodb.client.MongodbClientActor._
 import com.stratio.datasource.mongodb.config.MongodbSSLOptions
+import com.typesafe.config.ConfigFactory
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
@@ -43,7 +44,7 @@ object MongodbClientFactory {
   /**
    * Scheduler that close connections automatically when the timeout was expired
    */
-  private val actorSystem = ActorSystem()
+  private val actorSystem = ActorSystem("mongodbClientFactory", ConfigFactory.load(ConfigFactory.parseString("akka.daemonic=on")))
   private val scheduler = actorSystem.scheduler
   private val SecondsToCheckConnections = 60
   private val mongoConnectionsActor = actorSystem.actorOf(Props(new MongodbClientActor), "mongoConnectionActor")
