@@ -62,7 +62,7 @@ abstract class ConfigBuilder[Builder<:ConfigBuilder[Builder] ](
    */
   def build(): Config = new Config {
 
-    val properties = builder.properties
+    val properties = builder.properties.map(kv => kv.copy(_1 = kv._1.toLowerCase))
 
     require(
       requiredProperties.forall(properties.isDefinedAt),
@@ -109,7 +109,7 @@ trait Config extends Serializable {
    *   @return  the value associated with `key` if it exists,
    *            otherwise the result of the `default` computation.
    */
-  def getOrElse[T](key: Property, default: => T): T = properties.get(key) match {
+  def getOrElse[T](key: Property, default: => T): T = properties.get(key.toLowerCase) match {
     case Some(v) => v.asInstanceOf[T]
     case None => default
   }
@@ -121,7 +121,7 @@ trait Config extends Serializable {
    * @return An optional value of expected type
    */
   def get[T: ClassTag](property: Property): Option[T] =
-    properties.get(property).map(_.asInstanceOf[T])
+    properties.get(property.toLowerCase).map(_.asInstanceOf[T])
 
   /**
    * Gets specified property from current configuration object.
