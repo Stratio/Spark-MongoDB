@@ -21,7 +21,7 @@ import java.util.Locale
 
 import com.mongodb.util.JSON
 import com.mongodb.{BasicDBObject, DBObject}
-import com.stratio.datasource.MongodbTestConstants
+import com.stratio.datasource.{MongodbTestConstants, TemporaryTestSQLContext}
 import com.stratio.datasource.mongodb._
 import com.stratio.datasource.mongodb.client.MongodbClientFactory
 import com.stratio.datasource.mongodb.config.{MongodbConfig, MongodbConfigBuilder}
@@ -29,7 +29,7 @@ import com.stratio.datasource.mongodb.partitioner.MongodbPartition
 import com.stratio.datasource.mongodb.query.FilterSection
 import com.stratio.datasource.partitioner.PartitionRange
 import org.apache.spark.sql.Row
-import org.apache.spark.sql.mongodb.{TemporaryTestSQLContext, TestSQLContext}
+
 import org.apache.spark.sql.sources.{EqualTo, Filter}
 import org.apache.spark.sql.types._
 import org.junit.runner.RunWith

@@ -16,10 +16,9 @@
 package com.stratio.datasource.mongodb
 
 import com.mongodb.WriteConcern
-import com.stratio.datasource.MongodbTestConstants
+import com.stratio.datasource.{MongodbTestConstants, TemporaryTestSQLContext}
 import com.stratio.datasource.mongodb.client.MongodbClientFactory
 import com.stratio.datasource.mongodb.config.{MongodbCredentials, MongodbConfig, MongodbConfigBuilder}
-import org.apache.spark.sql.mongodb.{TemporaryTestSQLContext, TestSQLContext}
 import org.apache.spark.sql.types._
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner

@@ -18,12 +18,11 @@ package com.stratio.datasource.mongodb.schema
 import java.text.SimpleDateFormat
 import java.util.Locale
 
-import com.stratio.datasource.MongodbTestConstants
+import com.stratio.datasource.{MongodbTestConstants, TemporaryTestSQLContext}
 import com.stratio.datasource.mongodb.config.{MongodbConfig, MongodbConfigBuilder}
 import com.stratio.datasource.mongodb.partitioner.MongodbPartitioner
 import com.stratio.datasource.mongodb.rdd.MongodbRDD
 import com.stratio.datasource.mongodb._
-import org.apache.spark.sql.mongodb.{TemporaryTestSQLContext, TestSQLContext}
 
 import org.apache.spark.sql.types.TimestampType
 import org.junit.runner.RunWith

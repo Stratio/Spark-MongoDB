@@ -17,7 +17,7 @@ package com.stratio.datasource.mongodb.schema
 
 import com.mongodb.DBObject
 import com.mongodb.util.JSON
-import com.stratio.datasource.MongodbTestConstants
+import com.stratio.datasource.{MongodbTestConstants, TemporaryTestSQLContext}
 import com.stratio.datasource.mongodb.client.MongodbClientFactory
 import com.stratio.datasource.mongodb.config.{MongodbConfig, MongodbConfigBuilder}
 import com.stratio.datasource.mongodb.partitioner.MongodbPartitioner
@@ -26,7 +26,6 @@ import com.stratio.datasource.mongodb.schema.MongodbRowConverter._
 import com.stratio.datasource.mongodb._
 
 import org.apache.spark.sql.catalyst.expressions.GenericRow
-import org.apache.spark.sql.mongodb.{TemporaryTestSQLContext, TestSQLContext}
 import org.apache.spark.sql.types._
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
