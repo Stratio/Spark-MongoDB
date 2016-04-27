@@ -62,7 +62,7 @@ abstract class ConfigBuilder[Builder<:ConfigBuilder[Builder] ](
    */
   def build(): Config = new Config {
 
-    val properties = builder.properties.map(kv => kv.copy(_1 = kv._1.toLowerCase))
+    val properties = builder.properties.map { case (k, v) => k.toLowerCase -> v }
 
     require(
       requiredProperties.forall(properties.isDefinedAt),
@@ -109,10 +109,8 @@ trait Config extends Serializable {
    *   @return  the value associated with `key` if it exists,
    *            otherwise the result of the `default` computation.
    */
-  def getOrElse[T](key: Property, default: => T): T = properties.get(key.toLowerCase) match {
-    case Some(v) => v.asInstanceOf[T]
-    case None => default
-  }
+  def getOrElse[T](key: Property, default: => T): T =
+    properties.get(key.toLowerCase) collect { case v: T => v } getOrElse default
 
   /**
    * Gets specified property from current configuration object
