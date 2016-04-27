@@ -46,8 +46,8 @@ class MongodbPartitioner(config: Config) extends Partitioner[MongodbPartition] {
     config.get[MongodbSSLOptions](MongodbConfig.SSLOptions)
 
   private val clientOptions = {
-    val lowerCaseOptions = MongodbConfig.ListMongoClientOptions.map(_.toLowerCase)
-    config.properties.filter(kv => kv._1.contains(lowerCaseOptions))
+    val lowerCaseOptions = MongodbConfig.ListMongoClientOptions.map(_.toLowerCase).toSet
+    config.properties.filterKeys(lowerCaseOptions contains _)
   }
 
   private val databaseName: String = config(MongodbConfig.Database)
