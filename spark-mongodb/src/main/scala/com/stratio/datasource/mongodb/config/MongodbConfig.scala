@@ -106,7 +106,7 @@ object MongodbConfig {
     //optional parseable properties
     val optionalProperties: List[String] = List(Credentials,SSLOptions, UpdateFields)
 
-    (properties /: optionalProperties){
+    val optionalParsedProperties = (properties /: optionalProperties){
       /** We will assume credentials are provided like 'user,database,password;user,database,password;...' */
       case (properties,Credentials) =>
         parameters.get(Credentials).map{ credentialInput =>
@@ -116,7 +116,7 @@ object MongodbConfig {
         } getOrElse properties
 
       /** We will assume ssloptions are provided like '/path/keystorefile,keystorepassword,/path/truststorefile,truststorepassword' */
-      case (properties,SSLOptions) =>
+      case (properties, SSLOptions) =>
         parameters.get(SSLOptions).map{ ssloptionsInput =>
 
           val ssloption = ssloptionsInput.split(",")
@@ -129,6 +129,37 @@ object MongodbConfig {
         parameters.get(UpdateFields).map{ updateInputs =>
           val updateFields = updateInputs.split(",")
           properties + (UpdateFields -> updateFields)
+        } getOrElse properties
+      }
+    }
+
+    val intProperties: List[String] = List(SplitSize, ConnectTimeout, ConnectionsPerHost, MaxWaitTime, SocketTimeout,
+      ThreadsAllowedToBlockForConnectionMultiplier, CursorBatchSize, BulkBatchSize)
+
+    val intParsedProperties = (optionalParsedProperties /: intProperties){
+      case (properties, intProperty) => {
+        parameters.get(intProperty).map{ intValue =>
+          properties + (intProperty.toLowerCase -> intValue.toInt)
+        } getOrElse properties
+      }
+    }
+
+    val longProperties: List[String] = List(ConnectionsTime)
+
+    val longParsedProperties = (intParsedProperties /: longProperties){
+      case (properties, longProperty) => {
+        parameters.get(longProperty).map{ longValue =>
+          properties + (longProperty.toLowerCase -> longValue.toLong)
+        } getOrElse properties
+      }
+    }
+
+    val doubleProperties: List[String] = List(SamplingRatio)
+
+    (longParsedProperties /: doubleProperties){
+      case (properties, doubleProperty) => {
+        parameters.get(doubleProperty).map{ doubleValue =>
+          properties + (doubleProperty.toLowerCase -> doubleValue.toDouble)
         } getOrElse properties
       }
     }

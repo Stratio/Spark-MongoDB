@@ -70,6 +70,20 @@ with MongodbTestConstants{
 
   }
 
+  it should "get right value of user specified splitSize" + scalaBinaryVersion in {
+    val parameters = Map(
+      "host" -> "example.com",
+      "database" -> "example",
+      "collection" -> "test",
+      "schema_samplingRatio" -> "0.0001",
+      "splitSize" -> "20"
+    )
+
+    val config = MongodbConfigBuilder(MongodbConfig.parseParameters(parameters)).build()
+    val splitSize = config.getOrElse(MongodbConfig.SplitSize, MongodbConfig.DefaultSplitSize)
+    splitSize should equal(20)
+  }
+
 }
 trait ConfigHelpers {
 
