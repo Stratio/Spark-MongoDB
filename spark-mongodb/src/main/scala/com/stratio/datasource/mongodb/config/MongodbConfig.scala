@@ -29,27 +29,27 @@ object MongodbConfig {
   val Host = "host"
   val Database = "database"
   val Collection = "collection"
-  val SSLOptions = "sslOptions"
-  val ReadPreference = "readPreference"
-  val ConnectTimeout = "connectTimeout"
-  val ConnectionsPerHost = "connectionsPerHost"
-  val MaxWaitTime = "maxWaitTime"
-  val SocketTimeout = "socketTimeout"
-  val ThreadsAllowedToBlockForConnectionMultiplier = "threadsAllowedToBlockForConnectionMultiplier"
-  val WriteConcern = "writeConcern"
+  val SSLOptions = "ssloptions"
+  val ReadPreference = "readpreference"
+  val ConnectTimeout = "connecttimeout"
+  val ConnectionsPerHost = "connectionsperhost"
+  val MaxWaitTime = "maxwaittime"
+  val SocketTimeout = "sockettimeout"
+  val ThreadsAllowedToBlockForConnectionMultiplier = "threadsallowedtoblockforconnectionmultiplier"
+  val WriteConcern = "writeconcern"
   val Credentials = "credentials"
-  val SamplingRatio = "schema_samplingRatio"
-  val SplitSize = "splitSize"
-  val SplitKey = "splitKey"
-  val SplitKeyType = "splitKeyType"
-  val SplitKeyMin = "splitKeyMin"
-  val SplitKeyMax = "splitKeyMax"
-  val UpdateFields = "updateFields"
+  val SamplingRatio = "schema_samplingratio"
+  val SplitSize = "splitsize"
+  val SplitKey = "splitkey"
+  val SplitKeyType = "splitkeytype"
+  val SplitKeyMin = "splitkeymin"
+  val SplitKeyMax = "splitkeymax"
+  val UpdateFields = "updatefields"
   val Language = "language"
-  val ConnectionsTime = "connectionsTime"
-  val CursorBatchSize = "cursorBatchSize"
-  val BulkBatchSize = "bulkBatchSize"
-  val IdAsObjectId = "idAsObjectId"
+  val ConnectionsTime = "connectionstime"
+  val CursorBatchSize = "cursorbatchsize"
+  val BulkBatchSize = "bulkbatchsize"
+  val IdAsObjectId = "idasobjectid"
 
   // List of parameters for mongoClientOptions
   val ListMongoClientOptions = List(
@@ -84,8 +84,8 @@ object MongodbConfig {
   val DefaultSplitSize = 10
   val DefaultSplitKey = "_id"
   val DefaultConnectionsTime = 120000L
-  val DefaultCursorBatchSize = 101
-  val DefaultBulkBatchSize = 1000
+  val DefaultCursorBatchSize = "101"
+  val DefaultBulkBatchSize = "1000"
   val DefaultIdAsObjectId = "true"
 
   /**
@@ -105,7 +105,7 @@ object MongodbConfig {
     val optionalProperties: List[String] = List(Credentials,SSLOptions, UpdateFields)
 
     (properties /: optionalProperties){
-      /** We will assume credentials are provided like 'user,database,password;user,database,password;...' */
+      /** We will assume credentials are provided like 'user,database,password;...;user,database,password' */
       case (properties,Credentials) =>
         parameters.get(Credentials).map{ credentialInput =>
           val credentials = credentialInput.split(";").map(_.split(",")).toList
@@ -122,7 +122,7 @@ object MongodbConfig {
           properties + (SSLOptions -> ssloptions)
         } getOrElse properties
 
-      /** We will assume fields are provided like 'user,database,password...' */
+      /** We will assume fields are provided like 'field1,field2,...,fieldN' */
       case (properties, UpdateFields) => {
         parameters.get(UpdateFields).map{ updateInputs =>
           val updateFields = updateInputs.split(",")

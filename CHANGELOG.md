@@ -1,6 +1,10 @@
 # Changelog
 
-## 0.11.1 (? 2016)
+## 0.11.2 (? 2016)
+
+* Property names changed to lower case
+
+## 0.11.1 (March 2016)
 
 * Max and Min splitVector bounds for not sharded collections (see doc)
 * Config parameter renamed idasobjectid -> idAsObjectId

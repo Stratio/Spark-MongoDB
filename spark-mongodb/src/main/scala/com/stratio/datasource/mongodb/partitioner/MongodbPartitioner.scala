@@ -58,7 +58,8 @@ class MongodbPartitioner(config: Config) extends Partitioner[MongodbPartition] {
 
   private val connectionsTime = config.get[String](MongodbConfig.ConnectionsTime).map(_.toLong)
 
-  private val cursorBatchSize = config.getOrElse[Int](MongodbConfig.CursorBatchSize, MongodbConfig.DefaultCursorBatchSize)
+  private val cursorBatchSize =
+    config.getOrElse[String](MongodbConfig.CursorBatchSize, MongodbConfig.DefaultCursorBatchSize).toInt
 
   override def computePartitions(): Array[MongodbPartition] = {
     val mongoClient = MongodbClientFactory.getClient(hosts, credentials, ssloptions, clientOptions)

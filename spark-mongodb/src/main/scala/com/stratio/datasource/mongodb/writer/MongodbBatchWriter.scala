@@ -29,7 +29,8 @@ class MongodbBatchWriter(config: Config) extends MongodbWriter(config) {
 
   private val IdKey = "_id"
 
-  private val bulkBatchSize = config.getOrElse[Int](MongodbConfig.BulkBatchSize, MongodbConfig.DefaultBulkBatchSize)
+  private val bulkBatchSize =
+    config.getOrElse[String](MongodbConfig.BulkBatchSize, MongodbConfig.DefaultBulkBatchSize).toInt
 
   private val pkConfig: Option[Array[String]] = config.get[Array[String]](MongodbConfig.UpdateFields)
 

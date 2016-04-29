@@ -45,7 +45,8 @@ class MongodbReader(config: Config,
 
   private var dbCursor: Option[MongoCursorBase] = None
 
-  private val batchSize = config.getOrElse[Int](MongodbConfig.CursorBatchSize, MongodbConfig.DefaultCursorBatchSize)
+  private val batchSize =
+    config.getOrElse[String](MongodbConfig.CursorBatchSize, MongodbConfig.DefaultCursorBatchSize).toInt
 
   private val connectionsTime = config.get[String](MongodbConfig.ConnectionsTime).map(_.toLong)
 
