@@ -49,7 +49,7 @@ with BeforeAndAfterAll {
     .set(MongodbConfig.Credentials, MongodbCredentials("user","database","password".toCharArray))
     .set(MongodbConfig.SSLOptions, MongodbSSLOptions(Some("/etc/ssl/mongodb.keystore"), Some("password"), "/etc/ssl/mongodb.keystore", Some("password")))
     .build()
-  
+
   val fullClient = MongodbClientFactory.getClient(
     config[List[String]](MongodbConfig.Host).map(add => new ServerAddress(add)),
     config[List[MongodbCredentials]](MongodbConfig.Credentials).map {
