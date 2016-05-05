@@ -212,6 +212,18 @@ Examples
 Scala API
 ---------
 
+Launch the spark shell:
+::
+
+ $ bin/spark-shell --packages com.stratio.datasource:spark-mongodb_2.10:<VERSION>
+
+If you are using the spark shell, a SQLContext is already created and is available as a variable: 'sqlContext'.
+Alternatively, you could create a SQLContext instance in your spark application code:
+
+::
+
+ val sqlContext = new SQLContext(sc)
+
 To read a DataFrame from a Mongo collection, you can use the library by loading the implicits from `com.stratio.datasource.mongodb._`.
 
 To save a DataFrame in MongoDB you should use the saveToMongodb() function as follows:
@@ -249,8 +261,8 @@ In the example we can see how to use the fromMongoDB() function to read from Mon
  val readConfig = builder.build()
  val mongoRDD = sqlContext.fromMongoDB(readConfig)
  mongoRDD.registerTempTable("students")
- sqlContext.sql("SELECT name, age FROM students")
-
+ val dataFrame = sqlContext.sql("SELECT name, age FROM students")
+ dataFrame.show
 
 
 If you want to use a SSL connection, you need to add this 'import', and add 'SSLOptions' to the MongodbConfigBuilder:
@@ -268,9 +280,9 @@ Using  StructType:
 
  import org.apache.spark.sql.types._
  val schemaMongo = StructType(StructField("name", StringType, true) :: StructField("age", IntegerType, true ) :: Nil)
- sqlContext.createExternalTable("mongoTable", "com.stratio.datasource.mongodb", schemaMongo, Map("host" -> "localhost:27017", "database" -> "highschool", "collection" -> "students"))
+ val df = sqlContext.read.schema(schemaMongo).format("com.stratio.datasource.mongodb").options(Map("host" -> "localhost:27017", "database" -> "highschool", "collection" -> "students")).load
+ df.registerTempTable("mongoTable")
  sqlContext.sql("SELECT * FROM mongoTable WHERE name = 'Torcuato'").show()
- sqlContext.sql("DROP TABLE mongoTable")
 
 
 Using DataFrameWriter:
@@ -319,8 +331,18 @@ Then:
 ::
 
  from pyspark.sql import SQLContext
- sqlContext.sql("CREATE TEMPORARY TABLE students_table USING com.stratio.datasource.mongodb OPTIONS (host 'host:port', database 'highschool', collection 'students')")
+ sqlContext.sql("CREATE TEMPORARY TABLE students_table USING com.stratio.datasource.mongodb OPTIONS (host 'localhost:27017', database 'highschool', collection 'students')")
  sqlContext.sql("SELECT * FROM students_table").collect()
+
+Using DataFrameReader and DataFrameWriter:
+::
+
+ df = sqlContext.read.format('com.stratio.datasource.mongodb').options(host='localhost:27017', database='highschool', collection='students').load()
+ df.select("name").collect()
+
+ df.select("name").write.format("com.stratio.datasource.mongodb").mode('overwrite').options(host='localhost:27017', database='highschool', collection='studentsview').save()
+ dfView = sqlContext.read.format('com.stratio.datasource.mongodb').options(host='localhost:27017', database='highschool', collection='studentsview').load()
+ dfView.show()
 
 Java API
 --------
