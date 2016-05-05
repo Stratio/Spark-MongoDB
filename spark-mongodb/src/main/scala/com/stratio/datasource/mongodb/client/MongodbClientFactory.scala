@@ -155,8 +155,9 @@ object MongodbClientFactory {
     }
   }
 
+  // TODO Review when refactoring config
   def extractValue[T](options: Map[String, Any], key: String): Option[T] =
-    options.get(key).map(_.asInstanceOf[T])
+    options.get(key.toLowerCase).map(_.asInstanceOf[T])
 
   def sslBuilder(optionSSLOptions: Option[MongodbSSLOptions]): Boolean =
     optionSSLOptions.exists(sslOptions => {

@@ -62,12 +62,14 @@ abstract class ConfigBuilder[Builder<:ConfigBuilder[Builder] ](
    */
   def build(): Config = new Config {
 
+    // TODO Review when refactoring config
     val properties = builder.properties.map { case (k, v) => k.toLowerCase -> v }
+    val reqProperties = requiredProperties.map(_.toLowerCase)
 
     require(
-      requiredProperties.forall(properties.isDefinedAt),
+      reqProperties.forall(properties.isDefinedAt),
       s"Not all properties are defined! : ${
-        requiredProperties.diff(
+        reqProperties.diff(
           properties.keys.toList.intersect(requiredProperties))
       }")
 
