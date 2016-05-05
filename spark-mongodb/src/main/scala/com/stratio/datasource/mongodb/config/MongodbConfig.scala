@@ -23,6 +23,7 @@ import com.stratio.datasource.util.Config._
 /**
  * Values and Functions for access and parse the configuration parameters
  */
+// TODO Review when refactoring config
 object MongodbConfig {
 
   //  Parameter names
@@ -93,6 +94,7 @@ object MongodbConfig {
    * @param parameters List of parameters
    * @return List of parameters parsed to correct mongoDb configurations
    */
+  // TODO Review when refactoring config
   def parseParameters(parameters : Map[String,String]): Map[String, Any] = {
 
     // required properties
@@ -137,6 +139,7 @@ object MongodbConfig {
    * @param readPreference string key for identify the correct object
    * @return readPreference object
    */
+  // TODO Review when refactoring config
   def parseReadPreference(readPreference: String): ReadPreference = {
     readPreference.toUpperCase match {
       case "PRIMARY" => com.mongodb.casbah.ReadPreference.Primary
@@ -153,9 +156,9 @@ object MongodbConfig {
    * @param writeConcern string key for identify the correct object
    * @return writeConcern object
    */
+  // TODO Review when refactoring config
   def parseWriteConcern(writeConcern: String): WriteConcern = {
     writeConcern.toUpperCase match {
-
       case "SAFE" | "ACKNOWLEDGED" => com.mongodb.WriteConcern.SAFE
       case "NORMAL" | "UNACKNOWLEDGED" => com.mongodb.WriteConcern.NORMAL
       case "REPLICAS_SAFE" | "REPLICA_ACKNOWLEDGED" => com.mongodb.WriteConcern.REPLICAS_SAFE
@@ -165,7 +168,5 @@ object MongodbConfig {
       case "NONE" | "ERRORS_IGNORED" => com.mongodb.WriteConcern.NONE
       case _ => DefaultWriteConcern
     }
-    
-
   }
 }
