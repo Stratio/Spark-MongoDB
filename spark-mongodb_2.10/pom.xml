@@ -25,7 +25,7 @@
     <parent>
         <artifactId>spark-mongodb-parent</artifactId>
         <groupId>com.stratio.datasource</groupId>
-        <version>0.11.2-RC1-SNAPSHOT</version>
+        <version>0.12.0-SNAPSHOT</version>
     </parent>
     <properties>
         <scala.version>2.10.4</scala.version>
@@ -33,7 +33,7 @@
         <sonar.projectBaseDir>spark-mongodb</sonar.projectBaseDir>
         <scala.test.version>2.2.5</scala.test.version>
         <scala.mock.version>3.2.1</scala.mock.version>
-        <spark.version>1.5.2</spark.version>
+        <spark.version>1.6.1</spark.version>
         <casbah.version>2.8.0</casbah.version>
     </properties>
     <dependencies>
