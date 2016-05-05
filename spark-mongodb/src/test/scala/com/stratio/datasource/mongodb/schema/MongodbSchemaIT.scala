@@ -24,8 +24,7 @@ import com.stratio.datasource.mongodb.partitioner.MongodbPartitioner
 import com.stratio.datasource.mongodb.rdd.MongodbRDD
 import com.stratio.datasource.mongodb._
 import org.apache.spark.sql.mongodb.{TemporaryTestSQLContext, TestSQLContext}
-
-import org.apache.spark.sql.types.TimestampType
+import org.apache.spark.sql.types.{ArrayType, StringType, StructField, TimestampType}
 import org.junit.runner.RunWith
 import org.scalatest._
 import org.scalatest.junit.JUnitRunner
@@ -70,7 +69,12 @@ with MongodbTestConstants {
     withEmbedMongoFixture(complexFieldAndType1) { mongodProc =>
       val schema = MongodbSchema(mongodbRDD, 1.0).schema()
 
-      schema.fields should have size 12
+      schema.fields should have size 13
+
+      schema.fields filter {
+        case StructField(name, ArrayType(StringType, _), _, _) => Set("arrayOfNull", "arrayEmpty") contains name
+        case _ => false
+      } should have size 2
 
       schema.printTreeString()
     }

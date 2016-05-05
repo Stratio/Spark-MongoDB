@@ -23,6 +23,7 @@ import com.stratio.datasource.util.Config._
 /**
  * Values and Functions for access and parse the configuration parameters
  */
+// TODO Review when refactoring config
 object MongodbConfig {
 
   //  Parameter names
@@ -41,12 +42,15 @@ object MongodbConfig {
   val SamplingRatio = "schema_samplingRatio"
   val SplitSize = "splitSize"
   val SplitKey = "splitKey"
+  val SplitKeyType = "splitKeyType"
+  val SplitKeyMin = "splitKeyMin"
+  val SplitKeyMax = "splitKeyMax"
   val UpdateFields = "updateFields"
   val Language = "language"
   val ConnectionsTime = "connectionsTime"
   val CursorBatchSize = "cursorBatchSize"
   val BulkBatchSize = "bulkBatchSize"
-  val IdAsObjectId = "idasobjectid"
+  val IdAsObjectId = "idAsObjectId"
 
   // List of parameters for mongoClientOptions
   val ListMongoClientOptions = List(
@@ -90,6 +94,7 @@ object MongodbConfig {
    * @param parameters List of parameters
    * @return List of parameters parsed to correct mongoDb configurations
    */
+  // TODO Review when refactoring config
   def parseParameters(parameters : Map[String,String]): Map[String, Any] = {
 
     // required properties
@@ -134,6 +139,7 @@ object MongodbConfig {
    * @param readPreference string key for identify the correct object
    * @return readPreference object
    */
+  // TODO Review when refactoring config
   def parseReadPreference(readPreference: String): ReadPreference = {
     readPreference.toUpperCase match {
       case "PRIMARY" => com.mongodb.casbah.ReadPreference.Primary
@@ -150,18 +156,16 @@ object MongodbConfig {
    * @param writeConcern string key for identify the correct object
    * @return writeConcern object
    */
+  // TODO Review when refactoring config
   def parseWriteConcern(writeConcern: String): WriteConcern = {
     writeConcern.toUpperCase match {
-      case "FSYNC_SAFE" => com.mongodb.WriteConcern.FSYNC_SAFE
-      case "FSYNCED" => com.mongodb.WriteConcern.FSYNCED
-      case "JOURNAL_SAFE" => com.mongodb.WriteConcern.JOURNAL_SAFE
-      case "JOURNALED" => com.mongodb.WriteConcern.JOURNALED
+      case "SAFE" | "ACKNOWLEDGED" => com.mongodb.WriteConcern.SAFE
+      case "NORMAL" | "UNACKNOWLEDGED" => com.mongodb.WriteConcern.NORMAL
+      case "REPLICAS_SAFE" | "REPLICA_ACKNOWLEDGED" => com.mongodb.WriteConcern.REPLICAS_SAFE
+      case "FSYNC_SAFE" | "FSYNCED" => com.mongodb.WriteConcern.FSYNC_SAFE
       case "MAJORITY" => com.mongodb.WriteConcern.MAJORITY
-      case "NORMAL" => com.mongodb.WriteConcern.NORMAL
-      case "REPLICA_ACKNOWLEDGED" => com.mongodb.WriteConcern.REPLICA_ACKNOWLEDGED
-      case "REPLICAS_SAFE" => com.mongodb.WriteConcern.REPLICAS_SAFE
-      case "SAFE" => com.mongodb.WriteConcern.SAFE
-      case "UNACKNOWLEDGED" => com.mongodb.WriteConcern.UNACKNOWLEDGED
+      case "JOURNAL_SAFE" | "JOURNALED" => com.mongodb.WriteConcern.JOURNAL_SAFE
+      case "NONE" | "ERRORS_IGNORED" => com.mongodb.WriteConcern.NONE
       case _ => DefaultWriteConcern
     }
   }
