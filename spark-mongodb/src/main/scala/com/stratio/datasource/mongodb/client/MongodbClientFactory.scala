@@ -148,7 +148,7 @@ object MongodbClientFactory {
     mongoConnectionsActor ! SetFreeConnectionByKey(clientKey, extendedTime)
   }
 
-  def getClientPoolSize: Int = {
+  def getSize: Int = {
     val futureResult = mongoConnectionsActor ? GetSize
     Await.result(futureResult, timeout.duration) match {
       case size: Int => size

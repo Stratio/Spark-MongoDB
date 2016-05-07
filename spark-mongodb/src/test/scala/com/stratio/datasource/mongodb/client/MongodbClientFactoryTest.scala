@@ -69,11 +69,11 @@ with BeforeAndAfterAll {
   it should "Valid clients size when getting the same client " in {
     val sameHostClient = MongodbClientFactory.getClient("127.0.0.1").clientConnection
 
-    MongodbClientFactory.getClientPoolSize should be (1)
+    MongodbClientFactory.getSize should be (1)
 
     val otherHostClient = MongodbClientFactory.getClient("127.0.0.1").clientConnection
 
-    MongodbClientFactory.getClientPoolSize should be (2)
+    MongodbClientFactory.getSize should be (2)
 
     MongodbClientFactory.closeAll(notGracefully)
   }
@@ -81,13 +81,13 @@ with BeforeAndAfterAll {
   it should "Valid clients size when getting the same client and set free " in {
     val sameHostClient = MongodbClientFactory.getClient("127.0.0.1").clientConnection
 
-    MongodbClientFactory.getClientPoolSize should be (1)
+    MongodbClientFactory.getSize should be (1)
 
     MongodbClientFactory.setFreeConnectionByClient(sameHostClient)
 
     val otherHostClient = MongodbClientFactory.getClient("127.0.0.1").clientConnection
 
-    MongodbClientFactory.getClientPoolSize should be (1)
+    MongodbClientFactory.getSize should be (1)
 
     MongodbClientFactory.closeAll(notGracefully)
   }
@@ -95,11 +95,11 @@ with BeforeAndAfterAll {
   it should "Valid clients size when closing one client gracefully " in {
     val sameHostClient = MongodbClientFactory.getClient("127.0.0.1").clientConnection
 
-    MongodbClientFactory.getClientPoolSize should be (1)
+    MongodbClientFactory.getSize should be (1)
 
     MongodbClientFactory.closeByClient(sameHostClient)
 
-    MongodbClientFactory.getClientPoolSize should be (1)
+    MongodbClientFactory.getSize should be (1)
 
     MongodbClientFactory.closeAll(notGracefully)
   }
@@ -107,11 +107,11 @@ with BeforeAndAfterAll {
   it should "Valid clients size when closing one client not gracefully " in {
     val sameHostClient = MongodbClientFactory.getClient("127.0.0.1").clientConnection
 
-    MongodbClientFactory.getClientPoolSize should be (1)
+    MongodbClientFactory.getSize should be (1)
 
     MongodbClientFactory.closeByClient(sameHostClient, notGracefully)
 
-    MongodbClientFactory.getClientPoolSize should be (0)
+    MongodbClientFactory.getSize should be (0)
 
     MongodbClientFactory.closeAll(notGracefully)
   }
@@ -120,17 +120,17 @@ with BeforeAndAfterAll {
     val sameHostClient = MongodbClientFactory.getClient("127.0.0.1").clientConnection
     val otherHostClient = MongodbClientFactory.getClient("127.0.0.1").clientConnection
 
-    MongodbClientFactory.getClientPoolSize should be (2)
+    MongodbClientFactory.getSize should be (2)
 
     MongodbClientFactory.closeAll(gracefully, 1)
 
-    MongodbClientFactory.getClientPoolSize should be (2)
+    MongodbClientFactory.getSize should be (2)
 
     MongodbClientFactory.setFreeConnectionByClient(sameHostClient)
 
     MongodbClientFactory.closeAll(gracefully, 1)
 
-    MongodbClientFactory.getClientPoolSize should be (1)
+    MongodbClientFactory.getSize should be (1)
 
     MongodbClientFactory.closeAll(notGracefully)
   }
@@ -140,11 +140,11 @@ with BeforeAndAfterAll {
     val otherHostClient = MongodbClientFactory.getClient("127.0.0.1").clientConnection
     val gracefully = false
 
-    MongodbClientFactory.getClientPoolSize should be (2)
+    MongodbClientFactory.getSize should be (2)
 
     MongodbClientFactory.closeAll(notGracefully)
 
-    MongodbClientFactory.getClientPoolSize should be (0)
+    MongodbClientFactory.getSize should be (0)
 
     MongodbClientFactory.closeAll(notGracefully)
   }
