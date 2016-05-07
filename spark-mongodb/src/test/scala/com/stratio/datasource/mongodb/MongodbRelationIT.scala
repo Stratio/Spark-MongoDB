@@ -23,13 +23,13 @@ import org.apache.spark.sql.mongodb.{TemporaryTestSQLContext, TestSQLContext}
 import org.apache.spark.sql.types._
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
-import org.scalatest.{BeforeAndAfterAll, BeforeAndAfter, FlatSpec, Matchers}
+import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 @RunWith(classOf[JUnitRunner])
 class MongodbRelationIT extends FlatSpec
 with Matchers
-with MongodbTestConstants
-with BeforeAndAfterAll {
+with BeforeAndAfter
+with MongodbTestConstants {
 
   private val host: String = "localhost"
   private val port: Int = 12345
@@ -120,7 +120,7 @@ with BeforeAndAfterAll {
     mongodbrelation.equals(mongodbrelation4) shouldEqual false
   }
 
-  override def afterAll {
+  after {
     MongodbClientFactory.closeAll(false)
   }
 
