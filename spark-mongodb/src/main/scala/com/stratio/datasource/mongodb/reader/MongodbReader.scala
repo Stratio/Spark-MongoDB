@@ -58,8 +58,8 @@ class MongodbReader(config: Config,
 
     mongoClient.fold(ifEmpty = ()) { client =>
       mongoClientKey.fold({
-        MongodbClientFactory.setFreeConnectionByClient(client, connectionsTime)
-        MongodbClientFactory.closeByClient(client)
+        MongodbClientFactory.setFreeConnection(client, connectionsTime)
+        MongodbClientFactory.close(client)
       }) {key =>
         MongodbClientFactory.setFreeConnectionByKey(key, connectionsTime)
         MongodbClientFactory.closeByKey(key)
@@ -92,9 +92,9 @@ class MongodbReader(config: Config,
       val sslOptions = config.get[MongodbSSLOptions](MongodbConfig.SSLOptions)
       val clientOptions = config.properties.filterKeys(_.contains(MongodbConfig.ListMongoClientOptions))
 
-      val mongoClientResponse = MongodbClientFactory.getClient(hosts, credentials, sslOptions, clientOptions)
-      mongoClient = Option(mongoClientResponse.clientConnection)
-      mongoClientKey = Option(mongoClientResponse.key)
+      val (clientKey, client) = MongodbClientFactory.getClient(hosts, credentials, sslOptions, clientOptions)
+      mongoClient = Option(client)
+      mongoClientKey = Option(clientKey)
 
       val emptyFilter = MongoDBObject(List())
       val filter = Try(queryPartition(filters)).getOrElse(emptyFilter)

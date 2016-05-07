@@ -21,20 +21,16 @@ import com.stratio.datasource.MongodbTestConstants
 import com.stratio.datasource.mongodb.config.MongodbSSLOptions
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
-import org.scalatest.{BeforeAndAfterAll, BeforeAndAfter, FlatSpec, Matchers}
+import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 @RunWith(classOf[JUnitRunner])
-class MongodbClientFactoryTest extends FlatSpec
-with Matchers
-with MongodbTestConstants
-with BeforeAndAfter
-with BeforeAndAfterAll {
+class MongodbClientFactoryTest extends FlatSpec with Matchers with MongodbTestConstants with BeforeAndAfter {
 
   type Client = MongoClient
 
-  val hostClient = MongodbClientFactory.getClient("127.0.0.1").clientConnection
+  val hostClient = MongodbClientFactory.getClient("127.0.0.1")._2
 
-  val hostPortCredentialsClient = MongodbClientFactory.getClient("127.0.0.1", 27017, "user", "database", "password").clientConnection
+  val hostPortCredentialsClient = MongodbClientFactory.getClient("127.0.0.1", 27017, "user", "database", "password")._2
 
   val fullClient = MongodbClientFactory.getClient(
     List(new ServerAddress("127.0.0.1:27017")),
@@ -48,7 +44,7 @@ with BeforeAndAfterAll {
         "connectionsPerHost" -> "20",
         "threadsAllowedToBlockForConnectionMultiplier" -> "5"
       )
-  ).clientConnection
+  )._2
 
   val gracefully = true
 
@@ -62,90 +58,82 @@ with BeforeAndAfterAll {
     hostClient shouldBe a [Client]
     hostPortCredentialsClient shouldBe a [Client]
     fullClient shouldBe a [Client]
-
-    MongodbClientFactory.closeAll(notGracefully)
   }
 
   it should "Valid clients size when getting the same client " in {
-    val sameHostClient = MongodbClientFactory.getClient("127.0.0.1").clientConnection
+    val sameHostClient = MongodbClientFactory.getClient("127.0.0.1")._2
 
-    MongodbClientFactory.getSize should be (1)
+    MongodbClientFactory.mongoClient.size should be (1)
 
-    val otherHostClient = MongodbClientFactory.getClient("127.0.0.1").clientConnection
+    val otherHostClient = MongodbClientFactory.getClient("127.0.0.1")._2
 
-    MongodbClientFactory.getSize should be (2)
-
-    MongodbClientFactory.closeAll(notGracefully)
+    MongodbClientFactory.mongoClient.size should be (2)
   }
 
   it should "Valid clients size when getting the same client and set free " in {
-    val sameHostClient = MongodbClientFactory.getClient("127.0.0.1").clientConnection
+    val sameHostClient = MongodbClientFactory.getClient("127.0.0.1")._2
 
-    MongodbClientFactory.getSize should be (1)
+    MongodbClientFactory.mongoClient.size should be (1)
 
-    MongodbClientFactory.setFreeConnectionByClient(sameHostClient)
+    MongodbClientFactory.setFreeConnection(sameHostClient)
 
-    val otherHostClient = MongodbClientFactory.getClient("127.0.0.1").clientConnection
+    val otherHostClient = MongodbClientFactory.getClient("127.0.0.1")._2
 
-    MongodbClientFactory.getSize should be (1)
-
-    MongodbClientFactory.closeAll(notGracefully)
+    MongodbClientFactory.mongoClient.size should be (1)
   }
 
   it should "Valid clients size when closing one client gracefully " in {
-    val sameHostClient = MongodbClientFactory.getClient("127.0.0.1").clientConnection
+    val sameHostClient = MongodbClientFactory.getClient("127.0.0.1")._2
 
-    MongodbClientFactory.getSize should be (1)
+    MongodbClientFactory.mongoClient.size should be (1)
 
-    MongodbClientFactory.closeByClient(sameHostClient)
+    MongodbClientFactory.close(sameHostClient)
 
-    MongodbClientFactory.getSize should be (1)
-
-    MongodbClientFactory.closeAll(notGracefully)
+    MongodbClientFactory.mongoClient.size should be (1)
   }
 
   it should "Valid clients size when closing one client not gracefully " in {
-    val sameHostClient = MongodbClientFactory.getClient("127.0.0.1").clientConnection
+    val sameHostClient = MongodbClientFactory.getClient("127.0.0.1")._2
 
-    MongodbClientFactory.getSize should be (1)
+    MongodbClientFactory.mongoClient.size should be (1)
 
-    MongodbClientFactory.closeByClient(sameHostClient, notGracefully)
+    MongodbClientFactory.close(sameHostClient, notGracefully)
 
-    MongodbClientFactory.getSize should be (0)
-
-    MongodbClientFactory.closeAll(notGracefully)
+    MongodbClientFactory.mongoClient.size should be (0)
   }
 
   it should "Valid clients size when closing all clients gracefully " in {
-    val sameHostClient = MongodbClientFactory.getClient("127.0.0.1").clientConnection
-    val otherHostClient = MongodbClientFactory.getClient("127.0.0.1").clientConnection
+    val sameHostClient = MongodbClientFactory.getClient("127.0.0.1")._2
+    val otherHostClient = MongodbClientFactory.getClient("127.0.0.1")._2
 
-    MongodbClientFactory.getSize should be (2)
-
-    MongodbClientFactory.closeAll(gracefully, 1)
-
-    MongodbClientFactory.getSize should be (2)
-
-    MongodbClientFactory.setFreeConnectionByClient(sameHostClient)
+    MongodbClientFactory.mongoClient.size should be (2)
 
     MongodbClientFactory.closeAll(gracefully, 1)
 
-    MongodbClientFactory.getSize should be (1)
+    MongodbClientFactory.mongoClient.size should be (2)
 
-    MongodbClientFactory.closeAll(notGracefully)
+    MongodbClientFactory.setFreeConnection(sameHostClient)
+
+    MongodbClientFactory.closeAll(gracefully, 1)
+
+    MongodbClientFactory.mongoClient.size should be (1)
   }
 
   it should "Valid clients size when closing all clients not gracefully " in {
-    val sameHostClient = MongodbClientFactory.getClient("127.0.0.1").clientConnection
-    val otherHostClient = MongodbClientFactory.getClient("127.0.0.1").clientConnection
+    val sameHostClient = MongodbClientFactory.getClient("127.0.0.1")._2
+    val otherHostClient = MongodbClientFactory.getClient("127.0.0.1")._2
     val gracefully = false
 
-    MongodbClientFactory.getSize should be (2)
+    MongodbClientFactory.mongoClient.size should be (2)
 
     MongodbClientFactory.closeAll(notGracefully)
 
-    MongodbClientFactory.getSize should be (0)
+    MongodbClientFactory.mongoClient.size should be (0)
+  }
 
+
+  after {
     MongodbClientFactory.closeAll(notGracefully)
   }
+
 }

@@ -56,14 +56,14 @@ abstract class MongodbWriter(config: Config) extends Serializable {
 
   private val connectionsTime = config.get[String](MongodbConfig.ConnectionsTime).map(_.toLong)
 
-  protected val mongoClient =
+  protected val (clientKey, mongoClient) =
     MongodbClientFactory.getClient(hosts, credentials, sslOptions, clientOptions)
 
   /**
    * A MongoDB collection created from the specified database and collection.
    */
   protected val dbCollection: MongoCollection =
-    mongoClient.clientConnection(config(MongodbConfig.Database))(config(MongodbConfig.Collection))
+    mongoClient(config(MongodbConfig.Database))(config(MongodbConfig.Collection))
 
   /**
    * Abstract method that checks if a primary key exists in provided configuration
@@ -104,7 +104,7 @@ abstract class MongodbWriter(config: Config) extends Serializable {
    * Free current MongoDB client.
    */
   def freeConnection(): Unit = {
-    MongodbClientFactory.setFreeConnectionByKey(mongoClient.key, connectionsTime)
+    MongodbClientFactory.setFreeConnection(mongoClient, connectionsTime)
   }
 
 }
