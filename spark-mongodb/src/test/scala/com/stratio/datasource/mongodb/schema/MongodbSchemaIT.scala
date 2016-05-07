@@ -19,7 +19,6 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 
 import com.stratio.datasource.MongodbTestConstants
-import com.stratio.datasource.mongodb.config.{MongodbConfig, MongodbConfigBuilder}
 import com.stratio.datasource.mongodb.partitioner.MongodbPartitioner
 import com.stratio.datasource.mongodb.rdd.MongodbRDD
 import com.stratio.datasource.mongodb._

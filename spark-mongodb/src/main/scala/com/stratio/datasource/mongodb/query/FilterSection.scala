@@ -22,8 +22,8 @@ import com.mongodb.casbah.Imports
 import com.mongodb.casbah.Imports._
 import com.stratio.datasource.mongodb.sources.{NearSphere, Near}
 import org.apache.spark.sql.sources._
-import com.stratio.datasource.util.Config
-import com.stratio.datasource.mongodb.config.MongodbConfig
+import com.stratio.datasource.Config
+import com.stratio.datasource.mongodb.MongodbConfig
 
 object FilterSection {
 

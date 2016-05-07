@@ -16,43 +16,43 @@
 package com.stratio.datasource.mongodb.writer
 
 import com.mongodb.casbah.Imports._
-import com.stratio.datasource.mongodb.config.MongodbConfig
-import com.stratio.datasource.util.Config
+import com.stratio.datasource.Config
+import com.stratio.datasource.mongodb.MongodbConfig
 
 /**
- * A batch writer implementation for mongodb writer.
- * The used semantics for storing objects is 'replace'.
- *
- * @param config Configuration parameters (host,database,collection,...)
- */
-class MongodbBatchWriter(config: Config) extends MongodbWriter(config) {
+  * A batch writer implementation for mongodb writer.
+  * The used semantics for storing objects is 'replace'.
+  *
+  * @param config Configuration parameters (host,database,collection,...)
+  * @param batchSize Group size to be inserted via bulk operation
+  */
+class MongodbBatchWriter(
+                          config: Config,
+                          batchSize: Int = 100) extends MongodbWriter(config) {
 
-  private val IdKey = "_id"
+  final val IdKey = "_id"
 
-  private val bulkBatchSize = config.getOrElse[Int](MongodbConfig.BulkBatchSize, MongodbConfig.DefaultBulkBatchSize)
-
-  private val pkConfig: Option[Array[String]] = config.get[Array[String]](MongodbConfig.UpdateFields)
-
-  override def save(it: Iterator[DBObject]): Unit = {
-    it.grouped(bulkBatchSize).foreach { group =>
+  def save(it: Iterator[DBObject]): Unit = {
+    val pkConfig: Option[Array[String]] = config.get[Array[String]](MongodbConfig.UpdateFields)
+    it.grouped(batchSize).foreach { group =>
       val bulkOperation = dbCollection.initializeUnorderedBulkOperation
       group.foreach { element =>
-        val query = getUpdateQuery(element)
+        val query = getUpdateQuery(element, pkConfig)
         if (query.isEmpty) bulkOperation.insert(element)
         else bulkOperation.find(query).upsert().replaceOne(element)
       }
-
-      bulkOperation.execute(writeConcern)
+      bulkOperation.execute(config.getOrElse[WriteConcern](MongodbConfig.WriteConcern, MongodbConfig.DefaultWriteConcern))
     }
   }
 
-  private def getUpdateQuery(element: DBObject): Map[String, AnyRef] = {
+  private def getUpdateQuery(element: DBObject,
+                             pkConfig: Option[Array[String]]): Map[String, AnyRef] = {
     if(element.contains(IdKey)) Map(IdKey -> element.get(IdKey))
     else {
-      val pkValues : Map[String, AnyRef] =
+      val pkValues: Map[String, AnyRef] =
         if (pkConfig.isDefined)
           pkConfig.get.flatMap(field => if (element.contains(field)) Some(field -> element.get(field)) else None).toMap
-        else Map.empty[String, AnyRef]
+        else Map()
       pkValues
     }
   }

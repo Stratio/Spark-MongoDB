@@ -16,17 +16,19 @@
 package com.stratio.datasource.mongodb.writer
 
 import com.mongodb.casbah.Imports._
-import com.stratio.datasource.mongodb.config.MongodbConfig
-import com.stratio.datasource.util.Config
+import com.stratio.datasource.Config
+import com.stratio.datasource.mongodb.MongodbConfig
 
 /**
  * A simple mongodb writer.
  *
  * @param config Configuration parameters (host,database,collection,...)
  */
-class MongodbSimpleWriter(config: Config) extends MongodbWriter(config) {
+class MongodbSimpleWriter(
+  config: Config) extends MongodbWriter(config) {
 
-  override def save(it: Iterator[DBObject]): Unit =
-    it.foreach(dbo => dbCollection.save(dbo, writeConcern))
+  def save(it: Iterator[DBObject]): Unit =
+    it.foreach(dbo =>
+      dbCollection.save(dbo, config.getOrElse[WriteConcern](MongodbConfig.WriteConcern, MongodbConfig.DefaultWriteConcern)))
 
 }

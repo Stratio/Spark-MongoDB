@@ -13,19 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.stratio.datasource.mongodb
 
-import com.stratio.datasource.mongodb.config.MongodbConfig
+import com.stratio.datasource.Config
 import com.stratio.datasource.mongodb.partitioner.MongodbPartitioner
 import com.stratio.datasource.mongodb.rdd.MongodbRDD
 import com.stratio.datasource.mongodb.schema.{MongodbRowConverter, MongodbSchema}
 import com.stratio.datasource.mongodb.writer.MongodbSimpleWriter
-import com.stratio.datasource.util.Config
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.sources.{BaseRelation, Filter, InsertableRelation, PrunedFilteredScan}
-import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, Row, SQLContext}
+import org.apache.spark.sql.sources.{InsertableRelation, BaseRelation, Filter, PrunedFilteredScan}
+import org.apache.spark.sql.types._
 
 /**
  * A MongoDB baseRelation that can eliminate unneeded columns
@@ -38,9 +36,10 @@ import org.apache.spark.sql.{DataFrame, Row, SQLContext}
  *                       a sample ratio (as JSON Data Source does).
  * @param sqlContext An existing Spark SQL context.
  */
-class MongodbRelation(private val config: Config,
-                       schemaProvided: Option[StructType] = None)(
-                       @transient val sqlContext: SQLContext) extends BaseRelation
+class MongodbRelation(
+  private val config: Config,
+  schemaProvided: Option[StructType] = None)(
+  @transient val sqlContext: SQLContext) extends BaseRelation
 with PrunedFilteredScan with InsertableRelation {
 
   implicit val _: Config = config
@@ -63,8 +62,8 @@ with PrunedFilteredScan with InsertableRelation {
   override val schema: StructType = schemaProvided.getOrElse(lazySchema)
 
   override def buildScan(
-                          requiredColumns: Array[String],
-                          filters: Array[Filter]): RDD[Row] = {
+    requiredColumns: Array[String],
+    filters: Array[Filter]): RDD[Row] = {
 
     val rdd = new MongodbRDD(
       sqlContext,
@@ -74,6 +73,7 @@ with PrunedFilteredScan with InsertableRelation {
       filters)
 
     MongodbRowConverter.asRow(pruneSchema(schema, requiredColumns), rdd)
+
   }
 
   /**
@@ -88,7 +88,7 @@ with PrunedFilteredScan with InsertableRelation {
    * @param overwrite Boolean indicating whether to overwrite the data.
    */
   def insert(data: DataFrame, overwrite: Boolean): Unit = {
-    if (overwrite) {
+    if(overwrite){
       new MongodbSimpleWriter(config).dropCollection
     }
 

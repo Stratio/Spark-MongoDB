@@ -15,8 +15,8 @@
  */
 package com.stratio.datasource.mongodb
 
-import com.stratio.datasource.mongodb.config.MongodbConfigBuilder
-import com.stratio.datasource.mongodb.config.MongodbConfig._
+import com.stratio.datasource.Config._
+import com.stratio.datasource.mongodb.MongodbConfig._
 import org.apache.spark.sql.SaveMode._
 import org.apache.spark.sql.sources.{BaseRelation, CreatableRelationProvider, RelationProvider, SchemaRelationProvider}
 import org.apache.spark.sql.types.StructType
@@ -25,7 +25,7 @@ import org.apache.spark.sql.{DataFrame, SQLContext, SaveMode}
 /**
  * Allows creation of MongoDB based tables using
  * the syntax CREATE TEMPORARY TABLE ... USING com.stratio.deep.mongodb.
- * Required options are detailed in [[com.stratio.datasource.mongodb.config.MongodbConfig]]
+ * Required options are detailed in [[com.stratio.datasource.mongodb.MongodbConfig]]
  */
 class DefaultSource extends RelationProvider with SchemaRelationProvider with CreatableRelationProvider{
 
@@ -33,7 +33,9 @@ class DefaultSource extends RelationProvider with SchemaRelationProvider with Cr
                                sqlContext: SQLContext,
                                parameters: Map[String, String]): BaseRelation = {
 
-    new MongodbRelation(MongodbConfigBuilder(parseParameters(parameters)).build())(sqlContext)
+    new MongodbRelation(
+      MongodbConfigBuilder(parseParameters(parameters))
+        .build())(sqlContext)
 
   }
 
@@ -42,7 +44,9 @@ class DefaultSource extends RelationProvider with SchemaRelationProvider with Cr
                                parameters: Map[String, String],
                                schema: StructType): BaseRelation = {
 
-    new MongodbRelation(MongodbConfigBuilder(parseParameters(parameters)).build(), Some(schema))(sqlContext)
+    new MongodbRelation(
+      MongodbConfigBuilder(parseParameters(parameters))
+        .build(),Some(schema))(sqlContext)
 
   }
 
@@ -53,7 +57,8 @@ class DefaultSource extends RelationProvider with SchemaRelationProvider with Cr
                                data: DataFrame): BaseRelation = {
 
     val mongodbRelation = new MongodbRelation(
-      MongodbConfigBuilder(parseParameters(parameters)).build(), Some(data.schema))(sqlContext)
+      MongodbConfigBuilder(parseParameters(parameters))
+        .build())(sqlContext)
 
     mode match{
       case Append         => mongodbRelation.insert(data, overwrite = false)
@@ -64,6 +69,47 @@ class DefaultSource extends RelationProvider with SchemaRelationProvider with Cr
     }
 
     mongodbRelation
+  }
+
+  private def parseParameters(parameters : Map[String,String]): Map[String, Any] = {
+
+    // required properties
+    /** We will assume hosts are provided like 'host:port,host2:port2,...' */
+    val properties: Map[String, Any] = parameters.updated(Host, parameters.getOrElse(Host, notFound[String](Host)).split(",").toList)
+    if (!parameters.contains(Database)) notFound(Database)
+    if (!parameters.contains(Collection)) notFound(Collection)
+
+    //optional parseable properties
+    val optionalProperties: List[String] = List(Credentials,SSLOptions, UpdateFields)
+
+    val finalMap = (properties /: optionalProperties){
+      /** We will assume credentials are provided like 'user,database,password;user,database,password;...' */
+      case (properties,Credentials) =>
+        parameters.get(Credentials).map{ credentialInput =>
+          val credentials = credentialInput.split(";").map(_.split(",")).toList
+            .map(credentials => MongodbCredentials(credentials(0), credentials(1), credentials(2).toCharArray))
+          properties + (Credentials -> credentials)
+        } getOrElse properties
+
+      /** We will assume ssloptions are provided like '/path/keystorefile,keystorepassword,/path/truststorefile,truststorepassword' */
+      case (properties,SSLOptions) =>
+        parameters.get(SSLOptions).map{ ssloptionsInput =>
+
+          val ssloption = ssloptionsInput.split(",")
+          val ssloptions = MongodbSSLOptions(Some(ssloption(0)), Some(ssloption(1)), ssloption(2), Some(ssloption(3)))
+          properties + (SSLOptions -> ssloptions)
+        } getOrElse properties
+
+      /** We will assume fields are provided like 'user,database,password...' */
+      case (properties, UpdateFields) => {
+        parameters.get(UpdateFields).map{ updateInputs =>
+          val updateFields = updateInputs.split(",")
+          properties + (UpdateFields -> updateFields)
+        } getOrElse properties
+      }
+    }
+
+    finalMap
   }
 
 }
