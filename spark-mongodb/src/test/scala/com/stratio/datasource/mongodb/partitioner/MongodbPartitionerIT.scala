@@ -19,7 +19,7 @@ import com.mongodb.DBObject
 import com.mongodb.util.JSON
 import com.stratio.datasource.MongodbTestConstants
 import com.stratio.datasource.mongodb._
-import com.stratio.datasource.mongodb.config.MongodbConfig._
+import com.stratio.datasource.mongodb.MongodbConfig._
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.{BeforeAndAfter, Matchers, FlatSpec}
