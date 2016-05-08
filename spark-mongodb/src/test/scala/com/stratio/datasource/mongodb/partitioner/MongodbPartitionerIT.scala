@@ -19,12 +19,10 @@ import com.mongodb.DBObject
 import com.mongodb.util.JSON
 import com.stratio.datasource.MongodbTestConstants
 import com.stratio.datasource.mongodb._
-import com.stratio.datasource.mongodb.client.MongodbClientFactory
-import com.stratio.datasource.mongodb.config.{MongodbConfig, MongodbConfigBuilder}
-import com.stratio.datasource.mongodb.config.MongodbConfig._
+import com.stratio.datasource.mongodb.MongodbConfig._
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
-import org.scalatest.{BeforeAndAfterAll, BeforeAndAfter, Matchers, FlatSpec}
+import org.scalatest.{BeforeAndAfter, Matchers, FlatSpec}
 
 @RunWith(classOf[JUnitRunner])
 class MongodbPartitionerIT extends FlatSpec
@@ -33,8 +31,7 @@ with Matchers
 with MongoClusterEmbedDatabase
 with MongoEmbedDatabase
 with TestBsonData
-with MongodbTestConstants
-with BeforeAndAfterAll {
+with MongodbTestConstants {
 
   val configServerPorts = List(mongoPort+10)
   val database = "database-1"
@@ -86,9 +83,6 @@ with BeforeAndAfterAll {
     }.map(_._2)
   }
 
-  override def afterAll {
-    MongodbClientFactory.closeAll(false)
-  }
 
   it should "get proper partition ranges using splitVector with bounds" + scalaBinaryVersion in {
 

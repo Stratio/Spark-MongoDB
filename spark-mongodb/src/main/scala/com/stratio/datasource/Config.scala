@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.stratio.datasource.util
+package com.stratio.datasource
 
-import com.stratio.datasource.util.Config.Property
+import com.stratio.datasource.Config.Property
 
 import scala.reflect.ClassTag
 

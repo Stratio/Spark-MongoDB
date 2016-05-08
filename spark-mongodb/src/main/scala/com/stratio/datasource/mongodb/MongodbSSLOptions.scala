@@ -13,24 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.stratio.datasource.mongodb
-
-
-import org.apache.spark.sql.{SQLContext, DataFrame}
 
 import scala.language.implicitConversions
 
-
 /**
- *  Helpers for getting / storing MongoDB data.
+ * Case class with the SSL options.
  */
-trait MongodbFunctions {
+case class MongodbSSLOptions(
+keyStore: Option[String] = None,
+keyStorePassword: Option[String] = None,
+trustStore: String,
+trustStorePassword: Option[String] = None
+)
 
-  implicit def toMongodbContext(sqlContext: SQLContext): MongodbContext =
-    new MongodbContext(sqlContext)
-
-  implicit def toMongodbSchemaRDD(dataFrame: DataFrame): MongodbDataFrame =
-    new MongodbDataFrame(dataFrame)
+object MongodbSSLOptions{
+  implicit def stringToOption(parameter : String): Option[String]= Some(parameter)
 
 }
