@@ -17,7 +17,7 @@
 package com.stratio.datasource.mongodb
 
 import com.stratio.datasource.mongodb.schema.MongodbRowConverter
-import com.stratio.datasource.mongodb.writer.{MongodbSimpleWriter, MongodbBatchWriter}
+import com.stratio.datasource.mongodb.writer.{MongodbBatchWriter, MongodbSimpleWriter}
 import com.stratio.datasource.util.Config
 import org.apache.spark.sql.DataFrame
 
@@ -39,10 +39,13 @@ class MongodbDataFrame(dataFrame: DataFrame) extends Serializable {
       val writer =
         if (batch) new MongodbBatchWriter(config)
         else new MongodbSimpleWriter(config)
-      writer.saveWithPk(it.map(row =>
-        MongodbRowConverter.rowAsDBObject(row, schema)))
-      writer.freeConnection()
+
+      writer.saveWithPk(
+        it.map(row => MongodbRowConverter.rowAsDBObject(row, schema)))
+
     })
   }
+
+
 
 }

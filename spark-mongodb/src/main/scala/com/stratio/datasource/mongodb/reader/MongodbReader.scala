@@ -15,15 +15,12 @@
  */
 package com.stratio.datasource.mongodb.reader
 
-import java.util.regex.Pattern
-
-import com.mongodb.QueryBuilder
 import com.mongodb.casbah.Imports._
 import com.mongodb.casbah.MongoCursorBase
-import com.stratio.datasource.mongodb.query.FilterSection
 import com.stratio.datasource.mongodb.client.MongodbClientFactory
-import com.stratio.datasource.mongodb.config.{MongodbSSLOptions, MongodbCredentials, MongodbConfig}
+import com.stratio.datasource.mongodb.config.{MongodbConfig, MongodbCredentials, MongodbSSLOptions}
 import com.stratio.datasource.mongodb.partitioner.MongodbPartition
+import com.stratio.datasource.mongodb.query.FilterSection
 import com.stratio.datasource.util.Config
 import org.apache.spark.Partition
 
@@ -58,10 +55,8 @@ class MongodbReader(config: Config,
 
     mongoClient.fold(ifEmpty = ()) { client =>
       mongoClientKey.fold({
-        MongodbClientFactory.setFreeConnectionByClient(client, connectionsTime)
         MongodbClientFactory.closeByClient(client)
       }) {key =>
-        MongodbClientFactory.setFreeConnectionByKey(key, connectionsTime)
         MongodbClientFactory.closeByKey(key)
       }
 
