@@ -109,58 +109,38 @@ object MongodbConfig {
         * .) */
       case (properties, Host) =>
         parameters.get(Host).map{
-          case hostInput: String => properties + (Host.toLowerCase -> hostInput.split(",").toList)
+          case hostInput: String => properties + (Host -> hostInput.split(",").toList)
           case hostInput @ List(_: String, _*)  => properties
           case _ => throw new IllegalArgumentException
-        } getOrElse {
-          parameters.get(Host.toLowerCase).map {
-            case hostInput: String => properties + (Host.toLowerCase -> hostInput.split(",").toList)
-            case hostInput@List(_: String, _*) => properties
-            case _ => throw new IllegalArgumentException
-          } getOrElse properties
-        }
+        } getOrElse properties
 
       /** We will assume credentials are provided like 'user,database,password;user,database,password;...' or like
         * List('user,database,password', 'user,database,password', ...) */
       case (properties, Credentials) =>
-        parameters.get(Credentials).map{
+        parameters.get(Credentials).map {
           case credentialInput: String =>
             val credentials = credentialInput.split(";").map(_.split(",")).toList
               .map(credentials => MongodbCredentials(credentials(0), credentials(1), credentials(2).toCharArray))
-            properties + (Credentials.toLowerCase -> credentials)
-          case credentialInput: MongodbCredentials => properties + (Credentials.toLowerCase -> List(credentialInput))
+            properties + (Credentials -> credentials)
+          case credentialInput: MongodbCredentials => properties + (Credentials -> List(credentialInput))
           case credentialInput @ List(_: String, _*) =>
             val credentials = credentialInput.map(_.toString.split(","))
               .map(credentials => MongodbCredentials(credentials(0), credentials(1), credentials(2).toCharArray))
-            properties + (Credentials.toLowerCase -> credentials)
+            properties + (Credentials -> credentials)
           case credentialInput @ List(_: MongodbCredentials, _*) => properties
           case _ => throw new IllegalArgumentException
-        } getOrElse {
-          parameters.get(Credentials.toLowerCase).map{
-            case credentialInput: String =>
-              val credentials = credentialInput.split(";").map(_.split(",")).toList
-                .map(credentials => MongodbCredentials(credentials(0), credentials(1), credentials(2).toCharArray))
-              properties + (Credentials.toLowerCase -> credentials)
-            case credentialInput: MongodbCredentials => properties + (Credentials.toLowerCase -> List(credentialInput))
-            case credentialInput @ List(_: String, _*) =>
-              val credentials = credentialInput.map(_.toString.split(","))
-                .map(credentials => MongodbCredentials(credentials(0), credentials(1), credentials(2).toCharArray))
-              properties + (Credentials.toLowerCase -> credentials)
-            case credentialInput @ List(_: MongodbCredentials, _*) => properties
-            case _ => throw new IllegalArgumentException
-          } getOrElse properties
-        }
+        } getOrElse  properties
 
       /** We will assume ssloptions are provided like '/path/keystorefile,keystorepassword,/path/truststorefile,truststorepassword' */
       case (properties, SSLOptions) =>
-        parameters.get(SSLOptions).map{
+        parameters.get(SSLOptions).map {
           case ssloptionsInput: String =>
             val ssloption = ssloptionsInput.toString.split(",")
             val ssloptions = MongodbSSLOptions(Some(ssloption(0)), Some(ssloption(1)), ssloption(2), Some(ssloption(3)))
-            properties + (SSLOptions.toLowerCase -> ssloptions)
-          case ssloptionsInput: MongodbSSLOptions => properties
+            properties + (SSLOptions.toLowerCase -> ssloptions) - SSLOptions
+          case ssloptionsInput: MongodbSSLOptions => properties + (SSLOptions.toLowerCase -> ssloptionsInput) - SSLOptions
         } getOrElse {
-          parameters.get(SSLOptions.toLowerCase).map{
+          parameters.get(SSLOptions.toLowerCase).map {
             case ssloptionsInput: String =>
               val ssloption = ssloptionsInput.toString.split(",")
               val ssloptions = MongodbSSLOptions(Some(ssloption(0)), Some(ssloption(1)), ssloption(2), Some(ssloption(3)))
@@ -172,14 +152,14 @@ object MongodbConfig {
       /** We will assume fields are provided like 'fieldName1,fieldName2,...' or like List('fieldName1','fieldName2',..
         * .)*/
       case (properties, UpdateFields) => {
-        parameters.get(UpdateFields).map{
+        parameters.get(UpdateFields).map {
           case updateInputs: String =>
             val updateFields = updateInputs.split(",")
-            properties + (UpdateFields.toLowerCase -> updateFields)
-          case updateFields @ Array(_: String, _*) => properties
+            properties + (UpdateFields.toLowerCase -> updateFields) - UpdateFields
+          case updateFields @ Array(_: String, _*) => properties + (UpdateFields.toLowerCase -> updateFields) - UpdateFields
           case _ => throw new IllegalArgumentException
         } getOrElse {
-          parameters.get(UpdateFields.toLowerCase).map{
+          parameters.get(UpdateFields.toLowerCase).map {
             case updateInputs: String =>
               val updateFields = updateInputs.split(",")
               properties + (UpdateFields.toLowerCase -> updateFields)
@@ -196,11 +176,11 @@ object MongodbConfig {
     val intParsedProperties = (optionalParsedProperties /: intProperties){
       case (properties, intProperty) => {
         parameters.get(intProperty).map{
-          case intValueInput: String => properties + (intProperty.toLowerCase -> intValueInput.toInt)
-          case intValueInput: Int => properties
+          case intValueInput: String => properties + (intProperty.toLowerCase -> intValueInput.toInt) - intProperty
+          case intValueInput: Int => properties + (intProperty.toLowerCase -> intValueInput) - intProperty
           case _ => throw new IllegalArgumentException
         } getOrElse {
-          parameters.get(intProperty.toLowerCase).map{
+          parameters.get(intProperty.toLowerCase).map {
             case intValueInput: String => properties + (intProperty.toLowerCase -> intValueInput.toInt)
             case intValueInput: Int => properties
             case _ => throw new IllegalArgumentException
@@ -213,12 +193,12 @@ object MongodbConfig {
 
     val longParsedProperties = (intParsedProperties /: longProperties){
       case (properties, longProperty) => {
-        parameters.get(longProperty).map{
-          case longValueInput: String => properties + (longProperty.toLowerCase -> longValueInput.toLong)
-          case longValueInput: Long => properties
+        parameters.get(longProperty).map {
+          case longValueInput: String => properties + (longProperty.toLowerCase -> longValueInput.toLong) - longProperty
+          case longValueInput: Long => properties + (longProperty.toLowerCase -> longValueInput) - longProperty
           case _ => throw new IllegalArgumentException
         } getOrElse {
-          parameters.get(longProperty.toLowerCase).map{
+          parameters.get(longProperty.toLowerCase).map {
             case longValueInput: String => properties + (longProperty.toLowerCase -> longValueInput.toLong)
             case longValueInput: Long => properties
             case _ => throw new IllegalArgumentException
@@ -231,12 +211,12 @@ object MongodbConfig {
 
     val doubleParsedProperties = (longParsedProperties /: doubleProperties){
       case (properties, doubleProperty) => {
-        parameters.get(doubleProperty).map{
-          case doubleValueInput: String => properties + (doubleProperty.toLowerCase -> doubleValueInput.toDouble)
-          case doubleValueInput: Double => properties
+        parameters.get(doubleProperty).map {
+          case doubleValueInput: String => properties + (doubleProperty.toLowerCase -> doubleValueInput.toDouble) - doubleProperty
+          case doubleValueInput: Double => properties + (doubleProperty.toLowerCase -> doubleValueInput) - doubleProperty
           case _ => throw new IllegalArgumentException
         } getOrElse {
-          parameters.get(doubleProperty.toLowerCase).map{
+          parameters.get(doubleProperty.toLowerCase).map {
             case doubleValueInput: String => properties + (doubleProperty.toLowerCase -> doubleValueInput.toDouble)
             case doubleValueInput: Double => properties
             case _ => throw new IllegalArgumentException
@@ -249,12 +229,13 @@ object MongodbConfig {
 
     (doubleParsedProperties /: booleanProperties){
       case (properties, booleanProperty) => {
-        parameters.get(booleanProperty).map{
-          case booleanValueInput: String => properties + (booleanProperty.toLowerCase -> booleanValueInput.toBoolean)
-          case booleanValueInput: Boolean => properties
+        parameters.get(booleanProperty).map {
+          case booleanValueInput: String =>
+            properties + (booleanProperty.toLowerCase -> booleanValueInput.toBoolean) - booleanProperty
+          case booleanValueInput: Boolean => properties + (booleanProperty.toLowerCase -> booleanValueInput) - booleanProperty
           case _ => throw new IllegalArgumentException
         } getOrElse {
-          parameters.get(booleanProperty.toLowerCase).map{
+          parameters.get(booleanProperty.toLowerCase).map {
             case booleanValueInput: String => properties + (booleanProperty.toLowerCase -> booleanValueInput.toBoolean)
             case booleanValueInput: Boolean => properties
             case _ => throw new IllegalArgumentException
