@@ -79,7 +79,7 @@ with MongodbTestConstants{
       "splitSize" -> "20"
     )
 
-    val config = MongodbConfigBuilder(MongodbConfig.parseParameters(parameters)).build()
+    val config = MongodbConfigBuilder(parameters).build()
     val splitSize = config.getOrElse(MongodbConfig.SplitSize, MongodbConfig.DefaultSplitSize)
     splitSize should equal(20)
   }

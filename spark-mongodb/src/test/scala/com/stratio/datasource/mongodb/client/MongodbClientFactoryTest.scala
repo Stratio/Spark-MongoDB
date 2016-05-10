@@ -18,10 +18,10 @@ package com.stratio.datasource.mongodb.client
 import com.mongodb.casbah.MongoClient
 import com.mongodb.{MongoCredential, ServerAddress}
 import com.stratio.datasource.MongodbTestConstants
-import com.stratio.datasource.mongodb.config.MongodbSSLOptions
+import com.stratio.datasource.mongodb.config.{MongodbConfig, MongodbConfigBuilder, MongodbCredentials, MongodbSSLOptions}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
-import org.scalatest.{BeforeAndAfterAll, BeforeAndAfter, FlatSpec, Matchers}
+import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, FlatSpec, Matchers}
 
 @RunWith(classOf[JUnitRunner])
 class MongodbClientFactoryTest extends FlatSpec
@@ -36,18 +36,28 @@ with BeforeAndAfterAll {
 
   val hostPortCredentialsClient = MongodbClientFactory.getClient("127.0.0.1", 27017, "user", "database", "password").clientConnection
 
+  val config = MongodbConfigBuilder(Map(
+    "readPreference" -> "NEAREST",
+    "connectTimeout"-> "50000",
+    "socketTimeout"-> "50000",
+    "maxWaitTime"-> "50000",
+    "connectionsPerHost" -> "20",
+    "threadsAllowedToBlockForConnectionMultiplier" -> "5"
+  )).set("host", "127.0.0.1:27017")
+    .set("database", "database")
+    .set("collection", "collection")
+    .set(MongodbConfig.Credentials, MongodbCredentials("user","database","password".toCharArray))
+    .set(MongodbConfig.SSLOptions, MongodbSSLOptions(Some("/etc/ssl/mongodb.keystore"), Some("password"), "/etc/ssl/mongodb.keystore", Some("password")))
+    .build()
+  
   val fullClient = MongodbClientFactory.getClient(
-    List(new ServerAddress("127.0.0.1:27017")),
-    List(MongoCredential.createCredential("user","database","password".toCharArray)),
-    Some(MongodbSSLOptions(Some("/etc/ssl/mongodb.keystore"), Some("password"), "/etc/ssl/mongodb.keystore", Some("password"))),
-      Map(
-        "readPreference" -> "nearest",
-        "connectTimeout"-> "50000",
-        "socketTimeout"-> "50000",
-        "maxWaitTime"-> "50000",
-        "connectionsPerHost" -> "20",
-        "threadsAllowedToBlockForConnectionMultiplier" -> "5"
-      )
+    config[List[String]](MongodbConfig.Host).map(add => new ServerAddress(add)),
+    config[List[MongodbCredentials]](MongodbConfig.Credentials).map {
+      case MongodbCredentials(user, database, password) =>
+        MongoCredential.createCredential(user, database, password)
+    },
+    config.get[MongodbSSLOptions](MongodbConfig.SSLOptions),
+    config.properties
   ).clientConnection
 
   val gracefully = true

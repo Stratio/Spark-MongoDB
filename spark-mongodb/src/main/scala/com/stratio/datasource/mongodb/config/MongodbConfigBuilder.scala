@@ -28,7 +28,7 @@ import Config._
 
 case class MongodbConfigBuilder(props: Map[Property, Any] = Map()) extends {
 
-  override val properties = Map() ++ props
+  override val properties = MongodbConfig.parseParameters(Map() ++ props)
 
 } with ConfigBuilder[MongodbConfigBuilder](properties) {
 

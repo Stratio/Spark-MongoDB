@@ -45,7 +45,7 @@ class MongodbReader(config: Config,
 
   private var dbCursor: Option[MongoCursorBase] = None
 
-  private val batchSize = config.getOrElse[Int](MongodbConfig.CursorBatchSize, MongodbConfig.DefaultCursorBatchSize)
+  private val batchSize = config.getOrElse(MongodbConfig.CursorBatchSize, MongodbConfig.DefaultCursorBatchSize)
 
   private val connectionsTime = config.get[String](MongodbConfig.ConnectionsTime).map(_.toLong)
 
@@ -90,7 +90,10 @@ class MongodbReader(config: Config,
           MongoCredential.createCredential(user, database, password)
       }
       val sslOptions = config.get[MongodbSSLOptions](MongodbConfig.SSLOptions)
-      val clientOptions = config.properties.filterKeys(_.contains(MongodbConfig.ListMongoClientOptions))
+      val clientOptions = {
+        val lowerCaseOptions = MongodbConfig.ListMongoClientOptions.map(_.toLowerCase).toSet
+        config.properties.filter { case (k, _) => lowerCaseOptions contains k }
+      }
 
       val mongoClientResponse = MongodbClientFactory.getClient(hosts, credentials, sslOptions, clientOptions)
       mongoClient = Option(mongoClientResponse.clientConnection)

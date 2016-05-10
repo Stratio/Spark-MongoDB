@@ -58,7 +58,7 @@ class MongodbPartitioner(config: Config) extends Partitioner[MongodbPartition] {
 
   private val connectionsTime = config.get[String](MongodbConfig.ConnectionsTime).map(_.toLong)
 
-  private val cursorBatchSize = config.getOrElse[Int](MongodbConfig.CursorBatchSize, MongodbConfig.DefaultCursorBatchSize)
+  private val cursorBatchSize = config.getOrElse(MongodbConfig.CursorBatchSize, MongodbConfig.DefaultCursorBatchSize)
 
   override def computePartitions(): Array[MongodbPartition] = {
     val mongoClient = MongodbClientFactory.getClient(hosts, credentials, ssloptions, clientOptions)
@@ -180,8 +180,7 @@ class MongodbPartitioner(config: Config) extends Partitioner[MongodbPartition] {
     }
     else (MongoDBObject.empty, None, None)
 
-    val maxChunkSize = config.get[String](MongodbConfig.SplitSize).map(_.toInt)
-      .getOrElse(MongodbConfig.DefaultSplitSize)
+    val maxChunkSize = config.getOrElse(MongodbConfig.SplitSize, MongodbConfig.DefaultSplitSize)
 
     val cmd: MongoDBObject = MongoDBObject(
       "splitVector" -> collectionFullName,
