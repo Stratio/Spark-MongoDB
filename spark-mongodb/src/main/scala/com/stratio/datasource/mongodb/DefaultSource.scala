@@ -33,7 +33,7 @@ class DefaultSource extends RelationProvider with SchemaRelationProvider with Cr
                                sqlContext: SQLContext,
                                parameters: Map[String, String]): BaseRelation = {
 
-    new MongodbRelation(MongodbConfigBuilder(parseParameters(parameters)).build())(sqlContext)
+    new MongodbRelation(MongodbConfigBuilder(parameters).build())(sqlContext)
 
   }
 
@@ -42,7 +42,7 @@ class DefaultSource extends RelationProvider with SchemaRelationProvider with Cr
                                parameters: Map[String, String],
                                schema: StructType): BaseRelation = {
 
-    new MongodbRelation(MongodbConfigBuilder(parseParameters(parameters)).build(), Some(schema))(sqlContext)
+    new MongodbRelation(MongodbConfigBuilder(parameters).build(), Some(schema))(sqlContext)
 
   }
 
@@ -53,7 +53,7 @@ class DefaultSource extends RelationProvider with SchemaRelationProvider with Cr
                                data: DataFrame): BaseRelation = {
 
     val mongodbRelation = new MongodbRelation(
-      MongodbConfigBuilder(parseParameters(parameters)).build(), Some(data.schema))(sqlContext)
+      MongodbConfigBuilder(parameters).build(), Some(data.schema))(sqlContext)
 
     mode match{
       case Append         => mongodbRelation.insert(data, overwrite = false)

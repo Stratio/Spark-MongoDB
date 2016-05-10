@@ -50,11 +50,14 @@ abstract class MongodbWriter(config: Config) extends Serializable {
     case None => DefaultWriteConcern
   }
 
-  private val clientOptions = config.properties.filterKeys(_.contains(MongodbConfig.ListMongoClientOptions))
+  private val clientOptions = {
+    val lowerCaseOptions = MongodbConfig.ListMongoClientOptions.map(_.toLowerCase).toSet
+    config.properties.filter { case (k, _) => lowerCaseOptions contains k }
+  }
 
   private val languageConfig = config.get[String](MongodbConfig.Language)
 
-  private val connectionsTime = config.get[String](MongodbConfig.ConnectionsTime).map(_.toLong)
+  private val connectionsTime = config.get[Long](MongodbConfig.ConnectionsTime)
 
   protected val mongoClient =
     MongodbClientFactory.getClient(hosts, credentials, sslOptions, clientOptions)

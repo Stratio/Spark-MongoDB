@@ -79,7 +79,7 @@ class MongodbClientActor extends Actor {
 
     mongoClient.update(finalKey, connection.copy(
       timeOut = System.currentTimeMillis() +
-        extractValue[String](clientOptions, ConnectionsTime).map(_.toLong).getOrElse(DefaultConnectionsTime),
+        extractValue[Long](clientOptions, ConnectionsTime).getOrElse(DefaultConnectionsTime),
       status = ConnectionStatus.Busy))
 
     sender ! ClientResponse(finalKey, connection.client)
@@ -187,13 +187,10 @@ class MongodbClientActor extends Actor {
         case Some(preference) => parseReadPreference(preference)
         case None => DefaultReadPreference
       })
-        .connectTimeout(extractValue[String](clientOptions, ConnectTimeout).map(_.toInt)
-        .getOrElse(DefaultConnectTimeout))
-        .connectionsPerHost(extractValue[String](clientOptions, ConnectionsPerHost).map(_.toInt)
-        .getOrElse(DefaultConnectionsPerHost))
-        .maxWaitTime(extractValue[String](clientOptions, MaxWaitTime).map(_.toInt)
-        .getOrElse(DefaultMaxWaitTime))
-        .threadsAllowedToBlockForConnectionMultiplier(extractValue[String](clientOptions, ThreadsAllowedToBlockForConnectionMultiplier).map(_.toInt)
+        .connectTimeout(extractValue[Int](clientOptions, ConnectTimeout).getOrElse(DefaultConnectTimeout))
+        .connectionsPerHost(extractValue[Int](clientOptions, ConnectionsPerHost).getOrElse(DefaultConnectionsPerHost))
+        .maxWaitTime(extractValue[Int](clientOptions, MaxWaitTime).getOrElse(DefaultMaxWaitTime))
+        .threadsAllowedToBlockForConnectionMultiplier(extractValue[Int](clientOptions, ThreadsAllowedToBlockForConnectionMultiplier)
         .getOrElse(DefaultThreadsAllowedToBlockForConnectionMultiplier))
 
       if (sslBuilder(optionSSLOptions)) builder.socketFactory(SSLSocketFactory.getDefault())

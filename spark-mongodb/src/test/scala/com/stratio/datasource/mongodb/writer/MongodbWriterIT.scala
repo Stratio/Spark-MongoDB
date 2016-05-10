@@ -36,7 +36,7 @@ with BeforeAndAfterAll {
 
   private val host: String = "localhost"
   private val collection: String = "testCol"
-  private val writeConcern = "NORMAL"
+  private val writeConcern = "SAFE"
   private val idField: String = "att2"
   private val updateField: Array[String] = Array("att3")
   private val wrongIdField: String = "non-existentColumn"

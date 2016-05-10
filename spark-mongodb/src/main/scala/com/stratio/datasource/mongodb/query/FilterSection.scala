@@ -149,6 +149,6 @@ case class SourceFilters(
   }
 
   lazy val idAsObjectId: Boolean =
-    config.getOrElse[String](MongodbConfig.IdAsObjectId, MongodbConfig.DefaultIdAsObjectId).equalsIgnoreCase("true")
+    config.getOrElse(MongodbConfig.IdAsObjectId, MongodbConfig.DefaultIdAsObjectId)
 
 }
