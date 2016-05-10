@@ -56,7 +56,7 @@ class MongodbPartitioner(config: Config) extends Partitioner[MongodbPartition] {
 
   private val collectionFullName: String = s"$databaseName.$collectionName"
 
-  private val connectionsTime = config.get[String](MongodbConfig.ConnectionsTime).map(_.toLong)
+  private val connectionsTime = config.get[Long](MongodbConfig.ConnectionsTime)
 
   private val cursorBatchSize = config.getOrElse(MongodbConfig.CursorBatchSize, MongodbConfig.DefaultCursorBatchSize)
 

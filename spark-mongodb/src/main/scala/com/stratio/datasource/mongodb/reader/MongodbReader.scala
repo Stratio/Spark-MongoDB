@@ -47,7 +47,7 @@ class MongodbReader(config: Config,
 
   private val batchSize = config.getOrElse(MongodbConfig.CursorBatchSize, MongodbConfig.DefaultCursorBatchSize)
 
-  private val connectionsTime = config.get[String](MongodbConfig.ConnectionsTime).map(_.toLong)
+  private val connectionsTime = config.get[Long](MongodbConfig.ConnectionsTime)
 
 
   def close(): Unit = {

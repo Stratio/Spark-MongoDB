@@ -57,7 +57,7 @@ abstract class MongodbWriter(config: Config) extends Serializable {
 
   private val languageConfig = config.get[String](MongodbConfig.Language)
 
-  private val connectionsTime = config.get[String](MongodbConfig.ConnectionsTime).map(_.toLong)
+  private val connectionsTime = config.get[Long](MongodbConfig.ConnectionsTime)
 
   protected val mongoClient =
     MongodbClientFactory.getClient(hosts, credentials, sslOptions, clientOptions)
