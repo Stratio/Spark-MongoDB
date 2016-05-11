@@ -17,9 +17,8 @@ package com.stratio.datasource.mongodb.writer
 
 import com.mongodb.casbah.Imports._
 import com.stratio.datasource.mongodb.client.MongodbClientFactory
-import com.stratio.datasource.mongodb.config.{MongodbConfigReader, MongodbConfig}
-import com.stratio.datasource.mongodb.util.usingMongoClient
-import com.stratio.datasource.util.Config
+import com.stratio.datasource.mongodb.config.{MongodbConfig, MongodbConfigReader}
+import com.stratio.datasource.util.{Config, using}
 
 /**
  * Abstract Mongodb writer.
@@ -33,8 +32,6 @@ protected[mongodb] abstract class MongodbWriter(config: Config) extends Serializ
   import MongodbConfigReader._
 
   private val languageConfig = config.get[String](MongodbConfig.Language)
-
-  private val connectionsTime = config.get[String](MongodbConfig.ConnectionsTime).map(_.toLong)
 
   protected val writeConcern = config.writeConcern
 
@@ -60,7 +57,7 @@ protected[mongodb] abstract class MongodbWriter(config: Config) extends Serializ
       }
     } else it
 
-    usingMongoClient(MongodbClientFactory.getClient(config.hosts, config.credentials, config.sslOptions, config.clientOptions).clientConnection) { mongoClient =>
+    using(MongodbClientFactory.getClient(config.hosts, config.credentials, config.sslOptions, config.clientOptions)) { mongoClient =>
       save(itModified, mongoClient: MongoClient)
     }
   }

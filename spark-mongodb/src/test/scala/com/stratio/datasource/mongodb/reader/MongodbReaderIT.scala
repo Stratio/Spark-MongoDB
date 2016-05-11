@@ -23,18 +23,17 @@ import com.mongodb.util.JSON
 import com.mongodb.{BasicDBObject, DBObject}
 import com.stratio.datasource.MongodbTestConstants
 import com.stratio.datasource.mongodb._
-import com.stratio.datasource.mongodb.client.MongodbClientFactory
 import com.stratio.datasource.mongodb.config.{MongodbConfig, MongodbConfigBuilder}
 import com.stratio.datasource.mongodb.partitioner.MongodbPartition
 import com.stratio.datasource.mongodb.query.FilterSection
 import com.stratio.datasource.partitioner.PartitionRange
 import org.apache.spark.sql.Row
-import org.apache.spark.sql.mongodb.{TemporaryTestSQLContext, TestSQLContext}
+import org.apache.spark.sql.mongodb.TemporaryTestSQLContext
 import org.apache.spark.sql.sources.{EqualTo, Filter}
 import org.apache.spark.sql.types._
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
-import org.scalatest.{BeforeAndAfterAll, BeforeAndAfter, FlatSpec, Matchers}
+import org.scalatest.{BeforeAndAfterAll, FlatSpec, Matchers}
 
 @RunWith(classOf[JUnitRunner])
 class MongodbReaderIT extends FlatSpec
@@ -231,11 +230,6 @@ with BeforeAndAfterAll {
       resultNotLike should be (notLike)
 
     }
-  }
-
-
-  override def afterAll {
-    MongodbClientFactory.closeAll(false)
   }
 
 }

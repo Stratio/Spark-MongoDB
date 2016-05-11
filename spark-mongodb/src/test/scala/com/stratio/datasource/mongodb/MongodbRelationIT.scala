@@ -17,13 +17,12 @@ package com.stratio.datasource.mongodb
 
 import com.mongodb.WriteConcern
 import com.stratio.datasource.MongodbTestConstants
-import com.stratio.datasource.mongodb.client.MongodbClientFactory
-import com.stratio.datasource.mongodb.config.{MongodbCredentials, MongodbConfig, MongodbConfigBuilder}
-import org.apache.spark.sql.mongodb.{TemporaryTestSQLContext, TestSQLContext}
+import com.stratio.datasource.mongodb.config.{MongodbConfig, MongodbConfigBuilder, MongodbCredentials}
+import org.apache.spark.sql.mongodb.TemporaryTestSQLContext
 import org.apache.spark.sql.types._
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
-import org.scalatest.{BeforeAndAfterAll, BeforeAndAfter, FlatSpec, Matchers}
+import org.scalatest.{BeforeAndAfterAll, FlatSpec, Matchers}
 
 @RunWith(classOf[JUnitRunner])
 class MongodbRelationIT extends FlatSpec
@@ -120,8 +119,5 @@ with BeforeAndAfterAll {
     mongodbrelation.equals(mongodbrelation4) shouldEqual false
   }
 
-  override def afterAll {
-    MongodbClientFactory.closeAll(false)
-  }
 
 }
