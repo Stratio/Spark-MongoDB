@@ -16,11 +16,9 @@
 package com.stratio.datasource.mongodb.writer
 
 import com.mongodb.casbah.Imports._
-import com.mongodb.{MongoCredential, ServerAddress}
 import com.stratio.datasource.mongodb.client.MongodbClientFactory
-import MongodbClientFactory.Client
-import com.stratio.datasource.mongodb.config.{MongodbSSLOptions, MongodbCredentials, MongodbConfig}
-import MongodbConfig._
+import com.stratio.datasource.mongodb.config.{MongodbConfigReader, MongodbConfig}
+import com.stratio.datasource.mongodb.util.usingMongoClient
 import com.stratio.datasource.util.Config
 
 /**
@@ -30,40 +28,21 @@ import com.stratio.datasource.util.Config
  *
  * @param config Configuration parameters (host,database,collection,...)
  */
-abstract class MongodbWriter(config: Config) extends Serializable {
+protected[mongodb] abstract class MongodbWriter(config: Config) extends Serializable {
 
-  @transient private val hosts: List[ServerAddress] =
-    config[List[String]](MongodbConfig.Host)
-      .map(add => new ServerAddress(add))
-
-  @transient private val credentials: List[MongoCredential] =
-    config.getOrElse[List[MongodbCredentials]](MongodbConfig.Credentials, MongodbConfig.DefaultCredentials).map{
-      case MongodbCredentials(user,database,password) =>
-        MongoCredential.createCredential(user,database,password)
-    }
-
-  @transient private val sslOptions: Option[MongodbSSLOptions] =
-    config.get[MongodbSSLOptions](MongodbConfig.SSLOptions)
-
-  @transient protected val writeConcern: WriteConcern = config.get[String](MongodbConfig.WriteConcern) match {
-    case Some(wConcern) => parseWriteConcern(wConcern)
-    case None => DefaultWriteConcern
-  }
-
-  private val clientOptions = config.properties.filterKeys(_.contains(MongodbConfig.ListMongoClientOptions))
+  import MongodbConfigReader._
 
   private val languageConfig = config.get[String](MongodbConfig.Language)
 
   private val connectionsTime = config.get[String](MongodbConfig.ConnectionsTime).map(_.toLong)
 
-  protected val mongoClient =
-    MongodbClientFactory.getClient(hosts, credentials, sslOptions, clientOptions)
+  protected val writeConcern = config.writeConcern
 
   /**
    * A MongoDB collection created from the specified database and collection.
    */
-  protected val dbCollection: MongoCollection =
-    mongoClient.clientConnection(config(MongodbConfig.Database))(config(MongodbConfig.Collection))
+  protected def dbCollection(mongoClient: MongoClient): MongoCollection =
+    mongoClient(config(MongodbConfig.Database))(config(MongodbConfig.Collection))
 
   /**
    * Abstract method that checks if a primary key exists in provided configuration
@@ -72,15 +51,18 @@ abstract class MongodbWriter(config: Config) extends Serializable {
    *
    * @param it DBObject iterator.
    */
-  def saveWithPk (it: Iterator[DBObject]): Unit = {
-    val itModified = if(languageConfig.isDefined){
-      it.map { case obj: BasicDBObject => {
-        if(languageConfig.isDefined) obj.append("language", languageConfig.get)
-        obj
-      }}
+  def saveWithPk(it: Iterator[DBObject]): Unit = {
+    val itModified = if (languageConfig.isDefined) {
+      it.map {
+        case obj: BasicDBObject =>
+          if (languageConfig.isDefined) obj.append("language", languageConfig.get)
+          obj
+      }
     } else it
 
-    save(itModified)
+    usingMongoClient(MongodbClientFactory.getClient(config.hosts, config.credentials, config.sslOptions, config.clientOptions).clientConnection) { mongoClient =>
+      save(itModified, mongoClient: MongoClient)
+    }
   }
 
   /**
@@ -88,23 +70,6 @@ abstract class MongodbWriter(config: Config) extends Serializable {
    *
    * @param it Iterator of mongodb objects.
    */
-  def save(it: Iterator[DBObject]): Unit
-
-  /**
-   * Drop MongoDB collection.
-   */
-  def dropCollection: Unit = dbCollection.dropCollection()
-
-  /**
-   * Indicates if a collection is empty.
-   */
-  def isEmpty: Boolean = dbCollection.isEmpty
-
-  /**
-   * Free current MongoDB client.
-   */
-  def freeConnection(): Unit = {
-    MongodbClientFactory.setFreeConnectionByKey(mongoClient.key, connectionsTime)
-  }
+  def save(it: Iterator[DBObject], mongoClient: MongoClient): Unit
 
 }

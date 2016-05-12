@@ -17,14 +17,17 @@
 package com.stratio.datasource.mongodb.partitioner
 
 import java.text.SimpleDateFormat
+
 import com.mongodb.casbah.Imports._
 import com.mongodb.{MongoCredential, ServerAddress}
-import com.stratio.datasource.mongodb.client.MongodbClientFactory
 import com.stratio.datasource.mongodb.client.MongodbClientFactory.Client
-import com.stratio.datasource.mongodb.config.{MongodbSSLOptions, MongodbCredentials, MongodbConfig}
+import com.stratio.datasource.mongodb.client.MongodbClientFactory
+import com.stratio.datasource.mongodb.config.{MongodbConfig, MongodbCredentials, MongodbSSLOptions}
 import com.stratio.datasource.mongodb.partitioner.MongodbPartitioner._
+import com.stratio.datasource.mongodb.util.usingMongoClient
 import com.stratio.datasource.partitioner.{PartitionRange, Partitioner}
 import com.stratio.datasource.util.Config
+
 import scala.util.Try
 
 /**
@@ -60,16 +63,13 @@ class MongodbPartitioner(config: Config) extends Partitioner[MongodbPartition] {
 
   private val cursorBatchSize = config.getOrElse[Int](MongodbConfig.CursorBatchSize, MongodbConfig.DefaultCursorBatchSize)
 
-  override def computePartitions(): Array[MongodbPartition] = {
-    val mongoClient = MongodbClientFactory.getClient(hosts, credentials, ssloptions, clientOptions)
-
-    val result = if (isShardedCollection(mongoClient.clientConnection))
-      computeShardedChunkPartitions(mongoClient.clientConnection)
-    else
-      computeNotShardedPartitions(mongoClient.clientConnection)
-
-    result
-  }
+  override def computePartitions(): Array[MongodbPartition] =
+    usingMongoClient(MongodbClientFactory.getClient(hosts, credentials, ssloptions, clientOptions).clientConnection) { mongoClient =>
+      if (isShardedCollection(mongoClient))
+        computeShardedChunkPartitions(mongoClient)
+      else
+        computeNotShardedPartitions(mongoClient)
+    }
 
   /**
    * @return Whether this is a sharded collection or not
@@ -203,16 +203,16 @@ class MongodbPartitioner(config: Config) extends Partitioner[MongodbPartition] {
           .find(MongoDBObject("_id" -> stats.getString("primary"))).batchSize(cursorBatchSize)
         val shard = shards.next()
         val shardHost: String = shard.as[String]("host").replace(shard.get("_id") + "/", "")
-        val shardClient = MongodbClientFactory.getClient(shardHost)
-        val data = shardClient.clientConnection.getDB("admin").command(cmd)
-        val splitKeys = data.as[List[DBObject]]("splitKeys").map(Option(_))
-        val ranges = (splitKeyMin +: splitKeys) zip (splitKeys :+ splitKeyMax )
 
-        shards.close()
+        usingMongoClient(MongodbClientFactory.getClient(shardHost).clientConnection){ mongoClient =>
+          val data = mongoClient.getDB("admin").command(cmd)
+          val splitKeys = data.as[List[DBObject]]("splitKeys").map(Option(_))
+          val ranges = (splitKeyMin +: splitKeys) zip (splitKeys :+ splitKeyMax )
 
-        MongodbClientFactory.setFreeConnectionByKey(shardClient.key, connectionsTime)
+          shards.close()
+          ranges.toSeq
+        }
 
-        ranges.toSeq
     }.getOrElse(Seq((None, None)))
 
     ranges
