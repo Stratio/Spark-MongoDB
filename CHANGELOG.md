@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.11.1 (? 2016)
+
+* Max and Min splitVector bounds for not sharded collections (see doc)
+* Config parameter renamed idasobjectid -> idAsObjectId
+
 ## 0.11.0 (February 2016)
 
 * Compatibility with spark 1.6

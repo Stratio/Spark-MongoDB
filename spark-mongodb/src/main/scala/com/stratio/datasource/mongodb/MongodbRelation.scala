@@ -16,11 +16,13 @@
 
 package com.stratio.datasource.mongodb
 
-import com.stratio.datasource.mongodb.config.MongodbConfig
+import com.mongodb.casbah.Imports._
+import com.stratio.datasource.mongodb.client.MongodbClientFactory
+import com.stratio.datasource.mongodb.config.{MongodbConfig, MongodbConfigReader}
 import com.stratio.datasource.mongodb.partitioner.MongodbPartitioner
 import com.stratio.datasource.mongodb.rdd.MongodbRDD
 import com.stratio.datasource.mongodb.schema.{MongodbRowConverter, MongodbSchema}
-import com.stratio.datasource.mongodb.writer.MongodbSimpleWriter
+import com.stratio.datasource.mongodb.util.usingMongoClient
 import com.stratio.datasource.util.Config
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.sources.{BaseRelation, Filter, InsertableRelation, PrunedFilteredScan}
@@ -45,6 +47,7 @@ with PrunedFilteredScan with InsertableRelation {
 
   implicit val _: Config = config
 
+  import MongodbConfigReader._
   import MongodbRelation._
 
   private val rddPartitioner: MongodbPartitioner =
@@ -80,7 +83,14 @@ with PrunedFilteredScan with InsertableRelation {
    * Indicates if a collection is empty.
    * @return Boolean
    */
-  def isEmptyCollection: Boolean = new MongodbSimpleWriter(config).isEmpty
+  def isEmptyCollection: Boolean =
+    usingMongoClient(MongodbClientFactory.getClient(config.hosts, config.credentials, config.sslOptions, config.clientOptions).clientConnection) { mongoClient =>
+      dbCollection(mongoClient).isEmpty
+    }
+
+
+
+
 
   /**
    * Insert data into the specified DataSource.
@@ -89,7 +99,9 @@ with PrunedFilteredScan with InsertableRelation {
    */
   def insert(data: DataFrame, overwrite: Boolean): Unit = {
     if (overwrite) {
-      new MongodbSimpleWriter(config).dropCollection
+      usingMongoClient(MongodbClientFactory.getClient(config.hosts, config.credentials, config.sslOptions, config.clientOptions).clientConnection) { mongoClient =>
+        dbCollection(mongoClient).dropCollection()
+      }
     }
 
     data.saveToMongodb(config)
@@ -111,6 +123,12 @@ with PrunedFilteredScan with InsertableRelation {
     val state = Seq(schema, config)
     state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
   }
+
+  /**
+   * A MongoDB collection created from the specified database and collection.
+   */
+  private def dbCollection(mongoClient: MongoClient): MongoCollection =
+    mongoClient(config(MongodbConfig.Database))(config(MongodbConfig.Collection))
 }
 
 object MongodbRelation {

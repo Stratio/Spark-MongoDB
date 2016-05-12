@@ -44,9 +44,14 @@ case class MongodbSchema[T <: RDD[DBObject]](
         val fields = doc.mapValues(f => convertToStruct(f))
         fields
       }
-    }.reduceByKey(compatibleType).aggregate(Seq[StructField]())(
-        (fields, newField) => fields :+ StructField(newField._1, newField._2),
-        (oldFields, newFields) => oldFields ++ newFields)
+    }.reduceByKey(compatibleType).aggregate(Seq[StructField]())({
+      case (fields, (name, tpe)) =>
+        val newType = tpe match {
+          case ArrayType(NullType, containsNull) => ArrayType(StringType, containsNull)
+          case other => other
+        }
+        fields :+ StructField(name, newType)
+    }, (oldFields, newFields) => oldFields ++ newFields)
     StructType(structFields)
   }
 
