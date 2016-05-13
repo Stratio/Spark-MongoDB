@@ -16,21 +16,13 @@
 
 package com.stratio.datasource.mongodb.client
 
-import java.util.concurrent._
+import javax.net.ssl.SSLSocketFactory
 
-import akka.actor.{ActorSystem, Props}
-import akka.pattern.ask
-import akka.util.Timeout
 import com.mongodb.ServerAddress
 import com.mongodb.casbah.Imports._
-import com.mongodb.casbah.MongoClient
-import com.stratio.datasource.mongodb.client.MongodbClientActor._
-import com.stratio.datasource.mongodb.config.{MongodbConfig, MongodbSSLOptions}
-import com.typesafe.config.ConfigFactory
-
-import scala.concurrent.Await
-import scala.concurrent.duration._
-
+import com.mongodb.casbah.{MongoClient, MongoClientOptions}
+import com.stratio.datasource.mongodb.config.MongodbConfig.{ReadPreference => ProviderReadPreference, _}
+import com.stratio.datasource.mongodb.config.MongodbSSLOptions
 
 /**
  * Different client configurations to Mongodb database
@@ -40,36 +32,13 @@ object MongodbClientFactory {
 
   type Client = MongoClient
 
-  private val CloseAttempts = 120
-
-  /**
-   * Scheduler that close connections automatically when the timeout was expired
-   */
-  private val actorSystem = ActorSystem("mongodbClientFactory", ConfigFactory.load(ConfigFactory.parseString("akka.daemonic=on")))
-  private val scheduler = actorSystem.scheduler
-  private val SecondsToCheckConnections = MongodbConfig.DefaultConnectionsTime
-  private val mongoConnectionsActor = actorSystem.actorOf(Props(new MongodbClientActor), "mongoConnectionActor")
-
-  private implicit val executor = actorSystem.dispatcher
-  private implicit val timeout: Timeout = Timeout(3.seconds)
-
-  scheduler.schedule(
-    initialDelay = Duration(SecondsToCheckConnections, TimeUnit.SECONDS),
-    interval = Duration(SecondsToCheckConnections, TimeUnit.SECONDS),
-    mongoConnectionsActor,
-    CheckConnections)
-
   /**
    * Get or Create one client connection to MongoDb
    * @param host Ip or Dns to connect
    * @return Client connection with identifier
    */
-  private[mongodb] def getClient(host: String): ClientResponse = {
-    val futureResult = mongoConnectionsActor ? GetClient(host)
-    Await.result(futureResult, timeout.duration) match {
-      case ClientResponse(key, clientConnection) => ClientResponse(key, clientConnection)
-    }
-  }
+  private[mongodb] def getClient(host: String): MongoClient = MongoClient(host)
+
 
   /**
    * Get or Create one client connection to MongoDb
@@ -80,11 +49,10 @@ object MongodbClientFactory {
    * @param password Password for credentials
    * @return Client connection with identifier
    */
-  private[mongodb] def getClient(host: String, port: Int, user: String, database: String, password: String): ClientResponse = {
-    val futureResult = mongoConnectionsActor ? GetClientWithUser(host, port, user, database, password)
-    Await.result(futureResult, timeout.duration) match {
-      case ClientResponse(key, clientConnection) => ClientResponse(key, clientConnection)
-    }
+  private[mongodb] def getClient(host: String, port: Int, user: String, database: String, password: String): MongoClient = {
+    val credentials = List(MongoCredential.createCredential(user, database, password.toCharArray))
+    val hostPort = new ServerAddress(host, port)
+    createClient(List(hostPort), credentials)
   }
 
   /**
@@ -96,71 +64,45 @@ object MongodbClientFactory {
    * @return Client connection with identifier
    */
   private[mongodb] def getClient(hostPort: List[ServerAddress],
-                credentials: List[MongoCredential] = List(),
-                optionSSLOptions: Option[MongodbSSLOptions] = None,
-                clientOptions: Map[String, Any] = Map()): ClientResponse = {
-    val futureResult =
-      mongoConnectionsActor ? GetClientWithMongoDbConfig(hostPort, credentials, optionSSLOptions, clientOptions)
-    Await.result(futureResult, timeout.duration) match {
-      case ClientResponse(key, clientConnection) => ClientResponse(key, clientConnection)
+                                 credentials: List[MongoCredential] = List(),
+                                 optionSSLOptions: Option[MongodbSSLOptions] = None,
+                                 clientOptions: Map[String, Any] = Map()): MongoClient =
+    createClient(hostPort, credentials, optionSSLOptions, clientOptions)
+
+
+  private def createClient(hostPort: List[ServerAddress],
+                           credentials: List[MongoCredential] = List(),
+                           optionSSLOptions: Option[MongodbSSLOptions] = None,
+                           clientOptions: Map[String, Any] = Map()): MongoClient = {
+
+    val options = {
+      val builder = new MongoClientOptions.Builder()
+        .readPreference(extractValue[String](clientOptions, ProviderReadPreference) match {
+        case Some(preference) => parseReadPreference(preference)
+        case None => DefaultReadPreference
+      })
+        .connectTimeout(extractValue[String](clientOptions, ConnectTimeout).map(_.toInt)
+        .getOrElse(DefaultConnectTimeout))
+        .connectionsPerHost(extractValue[String](clientOptions, ConnectionsPerHost).map(_.toInt)
+        .getOrElse(DefaultConnectionsPerHost))
+        .maxWaitTime(extractValue[String](clientOptions, MaxWaitTime).map(_.toInt)
+        .getOrElse(DefaultMaxWaitTime))
+        .threadsAllowedToBlockForConnectionMultiplier(extractValue[String](clientOptions, ThreadsAllowedToBlockForConnectionMultiplier).map(_.toInt)
+        .getOrElse(DefaultThreadsAllowedToBlockForConnectionMultiplier))
+
+      if (sslBuilder(optionSSLOptions)) builder.socketFactory(SSLSocketFactory.getDefault)
+
+      builder.build()
     }
-  }
 
-
-  /**
-   * Close all client connections on the concurrent map
-   * @param gracefully Close the connections if is free
-   */
-  private[mongodb] def closeAll(gracefully: Boolean = true, attempts: Int = CloseAttempts): Unit = {
-    mongoConnectionsActor ! CloseAll(gracefully, attempts)
-  }
-
-  /**
-   * Close the connections that have the same client as the client param
-   * @param client client value for connect to MongoDb
-   * @param gracefully Close the connection if is free
-   */
-  private[mongodb] def closeByClient(client: Client, gracefully: Boolean = true): Unit = {
-    mongoConnectionsActor ! CloseByClient(client, gracefully)
-  }
-
-  /**
-   * Close the connections that have the same key as the clientKey param
-   * @param clientKey key pre calculated with the connection options
-   * @param gracefully Close the connection if is free
-   */
-  private[mongodb] def closeByKey(clientKey: String, gracefully: Boolean = true): Unit = {
-    mongoConnectionsActor ! CloseByKey(clientKey, gracefully)
-  }
-
-  /**
-   * Set Free the connection that have the same client as the client param
-   * @param client client value for connect to MongoDb
-   */
-  private[mongodb] def setFreeConnectionByClient(client: Client, extendedTime: Option[Long] = None): Unit = {
-    mongoConnectionsActor ! SetFreeConnectionsByClient(client, extendedTime)
-  }
-
-  /**
-   * Set Free the connection that have the same key as the clientKey param
-   * @param clientKey key pre calculated with the connection options
-   */
-  private[mongodb] def setFreeConnectionByKey(clientKey: String, extendedTime: Option[Long] = None): Unit = {
-    mongoConnectionsActor ! SetFreeConnectionByKey(clientKey, extendedTime)
-  }
-
-  private[client] def getClientPoolSize: Int = {
-    val futureResult = mongoConnectionsActor ? GetSize
-    Await.result(futureResult, timeout.duration) match {
-      case size: Int => size
-    }
+    MongoClient(hostPort, credentials, options)
   }
 
   // TODO Review when refactoring config
-  def extractValue[T](options: Map[String, Any], key: String): Option[T] =
+  private def extractValue[T](options: Map[String, Any], key: String): Option[T] =
     options.get(key.toLowerCase).map(_.asInstanceOf[T])
 
-  def sslBuilder(optionSSLOptions: Option[MongodbSSLOptions]): Boolean =
+  private def sslBuilder(optionSSLOptions: Option[MongodbSSLOptions]): Boolean =
     optionSSLOptions.exists(sslOptions => {
       if (sslOptions.keyStore.nonEmpty) {
         System.setProperty("javax.net.ssl.keyStore", sslOptions.keyStore.get)

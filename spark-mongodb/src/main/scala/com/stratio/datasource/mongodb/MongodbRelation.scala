@@ -22,8 +22,7 @@ import com.stratio.datasource.mongodb.config.{MongodbConfig, MongodbConfigReader
 import com.stratio.datasource.mongodb.partitioner.MongodbPartitioner
 import com.stratio.datasource.mongodb.rdd.MongodbRDD
 import com.stratio.datasource.mongodb.schema.{MongodbRowConverter, MongodbSchema}
-import com.stratio.datasource.mongodb.util.usingMongoClient
-import com.stratio.datasource.util.Config
+import com.stratio.datasource.util.{using, Config}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.sources.{BaseRelation, Filter, InsertableRelation, PrunedFilteredScan}
 import org.apache.spark.sql.types._
@@ -84,7 +83,7 @@ with PrunedFilteredScan with InsertableRelation {
    * @return Boolean
    */
   def isEmptyCollection: Boolean =
-    usingMongoClient(MongodbClientFactory.getClient(config.hosts, config.credentials, config.sslOptions, config.clientOptions).clientConnection) { mongoClient =>
+    using(MongodbClientFactory.getClient(config.hosts, config.credentials, config.sslOptions, config.clientOptions)) { mongoClient =>
       dbCollection(mongoClient).isEmpty
     }
 
@@ -99,7 +98,7 @@ with PrunedFilteredScan with InsertableRelation {
    */
   def insert(data: DataFrame, overwrite: Boolean): Unit = {
     if (overwrite) {
-      usingMongoClient(MongodbClientFactory.getClient(config.hosts, config.credentials, config.sslOptions, config.clientOptions).clientConnection) { mongoClient =>
+      using(MongodbClientFactory.getClient(config.hosts, config.credentials, config.sslOptions, config.clientOptions)) { mongoClient =>
         dbCollection(mongoClient).dropCollection()
       }
     }

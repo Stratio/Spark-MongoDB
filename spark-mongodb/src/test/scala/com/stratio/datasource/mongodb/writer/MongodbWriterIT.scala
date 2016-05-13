@@ -19,12 +19,11 @@ import com.mongodb._
 import com.mongodb.casbah.commons.MongoDBObject
 import com.mongodb.util.JSON
 import com.stratio.datasource.MongodbTestConstants
-import com.stratio.datasource.mongodb.client.MongodbClientFactory
 import com.stratio.datasource.mongodb.config.{MongodbConfig, MongodbConfigBuilder}
 import com.stratio.datasource.mongodb.{MongoEmbedDatabase, TestBsonData}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
-import org.scalatest.{BeforeAndAfterAll, BeforeAndAfter, FlatSpec, Matchers}
+import org.scalatest.{BeforeAndAfterAll, FlatSpec, Matchers}
 
 @RunWith(classOf[JUnitRunner])
 class MongodbWriterIT extends FlatSpec
@@ -247,10 +246,6 @@ with BeforeAndAfterAll {
       }
 
     }
-  }
-
-  override def afterAll {
-    MongodbClientFactory.closeAll(false)
   }
 
 }

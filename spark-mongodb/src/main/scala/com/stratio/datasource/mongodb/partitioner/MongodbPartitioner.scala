@@ -20,13 +20,12 @@ import java.text.SimpleDateFormat
 
 import com.mongodb.casbah.Imports._
 import com.mongodb.{MongoCredential, ServerAddress}
-import com.stratio.datasource.mongodb.client.MongodbClientFactory.Client
 import com.stratio.datasource.mongodb.client.MongodbClientFactory
+import com.stratio.datasource.mongodb.client.MongodbClientFactory.Client
 import com.stratio.datasource.mongodb.config.{MongodbConfig, MongodbCredentials, MongodbSSLOptions}
 import com.stratio.datasource.mongodb.partitioner.MongodbPartitioner._
-import com.stratio.datasource.mongodb.util.usingMongoClient
 import com.stratio.datasource.partitioner.{PartitionRange, Partitioner}
-import com.stratio.datasource.util.Config
+import com.stratio.datasource.util.{Config, using}
 
 import scala.util.Try
 
@@ -64,7 +63,7 @@ class MongodbPartitioner(config: Config) extends Partitioner[MongodbPartition] {
   private val cursorBatchSize = config.getOrElse[Int](MongodbConfig.CursorBatchSize, MongodbConfig.DefaultCursorBatchSize)
 
   override def computePartitions(): Array[MongodbPartition] =
-    usingMongoClient(MongodbClientFactory.getClient(hosts, credentials, ssloptions, clientOptions).clientConnection) { mongoClient =>
+    using(MongodbClientFactory.getClient(hosts, credentials, ssloptions, clientOptions)) { mongoClient =>
       if (isShardedCollection(mongoClient))
         computeShardedChunkPartitions(mongoClient)
       else
@@ -204,7 +203,7 @@ class MongodbPartitioner(config: Config) extends Partitioner[MongodbPartition] {
         val shard = shards.next()
         val shardHost: String = shard.as[String]("host").replace(shard.get("_id") + "/", "")
 
-        usingMongoClient(MongodbClientFactory.getClient(shardHost).clientConnection){ mongoClient =>
+        using(MongodbClientFactory.getClient(shardHost)){ mongoClient =>
           val data = mongoClient.getDB("admin").command(cmd)
           val splitKeys = data.as[List[DBObject]]("splitKeys").map(Option(_))
           val ranges = (splitKeyMin +: splitKeys) zip (splitKeys :+ splitKeyMax )

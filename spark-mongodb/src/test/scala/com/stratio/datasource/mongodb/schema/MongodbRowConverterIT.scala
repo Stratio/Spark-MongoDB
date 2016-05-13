@@ -18,19 +18,17 @@ package com.stratio.datasource.mongodb.schema
 import com.mongodb.DBObject
 import com.mongodb.util.JSON
 import com.stratio.datasource.MongodbTestConstants
-import com.stratio.datasource.mongodb.client.MongodbClientFactory
+import com.stratio.datasource.mongodb._
 import com.stratio.datasource.mongodb.config.{MongodbConfig, MongodbConfigBuilder}
 import com.stratio.datasource.mongodb.partitioner.MongodbPartitioner
 import com.stratio.datasource.mongodb.rdd.MongodbRDD
 import com.stratio.datasource.mongodb.schema.MongodbRowConverter._
-import com.stratio.datasource.mongodb._
-
 import org.apache.spark.sql.catalyst.expressions.GenericRow
-import org.apache.spark.sql.mongodb.{TemporaryTestSQLContext, TestSQLContext}
+import org.apache.spark.sql.mongodb.TemporaryTestSQLContext
 import org.apache.spark.sql.types._
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
-import org.scalatest.{BeforeAndAfterAll, BeforeAndAfter, FlatSpec, Matchers}
+import org.scalatest.{BeforeAndAfterAll, FlatSpec, Matchers}
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
@@ -134,10 +132,6 @@ with BeforeAndAfterAll {
         .asRow(schema,mongodbRDD)
         .collect().toList should equal(List(collected))
     }
-  }
-
-  override def afterAll {
-    MongodbClientFactory.closeAll(false)
   }
 
 }

@@ -38,8 +38,6 @@ class MongodbReader(config: Config,
 
   private var mongoClient: Option[MongodbClientFactory.Client] = None
 
-  private var mongoClientKey: Option[String] = None
-
   private var dbCursor: Option[MongoCursorBase] = None
 
   private val batchSize = config.getOrElse[Int](MongodbConfig.CursorBatchSize, MongodbConfig.DefaultCursorBatchSize)
@@ -53,15 +51,8 @@ class MongodbReader(config: Config,
       dbCursor = None
     }
 
-    mongoClient.fold(ifEmpty = ()) { client =>
-      mongoClientKey.fold({
-        MongodbClientFactory.closeByClient(client)
-      }) {key =>
-        MongodbClientFactory.closeByKey(key)
-      }
-
-      mongoClient = None
-    }
+    mongoClient.foreach(_.close())
+    mongoClient = None
   }
 
   def hasNext: Boolean = {
@@ -87,9 +78,7 @@ class MongodbReader(config: Config,
       val sslOptions = config.get[MongodbSSLOptions](MongodbConfig.SSLOptions)
       val clientOptions = config.properties.filterKeys(_.contains(MongodbConfig.ListMongoClientOptions))
 
-      val mongoClientResponse = MongodbClientFactory.getClient(hosts, credentials, sslOptions, clientOptions)
-      mongoClient = Option(mongoClientResponse.clientConnection)
-      mongoClientKey = Option(mongoClientResponse.key)
+      mongoClient = Option(MongodbClientFactory.getClient(hosts, credentials, sslOptions, clientOptions))
 
       val emptyFilter = MongoDBObject(List())
       val filter = Try(queryPartition(filters)).getOrElse(emptyFilter)
@@ -134,6 +123,5 @@ class MongodbReader(config: Config,
       })
 }
 
-case class MongodbReadException(
-                                 msg: String,
+case class MongodbReadException( msg: String,
                                  causedBy: Throwable) extends RuntimeException(msg, causedBy)
