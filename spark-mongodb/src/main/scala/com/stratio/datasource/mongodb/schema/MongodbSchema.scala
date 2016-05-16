@@ -19,7 +19,7 @@ import com.mongodb.casbah.Imports._
 import com.stratio.datasource.schema.SchemaProvider
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.catalyst.ScalaReflection
-import org.apache.spark.sql.catalyst.analysis.HiveTypeCoercion
+import org.apache.spark.sql.catalyst.analysis.TypeCoercion
 import org.apache.spark.sql.types._
 import org.apache.spark.unsafe.types.UTF8String
 
@@ -83,7 +83,7 @@ case class MongodbSchema[T <: RDD[DBObject]](
    * @return Compatible type for both t1 and t2
    */
   private def compatibleType(t1: DataType, t2: DataType): DataType = {
-    HiveTypeCoercion.findTightestCommonTypeOfTwo(t1, t2) match {
+    TypeCoercion.findTightestCommonTypeOfTwo(t1, t2) match {
       case Some(commonType) => commonType
 
       case None =>
