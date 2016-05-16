@@ -16,12 +16,15 @@
 
 package com.stratio.datasource.mongodb.partitioner
 
+import java.text.SimpleDateFormat
+
 import com.mongodb.casbah.Imports._
 import com.mongodb.{MongoCredential, ServerAddress}
-import com.stratio.datasource.mongodb.client.MongodbClientFactory
 import com.stratio.datasource.mongodb.client.MongodbClientFactory.Client
-import com.stratio.datasource.mongodb.config.{MongodbSSLOptions, MongodbCredentials, MongodbConfig}
+import com.stratio.datasource.mongodb.client.MongodbClientFactory
+import com.stratio.datasource.mongodb.config.{MongodbConfig, MongodbCredentials, MongodbSSLOptions}
 import com.stratio.datasource.mongodb.partitioner.MongodbPartitioner._
+import com.stratio.datasource.mongodb.util.usingMongoClient
 import com.stratio.datasource.partitioner.{PartitionRange, Partitioner}
 import com.stratio.datasource.util.Config
 
@@ -45,7 +48,10 @@ class MongodbPartitioner(config: Config) extends Partitioner[MongodbPartition] {
   @transient private val ssloptions: Option[MongodbSSLOptions] =
     config.get[MongodbSSLOptions](MongodbConfig.SSLOptions)
 
-  private val clientOptions = config.properties //config.properties.filterKeys(_.contains(MongodbConfig.ListMongoClientOptions)) // TODO review this Map. Can't filter keys
+  private val clientOptions = {
+    val lowerCaseOptions = MongodbConfig.ListMongoClientOptions.map(_.toLowerCase).toSet
+    config.properties.filter { case (k, _) => lowerCaseOptions contains k }
+  }
 
   private val databaseName: String = config(MongodbConfig.Database)
 
@@ -57,16 +63,13 @@ class MongodbPartitioner(config: Config) extends Partitioner[MongodbPartition] {
 
   private val cursorBatchSize = config.getOrElse[Int](MongodbConfig.CursorBatchSize, MongodbConfig.DefaultCursorBatchSize)
 
-  override def computePartitions(): Array[MongodbPartition] = {
-    val mongoClient = MongodbClientFactory.getClient(hosts, credentials, ssloptions, clientOptions)
-
-    val result = if (isShardedCollection(mongoClient.clientConnection))
-      computeShardedChunkPartitions(mongoClient.clientConnection)
-    else
-      computeNotShardedPartitions(mongoClient.clientConnection)
-
-    result
-  }
+  override def computePartitions(): Array[MongodbPartition] =
+    usingMongoClient(MongodbClientFactory.getClient(hosts, credentials, ssloptions, clientOptions).clientConnection) { mongoClient =>
+      if (isShardedCollection(mongoClient))
+        computeShardedChunkPartitions(mongoClient)
+      else
+        computeNotShardedPartitions(mongoClient)
+    }
 
   /**
    * @return Whether this is a sharded collection or not
@@ -139,16 +142,58 @@ class MongodbPartitioner(config: Config) extends Partitioner[MongodbPartition] {
    */
   protected def splitRanges(mongoClient: Client): Seq[(Option[DBObject], Option[DBObject])] = {
 
+    def BoundWithCorrectType(value: String, dataType: String) : Any = dataType match {
+      case "isoDate"  => convertToISODate(value)
+      case "int"      => value.toInt
+      case "long"     => value.toLong
+      case "double"   => value.toDouble
+      case "string"   => value
+      case _          => throw new IllegalArgumentException(s"Illegal type $dataType for ${MongodbConfig.SplitKeyType} parameter.")
+    }
+
+    def convertToISODate(value: String) : java.util.Date = {
+      val dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+      dateFormat.parse(value)
+    }
+
+    val splitKey = config.getOrElse(MongodbConfig.SplitKey, MongodbConfig.DefaultSplitKey)
+
+    val requiredCustomSplitParams = Seq(MongodbConfig.SplitKeyMin, MongodbConfig.SplitKeyMax, MongodbConfig.SplitKeyType)
+
+    val customSplitIsDefined = requiredCustomSplitParams.forall(key => config.get(key).isDefined)
+
+    val (splitBounds , splitKeyMin , splitKeyMax) = if(customSplitIsDefined){
+
+      val keyType = config[String](MongodbConfig.SplitKeyType)
+      val splitKeyMinValue = BoundWithCorrectType(config[String](MongodbConfig.SplitKeyMin), keyType)
+      val splitKeyMaxValue = BoundWithCorrectType(config[String](MongodbConfig.SplitKeyMax), keyType)
+
+      val splitKeyMin = MongoDBObject(splitKey -> splitKeyMinValue)
+      val splitKeyMax = MongoDBObject(splitKey -> splitKeyMaxValue)
+
+      val bounds = MongoDBObject(
+        "min" -> splitKeyMin,
+        "max" -> splitKeyMax
+      )
+
+      (bounds, Some(splitKeyMin), Some(splitKeyMax))
+    }
+    else (MongoDBObject.empty, None, None)
+
+    val maxChunkSize = config.get[String](MongodbConfig.SplitSize).map(_.toInt)
+      .getOrElse(MongodbConfig.DefaultSplitSize)
+
     val cmd: MongoDBObject = MongoDBObject(
       "splitVector" -> collectionFullName,
-      "keyPattern" -> MongoDBObject(config.getOrElse(MongodbConfig.SplitKey, MongodbConfig.DefaultSplitKey) -> 1),
+      "keyPattern" -> MongoDBObject(splitKey -> 1),
       "force" -> false,
-      "maxChunkSize" -> config.getOrElse(MongodbConfig.SplitSize, MongodbConfig.DefaultSplitSize)
-    )
+      "maxChunkSize" -> maxChunkSize
+    ) ++ splitBounds
+
     val ranges = Try {
       val data = mongoClient("admin").command(cmd)
       val splitKeys = data.as[List[DBObject]]("splitKeys").map(Option(_))
-      val ranges = (None +: splitKeys) zip (splitKeys :+ None)
+      val ranges = (splitKeyMin +: splitKeys) zip (splitKeys :+ splitKeyMax)
 
       ranges.toSeq
     }.recover {
@@ -158,16 +203,16 @@ class MongodbPartitioner(config: Config) extends Partitioner[MongodbPartition] {
           .find(MongoDBObject("_id" -> stats.getString("primary"))).batchSize(cursorBatchSize)
         val shard = shards.next()
         val shardHost: String = shard.as[String]("host").replace(shard.get("_id") + "/", "")
-        val shardClient = MongodbClientFactory.getClient(shardHost)
-        val data = shardClient.clientConnection.getDB("admin").command(cmd)
-        val splitKeys = data.as[List[DBObject]]("splitKeys").map(Option(_))
-        val ranges = (None +: splitKeys) zip (splitKeys :+ None)
 
-        shards.close()
+        usingMongoClient(MongodbClientFactory.getClient(shardHost).clientConnection){ mongoClient =>
+          val data = mongoClient.getDB("admin").command(cmd)
+          val splitKeys = data.as[List[DBObject]]("splitKeys").map(Option(_))
+          val ranges = (splitKeyMin +: splitKeys) zip (splitKeys :+ splitKeyMax )
 
-        MongodbClientFactory.setFreeConnectionByKey(shardClient.key, connectionsTime)
+          shards.close()
+          ranges.toSeq
+        }
 
-        ranges.toSeq
     }.getOrElse(Seq((None, None)))
 
     ranges

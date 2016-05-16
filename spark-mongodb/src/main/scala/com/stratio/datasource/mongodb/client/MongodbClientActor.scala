@@ -31,11 +31,12 @@ import scala.annotation.tailrec
 import scala.util.Try
 
 
+// TODO Refactor - "The MongoClient class is designed to be thread safe and shared among threads"
 class MongodbClientActor extends Actor {
 
   private val KeySeparator = "-"
 
-  private val CloseSleepTime = 1000
+  private val CloseSleepTime = 100
 
   private val mongoClient: scala.collection.mutable.Map[String, MongodbConnection] =
     scala.collection.mutable.Map.empty[String, MongodbConnection]

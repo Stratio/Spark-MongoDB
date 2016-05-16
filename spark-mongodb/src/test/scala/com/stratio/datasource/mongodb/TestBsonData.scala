@@ -96,6 +96,7 @@ trait TestBsonData {
           "arrayOfDouble":[1.2, 1.7976931348623157E308, 4.9E-324, 2.2250738585072014E-308],
           "arrayOfBoolean":[true, false, true],
           "arrayOfNull":[null, null, null, null],
+          "arrayEmpty":[],
           "arrayOfStruct":[{"field1": true, "field2": "str1"}, {"field1": false}, {"field3": null}],
           "arrayOfArray1":[[1, 2, 3], ["str1", "str2"]],
           "arrayOfArray2":[[1, 2, 3], [1.1, 2.1, 3.1]]

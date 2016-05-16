@@ -13,19 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.stratio.datasource.mongodb.writer
+package com.stratio.datasource.mongodb.util
 
-import com.mongodb.casbah.Imports._
-import com.stratio.datasource.util.Config
+import com.mongodb.casbah.MongoClient
+import com.stratio.datasource.mongodb.client.MongodbClientFactory
 
-/**
- * A simple mongodb writer.
- *
- * @param config Configuration parameters (host,database,collection,...)
- */
-private[mongodb] class MongodbSimpleWriter(config: Config) extends MongodbWriter(config) {
+import scala.util.Try
 
-  override def save(it: Iterator[DBObject], mongoClient: MongoClient): Unit =
-    it.foreach(dbo => dbCollection(mongoClient).save(dbo, writeConcern))
+  object usingMongoClient {
 
-}
+    def apply[A](mongoClient: MongoClient)(code: MongoClient => A): A =
+      try {
+        code(mongoClient)
+      } finally {
+        Try(MongodbClientFactory.closeByClient(mongoClient))
+      }
+  }
+

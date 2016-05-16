@@ -25,7 +25,7 @@ import com.stratio.datasource.util.Config
  *
  * @param config Configuration parameters (host,database,collection,...)
  */
-class MongodbBatchWriter(config: Config) extends MongodbWriter(config) {
+private[mongodb] class MongodbBatchWriter(config: Config) extends MongodbWriter(config) {
 
   private val IdKey = "_id"
 
@@ -33,9 +33,9 @@ class MongodbBatchWriter(config: Config) extends MongodbWriter(config) {
 
   private val pkConfig: Option[Array[String]] = config.get[Array[String]](MongodbConfig.UpdateFields)
 
-  override def save(it: Iterator[DBObject]): Unit = {
+  override def save(it: Iterator[DBObject], mongoClient: MongoClient): Unit = {
     it.grouped(bulkBatchSize).foreach { group =>
-      val bulkOperation = dbCollection.initializeUnorderedBulkOperation
+      val bulkOperation = dbCollection(mongoClient).initializeUnorderedBulkOperation
       group.foreach { element =>
         val query = getUpdateQuery(element)
         if (query.isEmpty) bulkOperation.insert(element)

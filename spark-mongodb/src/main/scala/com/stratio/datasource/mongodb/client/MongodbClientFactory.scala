@@ -25,7 +25,8 @@ import com.mongodb.ServerAddress
 import com.mongodb.casbah.Imports._
 import com.mongodb.casbah.MongoClient
 import com.stratio.datasource.mongodb.client.MongodbClientActor._
-import com.stratio.datasource.mongodb.config.MongodbSSLOptions
+import com.stratio.datasource.mongodb.config.{MongodbConfig, MongodbSSLOptions}
+import com.typesafe.config.ConfigFactory
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
@@ -34,6 +35,7 @@ import scala.concurrent.duration._
 /**
  * Different client configurations to Mongodb database
  */
+// TODO Refactor - MongodbClientFactory should be used internally and should not delegate to other when closing/freeing connections
 object MongodbClientFactory {
 
   type Client = MongoClient
@@ -43,9 +45,9 @@ object MongodbClientFactory {
   /**
    * Scheduler that close connections automatically when the timeout was expired
    */
-  private val actorSystem = ActorSystem()
+  private val actorSystem = ActorSystem("mongodbClientFactory", ConfigFactory.load(ConfigFactory.parseString("akka.daemonic=on")))
   private val scheduler = actorSystem.scheduler
-  private val SecondsToCheckConnections = 60
+  private val SecondsToCheckConnections = MongodbConfig.DefaultConnectionsTime
   private val mongoConnectionsActor = actorSystem.actorOf(Props(new MongodbClientActor), "mongoConnectionActor")
 
   private implicit val executor = actorSystem.dispatcher
@@ -62,7 +64,7 @@ object MongodbClientFactory {
    * @param host Ip or Dns to connect
    * @return Client connection with identifier
    */
-  def getClient(host: String): ClientResponse = {
+  private[mongodb] def getClient(host: String): ClientResponse = {
     val futureResult = mongoConnectionsActor ? GetClient(host)
     Await.result(futureResult, timeout.duration) match {
       case ClientResponse(key, clientConnection) => ClientResponse(key, clientConnection)
@@ -78,7 +80,7 @@ object MongodbClientFactory {
    * @param password Password for credentials
    * @return Client connection with identifier
    */
-  def getClient(host: String, port: Int, user: String, database: String, password: String): ClientResponse = {
+  private[mongodb] def getClient(host: String, port: Int, user: String, database: String, password: String): ClientResponse = {
     val futureResult = mongoConnectionsActor ? GetClientWithUser(host, port, user, database, password)
     Await.result(futureResult, timeout.duration) match {
       case ClientResponse(key, clientConnection) => ClientResponse(key, clientConnection)
@@ -93,7 +95,7 @@ object MongodbClientFactory {
    * @param clientOptions All options for the client connections
    * @return Client connection with identifier
    */
-  def getClient(hostPort: List[ServerAddress],
+  private[mongodb] def getClient(hostPort: List[ServerAddress],
                 credentials: List[MongoCredential] = List(),
                 optionSSLOptions: Option[MongodbSSLOptions] = None,
                 clientOptions: Map[String, Any] = Map()): ClientResponse = {
@@ -109,7 +111,7 @@ object MongodbClientFactory {
    * Close all client connections on the concurrent map
    * @param gracefully Close the connections if is free
    */
-  def closeAll(gracefully: Boolean = true, attempts: Int = CloseAttempts): Unit = {
+  private[mongodb] def closeAll(gracefully: Boolean = true, attempts: Int = CloseAttempts): Unit = {
     mongoConnectionsActor ! CloseAll(gracefully, attempts)
   }
 
@@ -118,7 +120,7 @@ object MongodbClientFactory {
    * @param client client value for connect to MongoDb
    * @param gracefully Close the connection if is free
    */
-  def closeByClient(client: Client, gracefully: Boolean = true): Unit = {
+  private[mongodb] def closeByClient(client: Client, gracefully: Boolean = true): Unit = {
     mongoConnectionsActor ! CloseByClient(client, gracefully)
   }
 
@@ -127,7 +129,7 @@ object MongodbClientFactory {
    * @param clientKey key pre calculated with the connection options
    * @param gracefully Close the connection if is free
    */
-  def closeByKey(clientKey: String, gracefully: Boolean = true): Unit = {
+  private[mongodb] def closeByKey(clientKey: String, gracefully: Boolean = true): Unit = {
     mongoConnectionsActor ! CloseByKey(clientKey, gracefully)
   }
 
@@ -135,7 +137,7 @@ object MongodbClientFactory {
    * Set Free the connection that have the same client as the client param
    * @param client client value for connect to MongoDb
    */
-  def setFreeConnectionByClient(client: Client, extendedTime: Option[Long] = None): Unit = {
+  private[mongodb] def setFreeConnectionByClient(client: Client, extendedTime: Option[Long] = None): Unit = {
     mongoConnectionsActor ! SetFreeConnectionsByClient(client, extendedTime)
   }
 
@@ -143,19 +145,20 @@ object MongodbClientFactory {
    * Set Free the connection that have the same key as the clientKey param
    * @param clientKey key pre calculated with the connection options
    */
-  def setFreeConnectionByKey(clientKey: String, extendedTime: Option[Long] = None): Unit = {
+  private[mongodb] def setFreeConnectionByKey(clientKey: String, extendedTime: Option[Long] = None): Unit = {
     mongoConnectionsActor ! SetFreeConnectionByKey(clientKey, extendedTime)
   }
 
-  def getClientPoolSize: Int = {
+  private[client] def getClientPoolSize: Int = {
     val futureResult = mongoConnectionsActor ? GetSize
     Await.result(futureResult, timeout.duration) match {
       case size: Int => size
     }
   }
 
+  // TODO Review when refactoring config
   def extractValue[T](options: Map[String, Any], key: String): Option[T] =
-    options.get(key).map(_.asInstanceOf[T])
+    options.get(key.toLowerCase).map(_.asInstanceOf[T])
 
   def sslBuilder(optionSSLOptions: Option[MongodbSSLOptions]): Boolean =
     optionSSLOptions.exists(sslOptions => {
