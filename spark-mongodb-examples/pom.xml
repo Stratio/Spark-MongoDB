@@ -40,8 +40,8 @@
 
     <properties>
         <scala.binary.version>2.10</scala.binary.version>
-        <mongodb.datasource.version>0.11.2-RC1-SNAPSHOT</mongodb.datasource.version>
-        <spark.version>1.5.2</spark.version>
+        <mongodb.datasource.version>0.11.2</mongodb.datasource.version>
+        <spark.version>1.6.1</spark.version>
     </properties>
 
     <dependencies>
