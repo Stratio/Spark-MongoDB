@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.11.2 (May 2016)
+
+* Fix #131: Connection not getting closed
+
 ## 0.11.1 (? 2016)
 
 * Max and Min splitVector bounds for not sharded collections (see doc)
@@ -8,7 +12,7 @@
 ## 0.11.0 (February 2016)
 
 * Compatibility with spark 1.6
-* Refactor mongo clients  to improve performance
+* Refactor mongo clients to improve performance
 
 ## 0.10.1 (November 2015)
 
