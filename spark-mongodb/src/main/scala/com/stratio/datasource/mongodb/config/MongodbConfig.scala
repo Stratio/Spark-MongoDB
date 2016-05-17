@@ -159,13 +159,12 @@ object MongodbConfig {
   // TODO Review when refactoring config
   def parseWriteConcern(writeConcern: String): WriteConcern = {
     writeConcern.toUpperCase match {
-      case "SAFE" | "ACKNOWLEDGED" => com.mongodb.WriteConcern.SAFE
-      case "NORMAL" | "UNACKNOWLEDGED" => com.mongodb.WriteConcern.NORMAL
-      case "REPLICAS_SAFE" | "REPLICA_ACKNOWLEDGED" => com.mongodb.WriteConcern.REPLICAS_SAFE
+      case "SAFE" | "ACKNOWLEDGED" => com.mongodb.WriteConcern.ACKNOWLEDGED
+      case "NORMAL" | "UNACKNOWLEDGED" => com.mongodb.WriteConcern.UNACKNOWLEDGED
+      case "REPLICAS_SAFE" | "REPLICA_ACKNOWLEDGED" => com.mongodb.WriteConcern.W2
       case "FSYNC_SAFE" | "FSYNCED" => com.mongodb.WriteConcern.FSYNC_SAFE
       case "MAJORITY" => com.mongodb.WriteConcern.MAJORITY
-      case "JOURNAL_SAFE" | "JOURNALED" => com.mongodb.WriteConcern.JOURNAL_SAFE
-      case "NONE" | "ERRORS_IGNORED" => com.mongodb.WriteConcern.NONE
+      case "JOURNAL_SAFE" | "JOURNALED" => com.mongodb.WriteConcern.JOURNALED
       case _ => DefaultWriteConcern
     }
   }

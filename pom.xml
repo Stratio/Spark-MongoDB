@@ -42,8 +42,12 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <sonar.projectBaseDir>spark-mongodb</sonar.projectBaseDir>
+        <scala.test.version>2.2.5</scala.test.version>
+        <scala.mock.version>3.2.1</scala.mock.version>
+        <spark.version>1.6.1</spark.version>
+        <casbah.version>3.1.1</casbah.version>
     </properties>
-
     <developers>
         <developer>
             <id>rmorandeira</id>

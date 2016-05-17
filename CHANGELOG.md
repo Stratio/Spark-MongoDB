@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.12.0 (? 2016)
+
+* Upgrade casbah to 3.1.1 (compatible with MongoDB 3.2)
+
 ## 0.11.1 (? 2016)
 
 * Max and Min splitVector bounds for not sharded collections (see doc)
