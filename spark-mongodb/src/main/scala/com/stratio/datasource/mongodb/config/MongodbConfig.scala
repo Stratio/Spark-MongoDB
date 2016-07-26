@@ -128,9 +128,9 @@ object MongodbConfig {
       case (properties,GSSAPICredentials) =>
         parameters.get(GSSAPICredentials).map{ gssapiCredentialInput =>
           val gssApiCredentials = gssapiCredentialInput.split(",").map(_.split(",")).toList
-            .map(credential => MongodbGSSAPICredentials(credential(0), credential(1),
-              credential(2).asInstanceOf[Map[String, String]],
-              credential(3).asInstanceOf[Map[String, Any]]))
+            .map(credential => MongodbGSSAPICredentials(credential(0),
+              credential(1).asInstanceOf[Map[String, String]],
+              credential(2).asInstanceOf[Map[String, Any]]))
           properties + (GSSAPICredentials -> gssApiCredentials)
         } getOrElse properties
 
