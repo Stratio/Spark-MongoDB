@@ -17,6 +17,5 @@ package com.stratio.datasource.mongodb.config
 
 case class MongodbGSSAPICredentials(
   user: String,
-  database: String,
   envProperties: Map[String, String],
   mechanismProperties: Map[String, Any]) extends DBCredentials

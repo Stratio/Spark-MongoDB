@@ -34,7 +34,7 @@ object MongodbConfigReader {
         case MongodbCredentials(user,database,password) =>
           MongoCredential.createCredential(user,database,password)
 
-        case MongodbGSSAPICredentials(user, database, envProperties, mechanismProperties) =>
+        case MongodbGSSAPICredentials(user, envProperties, mechanismProperties) =>
 
           envProperties.keys.foreach(k => System.setProperty(k, envProperties(k)))
 
