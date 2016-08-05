@@ -15,7 +15,8 @@
  */
 package org.apache.spark.sql.mongodb
 
-import org.apache.spark.sql.{SQLConf, SQLContext}
+import org.apache.spark.sql.SQLContext
+import org.apache.spark.sql.internal.SQLConf
 import org.apache.spark.{SparkConf, SparkContext}
 
 
