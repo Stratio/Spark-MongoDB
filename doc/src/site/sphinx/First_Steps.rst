@@ -28,7 +28,7 @@ You can link against this library by putting the following lines in your program
 ::
 
  <groupId>com.stratio.datasource</groupId>
- <artifactId>spark-mongodb_2.10</artifactId>
+ <artifactId>spark-mongodb_2.11</artifactId>
  <version>LATEST_VERSION</version>
 
 There also exists the possibility of downloading the project by doing:
@@ -46,14 +46,14 @@ Spark packages option:
 
 ::
 
- $ bin/spark-shell --packages com.stratio.datasource:spark-mongodb_2.10:<VERSION>
+ $ bin/spark-shell --packages com.stratio.datasource:spark-mongodb_2.11:<VERSION>
 
 
 Jars option:
 
 ::
 
- $ bin/spark-shell --jars <path-to>/spark-mongodb_2.10-<version>.jar,<path-to>/casbah-commons_2.10-2.8.0.jar,<path-to>/casbah-core_2.10-2.8.0.jar,<path-to>/casbah-query_2.10-2.8.0.jar,<path-to>/mongo-java-driver-2.13.0.jar
+ $ bin/spark-shell --jars <path-to>/spark-mongodb_2.11-<version>.jar,<path-to>/casbah-commons_2.11-2.8.0.jar,<path-to>/casbah-core_2.11-2.8.0.jar,<path-to>/casbah-query_2.11-2.8.0.jar,<path-to>/mongo-java-driver-2.13.0.jar,<path-to>/akka-actor_2.11-2.3.11.jar,<path-to-typesafeconfig>/config-1.2.1.jar
 
 ::
 
@@ -61,14 +61,14 @@ Jars option:
        ____              __
       / __/__  ___ _____/ /__
      _\ \/ _ \/ _ `/ __/  '_/
-    /___/ .__/\_,_/_/ /_/\_\   version 1.5.2
+    /___/ .__/\_,_/_/ /_/\_\   version 2.0.0
        /_/
  
- Using Scala version 2.10.4 (OpenJDK 64-Bit Server VM, Java 1.7.0_79)
+ Using Scala version 2.11.8 (Java HotSpot(TM) 64-Bit Server VM, Java 1.8.0_65)
  Type in expressions to have them evaluated.
  Type :help for more information.
+
  Spark context available as sc.
- SQL context available as sqlContext.
 
 
 
@@ -231,14 +231,14 @@ To save a DataFrame in MongoDB you should use the saveToMongodb() function as fo
 ::
 
  import org.apache.spark.sql._
- import sqlContext._
- case class Student(name: String, age: Int)
- val dataFrame: DataFrame = createDataFrame(sc.parallelize(List(Student("Torcuato", 27), Student("Rosalinda", 34))))
  import com.mongodb.casbah.{WriteConcern => MongodbWriteConcern}
  import com.stratio.datasource.mongodb._
  import com.stratio.datasource.mongodb.config._
  import com.stratio.datasource.mongodb.config.MongodbConfig._
 
+ val sparkSession = SparkSession.builder().getOrCreate()
+ case class Student(name: String, age: Int)
+ val dataFrame: DataFrame = sparkSession.createDataFrame(sc.parallelize(List(Student("Torcuato", 27), Student("Rosalinda", 34))))
  val saveConfig = MongodbConfigBuilder(Map(Host -> List("localhost:27017"), Database -> "highschool", Collection ->"students", SamplingRatio -> 1.0, WriteConcern -> "normal", SplitSize -> 8, SplitKey -> "_id"))
  dataFrame.saveToMongodb(saveConfig.build)
 
@@ -247,21 +247,17 @@ In the example we can see how to use the fromMongoDB() function to read from Mon
 
 ::
 
+ import org.apache.spark.sql._
  import com.mongodb.casbah.{WriteConcern => MongodbWriteConcern}
- import com.stratio.datasource._
  import com.stratio.datasource.mongodb._
- import com.stratio.datasource.mongodb.schema._
- import com.stratio.datasource.mongodb.writer._
  import com.stratio.datasource.mongodb.config._
  import com.stratio.datasource.mongodb.config.MongodbConfig._
- import org.apache.spark.sql.SQLContext
- import com.stratio.datasource.util.Config._
 
  val builder = MongodbConfigBuilder(Map(Host -> List("localhost:27017"), Database -> "highschool", Collection ->"students", SamplingRatio -> 1.0, WriteConcern -> "normal"))
  val readConfig = builder.build()
- val mongoRDD = sqlContext.fromMongoDB(readConfig)
- mongoRDD.registerTempTable("students")
- val dataFrame = sqlContext.sql("SELECT name, age FROM students")
+ val mongoRDD = sparkSession.sqlContext.fromMongoDB(readConfig)
+ mongoRDD.createTempView("students")
+ val dataFrame = sparkSession.sql("SELECT name, age FROM students")
  dataFrame.show
 
 
@@ -280,40 +276,41 @@ Using  StructType:
 
  import org.apache.spark.sql.types._
  val schemaMongo = StructType(StructField("name", StringType, true) :: StructField("age", IntegerType, true ) :: Nil)
- val df = sqlContext.read.schema(schemaMongo).format("com.stratio.datasource.mongodb").options(Map("host" -> "localhost:27017", "database" -> "highschool", "collection" -> "students")).load
- df.registerTempTable("mongoTable")
- sqlContext.sql("SELECT * FROM mongoTable WHERE name = 'Torcuato'").show()
+ val df = sparkSession.read.schema(schemaMongo).format("com.stratio.datasource.mongodb").options(Map("host" -> "localhost:27017", "database" -> "highschool", "collection" -> "students")).load
+ df.createTempView("mongoTable")
+ sparkSession.sql("SELECT * FROM mongoTable WHERE name = 'Torcuato'").show()
 
 
 Using DataFrameWriter:
 
 ::
 
- import org.apache.spark.sql.SQLContext._
  import org.apache.spark.sql._
+
  val options = Map("host" -> "localhost:27017", "database" -> "highschool", "collection" -> "students")
  case class Student(name: String, age: Int)
- val dfw: DataFrame = sqlContext.createDataFrame(sc.parallelize(List(Student("Michael", 46))))
+ val sparkSession = SparkSession.builder().getOrCreate()
+ val dfw: DataFrame = sparkSession.createDataFrame(sc.parallelize(List(Student("Michael", 46))))
  dfw.write.format("com.stratio.datasource.mongodb").mode(SaveMode.Append).options(options).save()
- val df = sqlContext.read.format("com.stratio.datasource.mongodb").options(options).load
+ val df = sparkSession.read.format("com.stratio.datasource.mongodb").options(options).load
  df.show
 
 
-Using HiveContext (sqlContext in spark-shell provide Hive support):
+Using HiveContext:
 
 ::
 
- sqlContext.sql("CREATE TABLE IF NOT EXISTS mongoTable(name STRING, age INTEGER) USING com.stratio.datasource.mongodb OPTIONS (host 'localhost:27017', database 'highschool', collection 'students')")
- sqlContext.sql("SELECT * FROM mongoTable WHERE name = 'Torcuato'").show()
- sqlContext.sql("DROP TABLE mongoTable")
+ sparkSession.sql("CREATE TABLE IF NOT EXISTS mongoTable(name STRING, age INTEGER) USING com.stratio.datasource.mongodb OPTIONS (host 'localhost:27017', database 'highschool', collection 'students')")
+ sparkSession.sql("SELECT * FROM mongoTable WHERE name = 'Torcuato'").show()
+ sparkSession.sql("DROP TABLE mongoTable")
 
 Using spark-sql shell:
 
 ::
 
- CREATE TEMPORARY TABLE mongoTable USING com.stratio.datasource.mongodb OPTIONS (host 'host:port', database 'highschool', collection 'students');
+ CREATE TEMPORARY VIEW mongoTable USING com.stratio.datasource.mongodb OPTIONS (host 'host:port', database 'highschool', collection 'students');
  SELECT * FROM mongoTable WHERE name = 'Torcuato';
- DROP TABLE mongoTable;
+
 
 Python API
 ----------
@@ -324,24 +321,25 @@ First, enter the pyspark shell from your SPARK_HOME.
 
 ::
 
- $ bin/pyspark --packages com.stratio.datasource:spark-mongodb_2.10:<VERSION>
+ $ bin/pyspark --packages com.stratio.datasource:spark-mongodb_2.11:<VERSION>
 
 Then:
 
 ::
 
- from pyspark.sql import SQLContext
- sqlContext.sql("CREATE TEMPORARY TABLE students_table USING com.stratio.datasource.mongodb OPTIONS (host 'localhost:27017', database 'highschool', collection 'students')")
- sqlContext.sql("SELECT * FROM students_table").collect()
+ from pyspark.sql import SparkSession
+ spark = SparkSession.builder.getOrCreate()
+ spark.sql("CREATE TEMPORARY VIEW students_table USING com.stratio.datasource.mongodb OPTIONS (host 'localhost:27017', database 'highschool', collection 'students')")
+ spark.sql("SELECT * FROM students_table").collect()
 
 Using DataFrameReader and DataFrameWriter:
 ::
 
- df = sqlContext.read.format('com.stratio.datasource.mongodb').options(host='localhost:27017', database='highschool', collection='students').load()
+ df = sparkSession.read.format('com.stratio.datasource.mongodb').options(host='localhost:27017', database='highschool', collection='students').load()
  df.select("name").collect()
 
  df.select("name").write.format("com.stratio.datasource.mongodb").mode('overwrite').options(host='localhost:27017', database='highschool', collection='studentsview').save()
- dfView = sqlContext.read.format('com.stratio.datasource.mongodb').options(host='localhost:27017', database='highschool', collection='studentsview').load()
+ dfView = sparkSession.read.format('com.stratio.datasource.mongodb').options(host='localhost:27017', database='highschool', collection='studentsview').load()
  dfView.show()
 
 Java API
@@ -354,17 +352,17 @@ public class SparkMongodbJavaExample {
 
     public static void main(String[] args) {
 
-        JavaSparkContext sc = new JavaSparkContext("local[2]", "test spark-mongodb java");
-        SQLContext sqlContext = new org.apache.spark.sql.SQLContext(sc);
+        SparkSession spark = SparkSession.builder().master("local[2]).getOrCreate();
+
         Map options = new HashMap();
         options.put("host", "localhost:27017");
         options.put("database", "highschoolCredentials");
         options.put("collection", "students");
         options.put("credentials", "user,highschoolCredentials,password");
 
-        DataFrame df = sqlContext.read().format("com.stratio.datasource.mongodb").options(options).load();
-        df.registerTempTable("students");
-        sqlContext.sql("SELECT * FROM students");
+        DataFrame df = spark.read().format("com.stratio.datasource.mongodb").options(options).load();
+        df.createTempView("students");
+        spark.sql("SELECT * FROM students");
         df.show();        }
 }
 
@@ -376,7 +374,7 @@ First, enter the SparkR shell from your SPARK_HOME.
 
 ::
 
- $ bin/sparkR --packages com.stratio.datasource:spark-mongodb_2.10:<VERSION>
+ $ bin/sparkR --packages com.stratio.datasource:spark-mongodb_2.11:<VERSION>
 
 Then:
 
@@ -384,7 +382,7 @@ Then:
 
  # credentials and samplingratio are optionals.
  df <- read.df(sqlContext, source= "com.stratio.datasource.mongodb", host = "host:port", database = "highschool", collection = "students", splitSize = 8, splitKey = "_id", credentials="user1,database,password;user2,database2,password2", samplingRatio=1.0)
- registerTempTable(df, "students_table")
+ createOrReplaceTempView(df, "students_table")
  collect(sql(sqlContext, "SELECT * FROM students_table"))
 
 
