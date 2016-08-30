@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.13.0 (upcoming)
+
+* Pending changelog
+
 ## 0.12.0 (upcoming)
 
 * Upgrade Spark to 2.0.0
