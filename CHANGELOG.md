@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.12.0 (upcoming)
+## 0.12.0 (August 30, 2016)
 
 * Upgrade Spark to 2.0.0
 
