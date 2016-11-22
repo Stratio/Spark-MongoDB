@@ -28,9 +28,20 @@ object MongodbConfigReader {
         .map(add => new ServerAddress(add))
 
     @transient protected[mongodb] val credentials: List[MongoCredential] =
-      config.getOrElse[List[MongodbCredentials]](MongodbConfig.Credentials, MongodbConfig.DefaultCredentials).map{
+      config.getOrElse[List[DBCredentials]](MongodbConfig.Credentials,
+        config.getOrElse[List[DBCredentials]](MongodbConfig.GSSAPICredentials, MongodbConfig.DefaultCredentials)).map{
+
         case MongodbCredentials(user,database,password) =>
           MongoCredential.createCredential(user,database,password)
+
+        case MongodbGSSAPICredentials(user, envProperties, mechanismProperties) =>
+
+          envProperties.keys.foreach(k => System.setProperty(k, envProperties(k)))
+
+          val credential = MongoCredential.createGSSAPICredential(user)
+
+          mechanismProperties.keys.foreach(k => credential.withMechanismProperty(k, mechanismProperties(k)))
+          credential
       }
 
     @transient protected[mongodb] val sslOptions: Option[MongodbSSLOptions] =

@@ -38,6 +38,7 @@ object MongodbConfig {
   val ThreadsAllowedToBlockForConnectionMultiplier = "threadsAllowedToBlockForConnectionMultiplier"
   val WriteConcern = "writeConcern"
   val Credentials = "credentials"
+  val GSSAPICredentials = "gssapiCredentials"
   val SamplingRatio = "schema_samplingRatio"
   val SplitSize = "splitSize"
   val SplitKey = "splitKey"
@@ -103,7 +104,7 @@ object MongodbConfig {
     if (!parameters.contains(Collection)) notFound(Collection)
 
     //optional parseable properties
-    val optionalProperties: List[String] = List(Credentials,SSLOptions, UpdateFields)
+    val optionalProperties: List[String] = List(Credentials,SSLOptions, UpdateFields, GSSAPICredentials)
 
     (properties /: optionalProperties){
       /** We will assume credentials are provided like 'user,database,password;user,database,password;...' */
@@ -121,6 +122,15 @@ object MongodbConfig {
           val ssloption = ssloptionsInput.split(",")
           val ssloptions = MongodbSSLOptions(Some(ssloption(0)), Some(ssloption(1)), ssloption(2), Some(ssloption(3)))
           properties + (SSLOptions -> ssloptions)
+        } getOrElse properties
+
+      case (properties,GSSAPICredentials) =>
+        parameters.get(GSSAPICredentials).map{ gssapiCredentialInput =>
+          val gssApiCredentials = gssapiCredentialInput.split(",").map(_.split(",")).toList
+            .map(credential => MongodbGSSAPICredentials(credential(0),
+              credential(1).asInstanceOf[Map[String, String]],
+              credential(2).asInstanceOf[Map[String, Any]]))
+          properties + (GSSAPICredentials -> gssApiCredentials)
         } getOrElse properties
 
       /** We will assume fields are provided like 'user,database,password...' */

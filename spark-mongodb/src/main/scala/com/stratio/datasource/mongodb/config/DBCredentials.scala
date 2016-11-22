@@ -1,4 +1,4 @@
-/*
+/**
  * Copyright (C) 2015 Stratio (http://stratio.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,7 +15,9 @@
  */
 package com.stratio.datasource.mongodb.config
 
-case class MongodbCredentials(
-  user: String,
-  database: String,
-  password: Array[Char]) extends DBCredentials
+/**
+  * Created by singhulariti on 7/26/16.
+  */
+trait DBCredentials {
+
+}
